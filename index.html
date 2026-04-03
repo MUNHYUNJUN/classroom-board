@@ -817,36 +817,49 @@ document.getElementById('quote-modal').addEventListener('click', function(e) {
 // ── 구글 시트에서 좋은글 로드 ──
 var QUOTE_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTQj5B0CsHrYNyFlDCtQuaN3KboIz01TJvzLxitzr6sfZ5eOFMERsWNKJRig8YmcURuIJHBW_GCCN6u/pub?gid=1446893502&single=true&output=csv';
 
+function parseCSVLine(line) {
+  // 쌍따옴표 포함된 CSV도 올바르게 파싱
+  var result = [];
+  var cur = '';
+  var inQuote = false;
+  for (var i = 0; i < line.length; i++) {
+    var ch = line[i];
+    if (ch === '"') {
+      inQuote = !inQuote;
+    } else if (ch === ',' && !inQuote) {
+      result.push(cur.trim());
+      cur = '';
+    } else {
+      cur += ch;
+    }
+  }
+  result.push(cur.trim());
+  return result;
+}
+
 function loadQuoteFromSheet() {
   fetch(QUOTE_CSV_URL + '&t=' + Date.now())
     .then(function(r) { return r.text(); })
     .then(function(csv) {
       var lines = csv.trim().split('\n');
-      // 1행: 헤더(내용,출처) 스킵, 2행부터 데이터
+      // 1행: 헤더 스킵, 2행 데이터
       if (lines.length >= 2) {
-        var cols = lines[1].split(',').map(function(c) {
-          return c.trim().replace(/^"|"$/g, '');
-        });
-        var text   = cols[0] || '';
-        var author = cols[1] || '작자미상';
+        var cols = parseCSVLine(lines[1]);
+        var text   = (cols[0] || '').replace(/^"|"$/g, '').trim();
+        var author = (cols[1] || '작자미상').replace(/^"|"$/g, '').trim();
         if (text) {
           applyQuote({ text: text, author: author });
-          // localStorage에도 저장 (편집 버튼으로 덮어쓰기 가능)
           localStorage.setItem('custom_quote', JSON.stringify({ text: text, author: author }));
+          console.log('좋은글 로드 성공:', text);
+        } else {
+          console.log('좋은글 내용이 비어있음. CSV:', lines[1]);
         }
       }
     })
-    .catch(function() {
-      // 실패 시 저장된 값 또는 기본값 사용
+    .catch(function(e) {
+      console.log('좋은글 로드 실패:', e);
       var saved = getQuote();
-      if (saved) {
-        applyQuote(saved);
-      } else {
-        applyQuote({
-          text: '자신을 믿어라. 당신 안에 있는 힘은 생각보다 훨씬 강하다.',
-          author: '작자미상'
-        });
-      }
+      if (saved) applyQuote(saved);
     });
 }
 // 초기 로드
