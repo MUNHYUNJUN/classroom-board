@@ -545,8 +545,46 @@ document.getElementById('dday-modal').addEventListener('click', function(e) {
   if (e.target === this) closeDdayModal();
 });
 
+// ── 구글 시트에서 D-Day 로드 ──
+var DDAY_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTQj5B0CsHrYNyFlDCtQuaN3KboIz01TJvzLxitzr6sfZ5eOFMERsWNKJRig8YmcURuIJHBW_GCCN6u/pub?gid=548968173&single=true&output=csv';
+
+function loadDdayFromSheet() {
+  fetch(DDAY_CSV_URL + '&t=' + Date.now())
+    .then(function(r) { return r.text(); })
+    .then(function(csv) {
+      var lines = csv.trim().split('\n');
+      // 1행: 헤더(시험명,날짜) 스킵
+      var rows = [];
+      for (var i = 1; i < lines.length; i++) {
+        var cols = lines[i].split(',').map(function(c) {
+          return c.trim().replace(/^"|"$/g, '');
+        });
+        if (cols[0] && cols[1]) {
+          rows.push({ name: cols[0], date: cols[1] });
+        }
+      }
+      if (rows.length) {
+        var data = {
+          main: { name: rows[0].name, date: rows[0].date },
+          subs: [
+            rows[1] || { name: '', date: '' },
+            rows[2] || { name: '', date: '' },
+            rows[3] || { name: '', date: '' },
+          ]
+        };
+        localStorage.setItem('dday_data', JSON.stringify(data));
+        applyDday(data);
+      }
+    })
+    .catch(function() {
+      // 실패 시 localStorage 또는 기본값 사용
+      applyDday(getDdayData());
+    });
+}
 // 초기 적용
-applyDday(getDdayData());
+loadDdayFromSheet();
+// 1시간마다 자동 갱신
+setInterval(loadDdayFromSheet, 60 * 60 * 1000);
 
 /* =========================================
    4. 급식
@@ -646,7 +684,7 @@ const NOTICE_DEFAULT = [
 ];
 
 // ── 구글 시트에서 공지 로드 ──
-var NOTICE_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vThbxNRp_0WBMA9c7mFkkjtDhL3Bswr8Klf9IV4q073efvkBQZEo_PHkwYfnBv3n2NUz2OO_OQCvWBx/pub?output=csv';
+var NOTICE_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTQj5B0CsHrYNyFlDCtQuaN3KboIz01TJvzLxitzr6sfZ5eOFMERsWNKJRig8YmcURuIJHBW_GCCN6u/pub?gid=584526684&single=true&output=csv';
 
 function getNotices() {
   try {
@@ -776,19 +814,45 @@ document.getElementById('quote-modal').addEventListener('click', function(e) {
   if (e.target === this) closeQuoteModal();
 });
 
-// 초기 로드: 저장된 한마디 있으면 우선 적용, 없으면 파일 기본값 표시
-(function() {
-  const saved = getQuote();
-  if (saved) {
-    applyQuote(saved);
-  } else {
-    // 파일 기본값 (편집 버튼으로 언제든 변경 가능)
-    applyQuote({
-      text: '자신을 믿어라. 당신 안에 있는 힘은 생각보다 훨씬 강하다.',
-      author: '작자미상'
+// ── 구글 시트에서 좋은글 로드 ──
+var QUOTE_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTQj5B0CsHrYNyFlDCtQuaN3KboIz01TJvzLxitzr6sfZ5eOFMERsWNKJRig8YmcURuIJHBW_GCCN6u/pub?gid=1446893502&single=true&output=csv';
+
+function loadQuoteFromSheet() {
+  fetch(QUOTE_CSV_URL + '&t=' + Date.now())
+    .then(function(r) { return r.text(); })
+    .then(function(csv) {
+      var lines = csv.trim().split('\n');
+      // 1행: 헤더(내용,출처) 스킵, 2행부터 데이터
+      if (lines.length >= 2) {
+        var cols = lines[1].split(',').map(function(c) {
+          return c.trim().replace(/^"|"$/g, '');
+        });
+        var text   = cols[0] || '';
+        var author = cols[1] || '작자미상';
+        if (text) {
+          applyQuote({ text: text, author: author });
+          // localStorage에도 저장 (편집 버튼으로 덮어쓰기 가능)
+          localStorage.setItem('custom_quote', JSON.stringify({ text: text, author: author }));
+        }
+      }
+    })
+    .catch(function() {
+      // 실패 시 저장된 값 또는 기본값 사용
+      var saved = getQuote();
+      if (saved) {
+        applyQuote(saved);
+      } else {
+        applyQuote({
+          text: '자신을 믿어라. 당신 안에 있는 힘은 생각보다 훨씬 강하다.',
+          author: '작자미상'
+        });
+      }
     });
-  }
-})();
+}
+// 초기 로드
+loadQuoteFromSheet();
+// 1시간마다 자동 갱신
+setInterval(loadQuoteFromSheet, 60 * 60 * 1000);
 
 renderNotices();
 }
