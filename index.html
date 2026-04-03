@@ -1,10 +1,13 @@
 <!DOCTYPE html>
-<!-- saved from url=(0074)file:///C:/Users/%EB%8C%80%EC%A7%84%EC%97%AC%EA%B3%A0/Downloads/index.html -->
-<html lang="ko"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <title>학급 디지털 게시판</title>
-<link href="./index_files/css2" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
   :root {
     --bg:#F2F1EE; --surface:#FFF; --border:#E4E2DC;
@@ -166,7 +169,7 @@
   hr.dday-divider{border:none;border-top:1px solid var(--border);margin:12px 0 4px;}
   .btn-save-dark{padding:7px 22px;border:none;border-radius:7px;font-size:12px;font-weight:700;cursor:pointer;background:var(--text-primary);color:#fff;}
 </style>
-<script src="./index_files/mealServiceDietInfo"></script><script src="./index_files/mealServiceDietInfo(1)"></script></head>
+</head>
 <body>
 
 <!-- 헤더 -->
@@ -180,8 +183,8 @@
     <div class="board-title-sub"><span class="live-dot"></span><span class="live-label">Live</span></div>
   </div>
   <div class="datetime-block">
-    <div id="clock">14:13:14</div>
-    <div id="date">2026년 4월 3일 (금)</div>
+    <div id="clock">00:00:00</div>
+    <div id="date">로딩 중...</div>
   </div>
 </header>
 
@@ -198,22 +201,22 @@
         </div>
         <div class="dday-event" id="dday-event-name">2026학년도 수능</div>
         <div class="dday-number">
-          <span class="pre" id="dday-prefix">D-</span><span id="dday-num">230</span>
+          <span class="pre" id="dday-prefix">D-</span><span id="dday-num">---</span>
         </div>
         <div class="dday-sub" id="dday-date-display">2026. 11. 19 (목)</div>
       </div>
       <div class="dday-list" id="dday-sub-list">
         <div class="dday-item">
-          <span class="dday-item-name" id="sub1-name">1학기 중간고사</span>
-          <span class="dday-item-count" id="sub1-count">D-21</span>
+          <span class="dday-item-name" id="sub1-name">6월 모의고사</span>
+          <span class="dday-item-count" id="sub1-count">D-?</span>
         </div>
         <div class="dday-item">
-          <span class="dday-item-name" id="sub2-name">5월 학력평가</span>
-          <span class="dday-item-count" id="sub2-count">D-34</span>
+          <span class="dday-item-name" id="sub2-name">9월 모의고사</span>
+          <span class="dday-item-count" id="sub2-count">D-?</span>
         </div>
         <div class="dday-item">
-          <span class="dday-item-name" id="sub3-name">6월 학력평가(미정)</span>
-          <span class="dday-item-count" id="sub3-count">D-62</span>
+          <span class="dday-item-name" id="sub3-name">1학기 기말고사</span>
+          <span class="dday-item-count" id="sub3-count">D-?</span>
         </div>
       </div>
     </div>
@@ -224,9 +227,11 @@
         <button class="meal-edit-btn" onclick="openMealModal()">✏ 편집</button>
         <div class="meal-header">
           <div class="card-label">오늘의 급식</div>
-          <div class="meal-day" id="meal-day">4/3 (금)</div>
+          <div class="meal-day" id="meal-day">오늘</div>
         </div>
-        <div class="meal-list" id="meal-grid"><div class="meal-item"><div class="meal-dot"></div>중식</div><div class="meal-item"><div class="meal-dot"></div>찹쌀밥</div><div class="meal-item"><div class="meal-dot"></div>뼈없는 감자탕</div><div class="meal-item"><div class="meal-dot"></div>궁중떡볶이</div><div class="meal-item"><div class="meal-dot"></div>더덕오이생채</div><div class="meal-item"><div class="meal-dot"></div>매콤가자미구이</div><div class="meal-item"><div class="meal-dot"></div>깍두기</div><div class="meal-item"><div class="meal-dot"></div>파인애플</div></div>
+        <div class="meal-list" id="meal-grid">
+          <div class="meal-item"><div class="meal-dot"></div><span>불러오는 중…</span></div>
+        </div>
         <div class="meal-kcal" id="meal-kcal"></div>
       </div>
       <div class="card card-quote">
@@ -234,9 +239,9 @@
         <div class="card-label">이번주의 한마디</div>
         <div class="quote-body">
           <div class="quote-mark">"</div>
-          <div class="quote-text" id="quote-text">자신을 믿어라. 당신 안에 있는 힘은 생각보다 훨씬 강하다.</div>
+          <div class="quote-text" id="quote-text"></div>
         </div>
-        <div class="quote-author" id="quote-author">— 작자미상</div>
+        <div class="quote-author" id="quote-author"></div>
       </div>
     </div>
 
@@ -246,7 +251,7 @@
         <div class="card-label">공지사항</div>
         <button class="notice-add-btn" onclick="openNoticeModal()">+ 공지 추가</button>
       </div>
-      <div class="notice-list" id="notice-list"><div class="notice-item"><div class="notice-badge">안내</div><div class="notice-item-inner"><div class="notice-text">연습22</div><div class="notice-date">2026.04.03</div></div><button class="notice-del-btn" onclick="deleteNotice(0)">✕</button></div><div class="notice-item"><div class="notice-badge">안내</div><div class="notice-item-inner"><div class="notice-text">연습11</div><div class="notice-date">2026.04.03</div></div><button class="notice-del-btn" onclick="deleteNotice(1)">✕</button></div></div>
+      <div class="notice-list" id="notice-list"></div>
     </div>
 
   </div>
@@ -258,7 +263,7 @@
         <span class="pdf-label">공지 자료</span>
         <span class="pdf-filename" id="pdf-filename"></span>
       </div>
-      <button class="pdf-upload-btn" onclick="document.getElementById(&#39;pdf-input&#39;).click()">+ PDF 업로드</button>
+      <button class="pdf-upload-btn" onclick="document.getElementById('pdf-input').click()">+ PDF 업로드</button>
       <input type="file" id="pdf-input" accept="application/pdf" onchange="onPdfSelected(this)">
     </div>
     <div class="pdf-body" id="pdf-body">
@@ -281,7 +286,7 @@
 <footer>
   <div class="ticker-label">TODAY</div>
   <div class="ticker-wrap">
-    <div class="ticker-track" id="ticker-track"><span class="ticker-item">📌 연습22</span><span class="ticker-sep">·</span><span class="ticker-item">📌 연습11</span><span class="ticker-sep">·</span><span class="ticker-item" id="ticker-meal1">🍱 오늘 급식: 중식 · 찹쌀밥 · 뼈없는 감자탕 · 궁중떡볶이 · 더덕오이생채 · 매콤가자미구이 · 깍두기 · 파인애플</span><span class="ticker-sep">·</span><span class="ticker-item">📌 연습22</span><span class="ticker-sep">·</span><span class="ticker-item">📌 연습11</span><span class="ticker-sep">·</span><span class="ticker-item" id="ticker-meal2">🍱 오늘 급식: 중식 · 찹쌀밥 · 뼈없는 감자탕 · 궁중떡볶이 · 더덕오이생채 · 매콤가자미구이 · 깍두기 · 파인애플</span></div>
+    <div class="ticker-track" id="ticker-track"></div>
   </div>
 </footer>
 
@@ -290,12 +295,7 @@
   <div class="modal-box">
     <div class="modal-title">오늘의 급식 편집</div>
     <div class="modal-sub">메뉴를 한 줄에 하나씩 입력하세요</div>
-    <textarea id="meal-input" placeholder="흑미밥
-된장찌개
-제육볶음
-깍두기
-오이무침
-우유"></textarea>
+    <textarea id="meal-input" placeholder="흑미밥&#10;된장찌개&#10;제육볶음&#10;깍두기&#10;오이무침&#10;우유"></textarea>
     <div class="meal-kcal-row">
       <label>열량</label>
       <input type="text" id="kcal-input" placeholder="예: 875.3 Kcal">
@@ -314,7 +314,7 @@
     <div class="modal-sub">배지 유형과 내용을 입력하세요</div>
     <div class="badge-row">
       <label class="badge-opt"><input type="radio" name="nbadge" value="중요"> 🔴 중요</label>
-      <label class="badge-opt"><input type="radio" name="nbadge" value="안내" checked=""> 🔵 안내</label>
+      <label class="badge-opt"><input type="radio" name="nbadge" value="안내" checked> 🔵 안내</label>
       <label class="badge-opt"><input type="radio" name="nbadge" value="일정"> 🟢 일정</label>
     </div>
     <textarea id="notice-input" placeholder="공지 내용을 입력하세요"></textarea>
@@ -339,7 +339,7 @@
     <div class="dday-input-row">
       <input type="text" id="dm-name" placeholder="시험명">
       <input type="date" id="dm-date">
-      <span class="dday-preview" id="dm-preview">D-230</span>
+      <span class="dday-preview" id="dm-preview"></span>
     </div>
 
     <hr class="dday-divider">
@@ -348,17 +348,17 @@
     <div class="dday-input-row">
       <input type="text" id="ds1-name" placeholder="시험명">
       <input type="date" id="ds1-date">
-      <span class="dday-preview" id="ds1-preview">D-21</span>
+      <span class="dday-preview" id="ds1-preview"></span>
     </div>
     <div class="dday-input-row">
       <input type="text" id="ds2-name" placeholder="시험명">
       <input type="date" id="ds2-date">
-      <span class="dday-preview" id="ds2-preview">D-34</span>
+      <span class="dday-preview" id="ds2-preview"></span>
     </div>
     <div class="dday-input-row">
       <input type="text" id="ds3-name" placeholder="시험명">
       <input type="date" id="ds3-date">
-      <span class="dday-preview" id="ds3-preview">D-62</span>
+      <span class="dday-preview" id="ds3-preview"></span>
     </div>
 
     <div class="modal-btns">
@@ -368,7 +368,7 @@
   </div>
 </div>
 
-<script src="./index_files/pdf.min.js.다운로드"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script>
 'use strict';
 
@@ -822,17 +822,34 @@ function changePage(delta) {
       5분마다 파일 변경 여부 확인 후 갱신
    ========================================= */
 (function() {
-  var lastModified = '';
-  var CHECK_MS = 5 * 60 * 1000;
+  var lastEtag = '';
+  var CHECK_MS = 3 * 60 * 1000; // 3분마다 확인
+
   function checkReload() {
-    fetch(location.href, { method: 'HEAD', cache: 'no-cache' })
-      .then(function(res) {
-        var m = res.headers.get('last-modified') || res.headers.get('etag') || '';
-        if (lastModified && m && lastModified !== m) location.reload();
-        lastModified = m;
-      }).catch(function() {});
+    // 매번 새로운 URL로 요청해서 캐시 완전 우회
+    var url = location.origin + location.pathname + '?_=' + Date.now();
+    fetch(url, {
+      method: 'HEAD',
+      cache: 'no-store',
+      headers: {
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache'
+      }
+    })
+    .then(function(res) {
+      var etag = res.headers.get('etag') || res.headers.get('last-modified') || '';
+      if (lastEtag && etag && lastEtag !== etag) {
+        // 캐시 없이 강제 리로드
+        location.href = location.origin + location.pathname + '?_=' + Date.now();
+      }
+      lastEtag = etag;
+    })
+    .catch(function() {});
   }
-  checkReload();
+
+  // 첫 로드 후 3초 뒤 기준값 설정
+  setTimeout(checkReload, 3000);
+  // 이후 3분마다 반복
   setInterval(checkReload, CHECK_MS);
 })();
 </script>
@@ -842,10 +859,10 @@ function changePage(delta) {
   <div class="modal-box">
     <div class="modal-title">이번주의 한마디 편집</div>
     <div class="modal-sub">이번 주 학생들에게 전하고 싶은 말을 입력하세요</div>
-    <textarea id="quote-input" style="width:100%;height:100px;border:1px solid var(--border);border-radius:9px;padding:11px 13px;font-family:&#39;Noto Sans KR&#39;,sans-serif;font-size:13px;line-height:1.7;resize:none;outline:none;background:var(--bg);" placeholder="예: 오늘도 최선을 다하자!"></textarea>
+    <textarea id="quote-input" style="width:100%;height:100px;border:1px solid var(--border);border-radius:9px;padding:11px 13px;font-family:'Noto Sans KR',sans-serif;font-size:13px;line-height:1.7;resize:none;outline:none;background:var(--bg);" placeholder="예: 오늘도 최선을 다하자!"></textarea>
     <div style="display:flex;align-items:center;gap:8px;margin-top:8px;">
       <label style="font-size:11px;color:var(--text-secondary);white-space:nowrap;">출처</label>
-      <input type="text" id="quote-author-input" placeholder="예: 작자미상  또는  선생님" style="flex:1;border:1px solid var(--border);border-radius:7px;padding:6px 11px;font-size:12px;outline:none;background:var(--bg);font-family:&#39;Noto Sans KR&#39;,sans-serif;">
+      <input type="text" id="quote-author-input" placeholder="예: 작자미상  또는  선생님" style="flex:1;border:1px solid var(--border);border-radius:7px;padding:6px 11px;font-size:12px;outline:none;background:var(--bg);font-family:'Noto Sans KR',sans-serif;">
     </div>
     <div class="modal-btns">
       <button class="btn-cancel" onclick="closeQuoteModal()">취소</button>
@@ -853,6 +870,5 @@ function changePage(delta) {
     </div>
   </div>
 </div>
-
-
-</body></html>
+</body>
+</html>
