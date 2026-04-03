@@ -21,6 +21,8 @@
   .school-name{font-size:11px;font-weight:500;color:var(--text-secondary);letter-spacing:.06em;}
   .class-name{font-size:19px;font-weight:900;letter-spacing:-.02em;margin-top:1px;}
   .header-center{text-align:center;}
+  .board-title{font-size:clamp(26px,3.2vw,42px);font-weight:900;letter-spacing:-.03em;color:var(--text-primary);line-height:1;}
+  .board-title-sub{margin-top:5px;display:flex;align-items:center;justify-content:center;gap:5px;}
   .live-dot{display:inline-block;width:6px;height:6px;background:var(--red);border-radius:50%;margin-right:5px;animation:pulse 2s infinite;}
   @keyframes pulse{0%,100%{opacity:1}50%{opacity:.25}}
   .live-label{font-size:10px;font-weight:600;color:var(--text-muted);letter-spacing:.12em;text-transform:uppercase;}
@@ -28,21 +30,22 @@
   #clock{font-family:"DM Mono",monospace;font-size:24px;font-weight:400;letter-spacing:-.02em;}
   #date{font-size:11px;color:var(--text-secondary);margin-top:2px;}
 
-  /* 메인: 왼쪽 | 오른쪽(PDF) */
+  /* 메인 */
   main{display:grid;grid-template-columns:1fr 1fr;gap:13px;padding:13px 36px;overflow:hidden;min-height:0;}
-
-  /* 왼쪽: D-Day / [급식+한마디] / 공지 */
   .left-col{display:grid;grid-template-rows:auto auto 1fr;gap:11px;min-height:0;}
   .mid-row{display:grid;grid-template-columns:1fr 1fr;gap:11px;min-height:0;}
 
-  /* 공통 카드 */
+  /* 카드 */
   .card{background:var(--surface);border:1px solid var(--border);border-radius:13px;padding:15px 19px;display:flex;flex-direction:column;overflow:hidden;}
   .card-label{font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;margin-bottom:10px;flex-shrink:0;}
 
   /* D-Day 카드 */
   .card-dday{background:var(--text-primary);border-color:var(--text-primary);color:white;flex-direction:row;align-items:stretch;padding:20px 26px;gap:0;}
   .dday-main{display:flex;flex-direction:column;justify-content:center;padding-right:26px;margin-right:26px;border-right:1px solid rgba(255,255,255,.1);flex-shrink:0;}
-  .dday-label-txt{font-size:10px;font-weight:700;letter-spacing:.12em;color:rgba(255,255,255,.3);text-transform:uppercase;margin-bottom:4px;}
+  .dday-top-row{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px;}
+  .dday-label-txt{font-size:10px;font-weight:700;letter-spacing:.12em;color:rgba(255,255,255,.3);text-transform:uppercase;}
+  .dday-edit-btn{font-size:9px;font-weight:700;color:rgba(255,255,255,.55);background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);border-radius:5px;padding:2px 8px;cursor:pointer;white-space:nowrap;flex-shrink:0;}
+  .dday-edit-btn:hover{background:rgba(255,255,255,.2);color:#fff;}
   .dday-event{font-size:11px;color:rgba(255,255,255,.4);margin-bottom:4px;white-space:nowrap;}
   .dday-number{font-family:"DM Mono",monospace;font-size:clamp(48px,6.5vw,78px);font-weight:300;line-height:1;letter-spacing:-.04em;color:#fff;white-space:nowrap;}
   .dday-number .pre{font-size:.36em;font-weight:500;vertical-align:super;color:rgba(255,255,255,.4);}
@@ -62,11 +65,13 @@
   .meal-item{display:flex;align-items:center;gap:6px;padding:5px 8px;background:var(--bg);border-radius:6px;font-size:12px;}
   .meal-dot{width:4px;height:4px;border-radius:50%;background:var(--green);flex-shrink:0;}
   .meal-kcal{text-align:center;margin-top:5px;font-size:10px;color:var(--text-muted);font-family:"DM Mono",monospace;flex-shrink:0;}
-  .edit-btn{position:absolute;top:12px;right:13px;font-size:9px;font-weight:700;color:var(--green);background:var(--green-soft);border:1px solid #B8DDD0;border-radius:5px;padding:2px 7px;cursor:pointer;opacity:0;transition:opacity .2s;}
-  .card-meal:hover .edit-btn{opacity:1;}
+  .meal-edit-btn{position:absolute;top:12px;right:13px;font-size:9px;font-weight:700;color:var(--green);background:var(--green-soft);border:1px solid #B8DDD0;border-radius:5px;padding:2px 7px;cursor:pointer;opacity:0;transition:opacity .2s;}
+  .card-meal:hover .meal-edit-btn{opacity:1;}
 
   /* 한마디 카드 */
-  .card-quote{background:var(--amber-soft);border-color:#E2C99A;}
+  .card-quote{background:var(--amber-soft);border-color:#E2C99A;position:relative;}
+  .quote-edit-btn{position:absolute;top:12px;right:13px;font-size:9px;font-weight:700;color:var(--amber);background:rgba(176,112,40,.12);border:1px solid rgba(176,112,40,.25);border-radius:5px;padding:2px 7px;cursor:pointer;opacity:0;transition:opacity .2s;}
+  .card-quote:hover .quote-edit-btn{opacity:1;}
   .card-quote .card-label{color:var(--amber);}
   .quote-body{flex:1;display:flex;flex-direction:column;justify-content:center;}
   .quote-mark{font-size:28px;font-weight:900;color:var(--amber);opacity:.18;line-height:.8;margin-bottom:4px;}
@@ -75,21 +80,28 @@
 
   /* 공지사항 카드 */
   .card-notice .card-label{color:var(--accent);}
+  .notice-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
+  .notice-header .card-label{margin-bottom:0;}
+  .notice-add-btn{font-size:9px;font-weight:700;color:var(--accent);background:var(--accent-soft);border:1px solid #C8D8F8;border-radius:5px;padding:2px 8px;cursor:pointer;}
+  .notice-add-btn:hover{background:#DDE8FB;}
   .notice-list{display:flex;flex-direction:column;gap:8px;flex:1;overflow:hidden;}
   .notice-item{display:flex;align-items:flex-start;gap:8px;padding:10px 12px;background:var(--accent-soft);border-radius:9px;border-left:3px solid var(--accent);flex-shrink:0;}
   .notice-badge{font-size:9px;font-weight:700;background:var(--accent);color:white;padding:2px 6px;border-radius:3px;white-space:nowrap;margin-top:1px;letter-spacing:.04em;flex-shrink:0;}
+  .notice-item-inner{flex:1;min-width:0;}
   .notice-text{font-size:13px;line-height:1.5;color:var(--text-primary);}
   .notice-date{font-size:10px;color:var(--text-muted);margin-top:3px;font-family:"DM Mono",monospace;}
+  .notice-del-btn{font-size:11px;color:var(--text-muted);background:none;border:none;cursor:pointer;padding:0 2px;flex-shrink:0;margin-top:1px;line-height:1;}
+  .notice-del-btn:hover{color:var(--red);}
 
-  /* PDF 뷰어 (오른쪽) */
+  /* PDF 패널 */
   .pdf-panel{background:var(--surface);border:1px solid var(--border);border-radius:13px;display:flex;flex-direction:column;overflow:hidden;}
   .pdf-toolbar{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-bottom:1px solid var(--border);flex-shrink:0;}
   .pdf-title-area{display:flex;align-items:center;gap:8px;}
   .pdf-label{font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);}
-  .pdf-filename{font-size:11px;color:var(--text-secondary);font-family:"DM Mono",monospace;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .pdf-filename{font-size:11px;color:var(--text-secondary);font-family:"DM Mono",monospace;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
   .pdf-upload-btn{font-size:10px;font-weight:700;color:white;background:var(--accent);border:none;border-radius:6px;padding:5px 12px;cursor:pointer;}
   .pdf-upload-btn:hover{background:#2449C0;}
-  .pdf-body{flex:1;display:flex;align-items:center;justify-content:center;overflow:hidden;padding:12px;position:relative;}
+  .pdf-body{flex:1;display:flex;align-items:center;justify-content:center;overflow:hidden;padding:12px;}
   .pdf-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:var(--text-muted);text-align:center;}
   .pdf-empty-icon{font-size:38px;opacity:.25;}
   .pdf-empty-text{font-size:13px;line-height:1.65;}
@@ -111,85 +123,61 @@
   .ticker-item{font-size:12px;color:var(--text-secondary);flex-shrink:0;}
   .ticker-sep{color:var(--border);margin:0 6px;}
 
-  /* 급식 편집 모달 */
-  .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;align-items:center;justify-content:center;}
+  /* 모달 공통 */
+  .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.48);z-index:300;align-items:center;justify-content:center;}
   .modal-overlay.open{display:flex;}
-  .modal{background:#fff;border-radius:17px;padding:24px 24px 20px;width:390px;max-width:92vw;}
+  .modal-box{background:#fff;border-radius:18px;padding:26px 26px 22px;width:420px;max-width:93vw;}
   .modal-title{font-size:15px;font-weight:700;margin-bottom:3px;}
-  .modal-sub{font-size:11px;color:var(--text-muted);margin-bottom:13px;}
-  .modal textarea{width:100%;height:165px;border:1px solid var(--border);border-radius:9px;padding:11px 13px;font-family:"Noto Sans KR",sans-serif;font-size:13px;line-height:1.7;resize:none;outline:none;background:var(--bg);}
-  .modal textarea:focus{border-color:var(--green);}
-  .modal-kcal{display:flex;align-items:center;gap:8px;margin-top:8px;}
-  .modal-kcal label{font-size:11px;color:var(--text-secondary);white-space:nowrap;}
-  .modal-kcal input{flex:1;border:1px solid var(--border);border-radius:7px;padding:6px 11px;font-size:12px;font-family:"DM Mono",monospace;outline:none;background:var(--bg);}
-  .modal-kcal input:focus{border-color:var(--green);}
-  .modal-btns{display:flex;gap:8px;margin-top:14px;justify-content:flex-end;}
+  .modal-sub{font-size:11px;color:var(--text-muted);margin-bottom:16px;}
+  .modal-btns{display:flex;gap:8px;margin-top:16px;justify-content:flex-end;}
   .btn-cancel{padding:7px 16px;border:1px solid var(--border);border-radius:7px;font-size:12px;font-weight:500;cursor:pointer;background:#fff;color:var(--text-secondary);}
-  .btn-save{padding:7px 20px;border:none;border-radius:7px;font-size:12px;font-weight:700;cursor:pointer;background:var(--green);color:#fff;}
+  .btn-cancel:hover{background:var(--bg);}
 
-  /* 공지 편집 버튼 */
-  .notice-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
-  .notice-header .card-label{margin-bottom:0;}
-  .notice-add-btn{font-size:9px;font-weight:700;color:var(--accent);background:var(--accent-soft);border:1px solid #C8D8F8;border-radius:5px;padding:2px 8px;cursor:pointer;white-space:nowrap;}
-  .notice-add-btn:hover{background:#DDE8FB;}
-  .notice-del-btn{font-size:10px;color:var(--text-muted);background:none;border:none;cursor:pointer;padding:0 2px;line-height:1;flex-shrink:0;margin-top:1px;}
-  .notice-del-btn:hover{color:var(--red);}
-  .notice-item-inner{flex:1;min-width:0;}
+  /* 급식 모달 */
+  #meal-modal textarea{width:100%;height:160px;border:1px solid var(--border);border-radius:9px;padding:11px 13px;font-family:"Noto Sans KR",sans-serif;font-size:13px;line-height:1.7;resize:none;outline:none;background:var(--bg);}
+  #meal-modal textarea:focus{border-color:var(--green);}
+  .meal-kcal-row{display:flex;align-items:center;gap:8px;margin-top:8px;}
+  .meal-kcal-row label{font-size:11px;color:var(--text-secondary);white-space:nowrap;}
+  .meal-kcal-row input{flex:1;border:1px solid var(--border);border-radius:7px;padding:6px 11px;font-size:12px;font-family:"DM Mono",monospace;outline:none;background:var(--bg);}
+  .meal-kcal-row input:focus{border-color:var(--green);}
+  .btn-save-green{padding:7px 20px;border:none;border-radius:7px;font-size:12px;font-weight:700;cursor:pointer;background:var(--green);color:#fff;}
 
-  /* 공지 편집 모달 */
-  .notice-modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;align-items:center;justify-content:center;}
-  .notice-modal-overlay.open{display:flex;}
-  .notice-modal{background:#fff;border-radius:17px;padding:24px 24px 20px;width:400px;max-width:92vw;}
-  .notice-modal-title{font-size:15px;font-weight:700;margin-bottom:3px;}
-  .notice-modal-sub{font-size:11px;color:var(--text-muted);margin-bottom:14px;}
-  .notice-badge-row{display:flex;gap:8px;margin-bottom:12px;}
+  /* 공지 모달 */
+  .badge-row{display:flex;gap:10px;margin-bottom:12px;}
   .badge-opt{display:flex;align-items:center;gap:5px;cursor:pointer;font-size:12px;font-weight:500;}
   .badge-opt input{accent-color:var(--accent);}
-  .notice-modal textarea{width:100%;height:80px;border:1px solid var(--border);border-radius:9px;padding:10px 12px;font-family:"Noto Sans KR",sans-serif;font-size:13px;line-height:1.65;resize:none;outline:none;background:var(--bg);}
-  .notice-modal textarea:focus{border-color:var(--accent);}
-  .notice-modal-date{display:flex;align-items:center;gap:8px;margin-top:8px;}
-  .notice-modal-date label{font-size:11px;color:var(--text-secondary);white-space:nowrap;}
-  .notice-modal-date input{flex:1;border:1px solid var(--border);border-radius:7px;padding:6px 10px;font-size:12px;font-family:"DM Mono",monospace;outline:none;background:var(--bg);}
-  .notice-modal-date input:focus{border-color:var(--accent);}
-  .notice-modal-btns{display:flex;gap:8px;margin-top:14px;justify-content:flex-end;}
-  .nbtn-cancel{padding:7px 16px;border:1px solid var(--border);border-radius:7px;font-size:12px;font-weight:500;cursor:pointer;background:#fff;color:var(--text-secondary);}
-  .nbtn-save{padding:7px 20px;border:none;border-radius:7px;font-size:12px;font-weight:700;cursor:pointer;background:var(--accent);color:#fff;}
+  #notice-modal textarea{width:100%;height:80px;border:1px solid var(--border);border-radius:9px;padding:10px 12px;font-family:"Noto Sans KR",sans-serif;font-size:13px;line-height:1.65;resize:none;outline:none;background:var(--bg);}
+  #notice-modal textarea:focus{border-color:var(--accent);}
+  .notice-date-row{display:flex;align-items:center;gap:8px;margin-top:8px;}
+  .notice-date-row label{font-size:11px;color:var(--text-secondary);white-space:nowrap;}
+  .notice-date-row input{flex:1;border:1px solid var(--border);border-radius:7px;padding:6px 10px;font-size:12px;font-family:"DM Mono",monospace;outline:none;background:var(--bg);}
+  .notice-date-row input:focus{border-color:var(--accent);}
+  .btn-save-accent{padding:7px 20px;border:none;border-radius:7px;font-size:12px;font-weight:700;cursor:pointer;background:var(--accent);color:#fff;}
 
-  /* D-Day 편집 */
-  .dday-edit-btn{font-size:9px;font-weight:700;color:rgba(255,255,255,.5);background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:5px;padding:2px 8px;cursor:pointer;white-space:nowrap;flex-shrink:0;align-self:flex-start;}
-  .dday-edit-btn:hover{background:rgba(255,255,255,.15);color:#fff;}
-
-  /* D-Day 편집 모달 */
-  .dday-modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;align-items:center;justify-content:center;}
-  .dday-modal-overlay.open{display:flex;}
-  .dday-modal{background:#fff;border-radius:18px;padding:26px 26px 22px;width:460px;max-width:93vw;}
-  .dday-modal-title{font-size:15px;font-weight:700;margin-bottom:3px;}
-  .dday-modal-sub{font-size:11px;color:var(--text-muted);margin-bottom:18px;}
-  .dday-row{display:grid;grid-template-columns:1fr auto auto;gap:8px;align-items:center;margin-bottom:9px;}
-  .dday-row:last-of-type{margin-bottom:0;}
-  .dday-row input[type=text]{border:1px solid var(--border);border-radius:8px;padding:8px 11px;font-size:13px;font-family:"Noto Sans KR",sans-serif;outline:none;background:var(--bg);width:100%;}
-  .dday-row input[type=text]:focus{border-color:var(--accent);}
-  .dday-row input[type=date]{border:1px solid var(--border);border-radius:8px;padding:7px 10px;font-size:12px;font-family:"DM Mono",monospace;outline:none;background:var(--bg);width:150px;}
-  .dday-row input[type=date]:focus{border-color:var(--accent);}
-  .dday-section-label{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px;margin-top:16px;}
-  .dday-section-label:first-of-type{margin-top:0;}
-  .dday-divider{border:none;border-top:1px solid var(--border);margin:14px 0;}
-  .dday-modal-btns{display:flex;gap:8px;margin-top:16px;justify-content:flex-end;}
-  .dbtn-cancel{padding:7px 16px;border:1px solid var(--border);border-radius:7px;font-size:12px;font-weight:500;cursor:pointer;background:#fff;color:var(--text-secondary);}
-  .dbtn-save{padding:7px 22px;border:none;border-radius:7px;font-size:12px;font-weight:700;cursor:pointer;background:var(--text-primary);color:#fff;}
-  .col-label{font-size:11px;color:var(--text-secondary);text-align:right;white-space:nowrap;}
+  /* D-Day 모달 */
+  .dday-section-lbl{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px;margin-top:14px;}
+  .dday-section-lbl:first-of-type{margin-top:0;}
+  .dday-input-row{display:grid;grid-template-columns:1fr 148px 52px;gap:7px;align-items:center;margin-bottom:8px;}
+  .dday-input-row input[type=text]{border:1px solid var(--border);border-radius:8px;padding:8px 11px;font-size:13px;font-family:"Noto Sans KR",sans-serif;outline:none;background:var(--bg);width:100%;}
+  .dday-input-row input[type=text]:focus{border-color:var(--accent);}
+  .dday-input-row input[type=date]{border:1px solid var(--border);border-radius:8px;padding:7px 8px;font-size:12px;font-family:"DM Mono",monospace;outline:none;background:var(--bg);width:100%;}
+  .dday-input-row input[type=date]:focus{border-color:var(--accent);}
+  .dday-preview{font-family:"DM Mono",monospace;font-size:13px;font-weight:700;color:var(--accent);text-align:center;}
+  hr.dday-divider{border:none;border-top:1px solid var(--border);margin:12px 0 4px;}
+  .btn-save-dark{padding:7px 22px;border:none;border-radius:7px;font-size:12px;font-weight:700;cursor:pointer;background:var(--text-primary);color:#fff;}
 </style>
 </head>
 <body>
 
+<!-- 헤더 -->
 <header>
   <div>
     <div class="school-name">대진여자고등학교</div>
     <div class="class-name">3학년 11반</div>
   </div>
   <div class="header-center">
-    <span class="live-dot"></span>
-    <span class="live-label">학급 게시판</span>
+    <div class="board-title">학급 게시판</div>
+    <div class="board-title-sub"><span class="live-dot"></span><span class="live-label">Live</span></div>
   </div>
   <div class="datetime-block">
     <div id="clock">00:00:00</div>
@@ -198,35 +186,34 @@
 </header>
 
 <main>
-
-  <!-- ▌왼쪽 -->
+  <!-- 왼쪽 -->
   <div class="left-col">
 
-    <!-- D-Day -->
+    <!-- D-Day 카드 -->
     <div class="card card-dday">
       <div class="dday-main">
-        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px;">
-          <div class="dday-label-txt" style="margin-bottom:0">수능 D-Day</div>
-          <button class="dday-edit-btn" onclick="openDdayEditor()">✏ 편집</button>
+        <div class="dday-top-row">
+          <span class="dday-label-txt">수능 D-Day</span>
+          <button class="dday-edit-btn" onclick="openDdayModal()">✏ 편집</button>
         </div>
-        <div class="dday-event">2026학년도 대학수학능력시험</div>
+        <div class="dday-event" id="dday-event-name">2026학년도 수능</div>
         <div class="dday-number">
-          <span class="pre" id="suneung-prefix">D-</span><span id="dday-num">---</span>
+          <span class="pre" id="dday-prefix">D-</span><span id="dday-num">---</span>
         </div>
-        <div class="dday-sub">2026. 11. 19 (목)</div>
+        <div class="dday-sub" id="dday-date-display">2026. 11. 19 (목)</div>
       </div>
-      <div class="dday-list">
+      <div class="dday-list" id="dday-sub-list">
         <div class="dday-item">
-          <span class="dday-item-name">6월 모의고사</span>
-          <span class="dday-item-count" id="d-june">D-?</span>
+          <span class="dday-item-name" id="sub1-name">6월 모의고사</span>
+          <span class="dday-item-count" id="sub1-count">D-?</span>
         </div>
         <div class="dday-item">
-          <span class="dday-item-name">9월 모의고사</span>
-          <span class="dday-item-count" id="d-sept">D-?</span>
+          <span class="dday-item-name" id="sub2-name">9월 모의고사</span>
+          <span class="dday-item-count" id="sub2-count">D-?</span>
         </div>
         <div class="dday-item">
-          <span class="dday-item-name">1학기 기말고사</span>
-          <span class="dday-item-count" id="d-mid">D-?</span>
+          <span class="dday-item-name" id="sub3-name">1학기 기말고사</span>
+          <span class="dday-item-count" id="sub3-count">D-?</span>
         </div>
       </div>
     </div>
@@ -234,7 +221,7 @@
     <!-- 급식 + 한마디 -->
     <div class="mid-row">
       <div class="card card-meal">
-        <button class="edit-btn" onclick="openMealEditor()">✏ 편집</button>
+        <button class="meal-edit-btn" onclick="openMealModal()">✏ 편집</button>
         <div class="meal-header">
           <div class="card-label">오늘의 급식</div>
           <div class="meal-day" id="meal-day">오늘</div>
@@ -244,14 +231,14 @@
         </div>
         <div class="meal-kcal" id="meal-kcal"></div>
       </div>
-
       <div class="card card-quote">
-        <div class="card-label">오늘의 한마디</div>
+        <button class="quote-edit-btn" onclick="openQuoteModal()">✏ 편집</button>
+        <div class="card-label">이번주의 한마디</div>
         <div class="quote-body">
           <div class="quote-mark">"</div>
-          <div class="quote-text" id="quote-text">노력은 배신하지 않는다.</div>
+          <div class="quote-text" id="quote-text"></div>
         </div>
-        <div class="quote-author" id="quote-author">— 작자미상</div>
+        <div class="quote-author" id="quote-author"></div>
       </div>
     </div>
 
@@ -259,14 +246,14 @@
     <div class="card card-notice">
       <div class="notice-header">
         <div class="card-label">공지사항</div>
-        <button class="notice-add-btn" onclick="openNoticeEditor()">+ 공지 추가</button>
+        <button class="notice-add-btn" onclick="openNoticeModal()">+ 공지 추가</button>
       </div>
       <div class="notice-list" id="notice-list"></div>
     </div>
 
   </div>
 
-  <!-- ▌오른쪽: PDF 뷰어 -->
+  <!-- PDF 패널 -->
   <div class="pdf-panel">
     <div class="pdf-toolbar">
       <div class="pdf-title-area">
@@ -274,13 +261,13 @@
         <span class="pdf-filename" id="pdf-filename"></span>
       </div>
       <button class="pdf-upload-btn" onclick="document.getElementById('pdf-input').click()">+ PDF 업로드</button>
-      <input type="file" id="pdf-input" accept="application/pdf" onchange="loadPDF(this)">
+      <input type="file" id="pdf-input" accept="application/pdf" onchange="onPdfSelected(this)">
     </div>
     <div class="pdf-body" id="pdf-body">
       <div class="pdf-empty" id="pdf-empty">
         <div class="pdf-empty-icon">📄</div>
         <div class="pdf-empty-text">표시할 PDF가 없습니다<br>오른쪽 상단 버튼으로 업로드하세요</div>
-        <div class="pdf-empty-hint">가정통신문 · 시간표 · 학사일정 등 한 장짜리 자료</div>
+        <div class="pdf-empty-hint">가정통신문 · 시간표 · 학사일정 등</div>
       </div>
       <canvas id="pdf-canvas"></canvas>
     </div>
@@ -290,667 +277,578 @@
       <button class="nav-btn" id="btn-next" onclick="changePage(1)">다음 ▶</button>
     </div>
   </div>
-
 </main>
 
+<!-- 티커 -->
 <footer>
   <div class="ticker-label">TODAY</div>
   <div class="ticker-wrap">
-    <div class="ticker-track">
-      <span class="ticker-item">📌 생활기록부 자율활동 기재 마감 — 담임 선생님께 확인 필수</span>
-      <span class="ticker-sep">·</span>
-      <span class="ticker-item">📅 4월 학부모 상담 주간: 4/14 ~ 4/18</span>
-      <span class="ticker-sep">·</span>
-      <span class="ticker-item">📝 진로탐색 보고서 제출: 4월 10일(금)까지</span>
-      <span class="ticker-sep">·</span>
-      <span class="ticker-item" id="ticker-meal1">🍱 급식 정보 로딩 중...</span>
-      <span class="ticker-sep">·</span>
-      <span class="ticker-item">📌 생활기록부 자율활동 기재 마감 — 담임 선생님께 확인 필수</span>
-      <span class="ticker-sep">·</span>
-      <span class="ticker-item">📅 4월 학부모 상담 주간: 4/14 ~ 4/18</span>
-      <span class="ticker-sep">·</span>
-      <span class="ticker-item">📝 진로탐색 보고서 제출: 4월 10일(금)까지</span>
-      <span class="ticker-sep">·</span>
-      <span class="ticker-item" id="ticker-meal2">🍱 급식 정보 로딩 중...</span>
-    </div>
+    <div class="ticker-track" id="ticker-track"></div>
   </div>
 </footer>
 
-<!-- 급식 편집 모달 -->
+<!-- ① 급식 편집 모달 -->
 <div class="modal-overlay" id="meal-modal">
-  <div class="modal">
+  <div class="modal-box">
     <div class="modal-title">오늘의 급식 편집</div>
     <div class="modal-sub">메뉴를 한 줄에 하나씩 입력하세요</div>
     <textarea id="meal-input" placeholder="흑미밥&#10;된장찌개&#10;제육볶음&#10;깍두기&#10;오이무침&#10;우유"></textarea>
-    <div class="modal-kcal">
+    <div class="meal-kcal-row">
       <label>열량</label>
       <input type="text" id="kcal-input" placeholder="예: 875.3 Kcal">
     </div>
     <div class="modal-btns">
-      <button class="btn-cancel" onclick="closeMealEditor()">취소</button>
-      <button class="btn-save" onclick="saveMeal()">저장</button>
+      <button class="btn-cancel" onclick="closeMealModal()">취소</button>
+      <button class="btn-save-green" onclick="saveMeal()">저장</button>
     </div>
   </div>
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js">
-  /* ── 공지사항 관리 ── */
-  const DEFAULT_NOTICES = [
-    {badge:'중요', text:'생활기록부 자율활동 기재 마감 — 담임 선생님께 제출', date:'2026.04.02'},
-    {badge:'안내', text:'4월 학부모 상담 주간 운영 (4/14 ~ 4/18)', date:'2026.04.01'},
-    {badge:'안내', text:'진로탐색 보고서 제출 기한: 4월 10일(금)까지', date:'2026.03.31'},
-    {badge:'안내', text:'수시 학생부종합전형 설명회 — 4월 24일(금) 방과후', date:'2026.03.30'},
-  ];
-
-  function loadNotices() {
-    const saved = localStorage.getItem('notices');
-    return saved ? JSON.parse(saved) : DEFAULT_NOTICES;
-  }
-
-  function saveNotices(arr) {
-    localStorage.setItem('notices', JSON.stringify(arr));
-  }
-
-  function renderNotices() {
-    const notices = loadNotices();
-    const list = document.getElementById('notice-list');
-    if (!notices.length) {
-      list.innerHTML = '<div style="color:var(--text-muted);font-size:13px;padding:8px 0">공지사항이 없습니다</div>';
-      return;
-    }
-    list.innerHTML = notices.map((n, i) => `
-      <div class="notice-item">
-        <div class="notice-badge">${n.badge}</div>
-        <div class="notice-item-inner">
-          <div class="notice-text">${n.text}</div>
-          <div class="notice-date">${n.date}</div>
-        </div>
-        <button class="notice-del-btn" onclick="deleteNotice(${i})" title="삭제">✕</button>
-      </div>
-    `).join('');
-  }
-
-  function deleteNotice(idx) {
-    const notices = loadNotices();
-    notices.splice(idx, 1);
-    saveNotices(notices);
-    renderNotices();
-  }
-
-  function openNoticeEditor() {
-    document.getElementById('notice-input').value = '';
-    // 날짜 오늘 날짜 자동 입력
-    const now = new Date();
-    const dateStr = now.getFullYear() + '.' +
-      String(now.getMonth()+1).padStart(2,'0') + '.' +
-      String(now.getDate()).padStart(2,'0');
-    document.getElementById('notice-date-input').value = dateStr;
-    document.querySelector('input[name="nbadge"][value="안내"]').checked = true;
-    document.getElementById('notice-modal').classList.add('open');
-    setTimeout(() => document.getElementById('notice-input').focus(), 100);
-  }
-
-  function closeNoticeEditor() {
-    document.getElementById('notice-modal').classList.remove('open');
-  }
-
-  function saveNotice() {
-    const text = document.getElementById('notice-input').value.trim();
-    if (!text) { document.getElementById('notice-input').focus(); return; }
-    const badge = document.querySelector('input[name="nbadge"]:checked').value;
-    const date  = document.getElementById('notice-date-input').value.trim();
-    const notices = loadNotices();
-    // 최신 공지가 위에 오도록 맨 앞에 추가
-    notices.unshift({ badge, text, date });
-    saveNotices(notices);
-    renderNotices();
-    closeNoticeEditor();
-  }
-
-  document.getElementById('notice-modal').addEventListener('click', function(e) {
-    if (e.target === this) closeNoticeEditor();
-  });
-
-  // 초기 렌더
-  renderNotices();
-
-
-  /* ── D-Day 편집 ── */
-  const DDAY_DEFAULT = {
-    main: { name:'2026학년도 수능', date:'2026-11-19' },
-    subs: [
-      { name:'6월 모의고사',  date:'2026-06-04' },
-      { name:'9월 모의고사',  date:'2026-09-03' },
-      { name:'1학기 기말고사', date:'2026-07-02' },
-    ]
-  };
-
-  function loadDdayData() {
-    const saved = localStorage.getItem('dday_data');
-    return saved ? JSON.parse(saved) : DDAY_DEFAULT;
-  }
-
-  function saveDdayData(data) {
-    localStorage.setItem('dday_data', JSON.stringify(data));
-  }
-
-  function calcDdayStr(dateStr) {
-    if (!dateStr) return '';
-    const t = new Date(); t.setHours(0,0,0,0);
-    const d = Math.round((new Date(dateStr) - t) / 86400000);
-    return d > 0 ? 'D-' + d : d === 0 ? 'D-Day' : 'D+' + Math.abs(d);
-  }
-
-  function applyDdayToUI(data) {
-    // 메인 수능
-    const mainStr = calcDdayStr(data.main.date);
-    document.getElementById('dday-num').textContent =
-      (mainStr === 'D-Day') ? 'Day' : mainStr.replace(/D[-+]/, '');
-    document.getElementById('suneung-prefix').textContent =
-      (mainStr === 'D-Day') ? '' : mainStr.startsWith('D+') ? 'D+' : 'D-';
-    // 이벤트명·날짜 표시
-    const evEl = document.querySelector('.dday-event');
-    if (evEl) evEl.textContent = data.main.name;
-    const subEl = document.querySelector('.dday-sub');
-    if (subEl && data.main.date) {
-      const d = new Date(data.main.date);
-      const wds = ['일','월','화','수','목','금','토'];
-      subEl.textContent = d.getFullYear() + '. ' +
-        String(d.getMonth()+1).padStart(2,'0') + '. ' +
-        String(d.getDate()).padStart(2,'0') + ' (' + wds[d.getDay()] + ')';
-    }
-    // 서브 시험
-    const items = document.querySelectorAll('.dday-item');
-    data.subs.forEach((sub, i) => {
-      if (!items[i]) return;
-      items[i].querySelector('.dday-item-name').textContent = sub.name || '';
-      items[i].querySelector('.dday-item-count').textContent = sub.date ? calcDdayStr(sub.date) : '-';
-    });
-  }
-
-  function openDdayEditor() {
-    const data = loadDdayData();
-    // 메인
-    document.getElementById('d-main-name').value = data.main.name;
-    document.getElementById('d-main-date').value = data.main.date;
-    // 서브
-    data.subs.forEach((sub, i) => {
-      const n = i + 1;
-      document.getElementById('d-sub' + n + '-name').value = sub.name || '';
-      document.getElementById('d-sub' + n + '-date').value = sub.date || '';
-    });
-    updatePreviews();
-    document.getElementById('dday-modal').classList.add('open');
-  }
-
-  function closeDdayEditor() {
-    document.getElementById('dday-modal').classList.remove('open');
-  }
-
-  function updatePreviews() {
-    // 메인 미리보기
-    document.getElementById('d-main-preview').textContent =
-      calcDdayStr(document.getElementById('d-main-date').value);
-    // 서브 미리보기
-    [1,2,3].forEach(n => {
-      const dateVal = document.getElementById('d-sub' + n + '-date').value;
-      document.getElementById('d-sub' + n + '-preview').textContent =
-        dateVal ? calcDdayStr(dateVal) : '';
-    });
-  }
-
-  // 날짜 바뀔 때마다 미리보기 업데이트
-  ['d-main-date','d-sub1-date','d-sub2-date','d-sub3-date'].forEach(id => {
-    document.getElementById(id).addEventListener('change', updatePreviews);
-  });
-
-  function saveDday() {
-    const data = {
-      main: {
-        name: document.getElementById('d-main-name').value.trim() || '수능',
-        date: document.getElementById('d-main-date').value,
-      },
-      subs: [1,2,3].map(n => ({
-        name: document.getElementById('d-sub' + n + '-name').value.trim(),
-        date: document.getElementById('d-sub' + n + '-date').value,
-      }))
-    };
-    saveDdayData(data);
-    applyDdayToUI(data);
-    closeDdayEditor();
-  }
-
-  document.getElementById('dday-modal').addEventListener('click', function(e) {
-    if (e.target === this) closeDdayEditor();
-  });
-
-  // 초기 적용 (localStorage 또는 기본값)
-  applyDdayToUI(loadDdayData());
-
-</script>
-<script>
-  pdfjsLib.GlobalWorkerOptions.workerSrc =
-    'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-
-  /* 시계 */
-  const WD=['일','월','화','수','목','금','토'];
-  function tick(){
-    const n=new Date();
-    document.getElementById('clock').textContent=
-      String(n.getHours()).padStart(2,'0')+':'+
-      String(n.getMinutes()).padStart(2,'0')+':'+
-      String(n.getSeconds()).padStart(2,'0');
-    const wd=WD[n.getDay()];
-    document.getElementById('date').textContent=
-      n.getFullYear()+'년 '+(n.getMonth()+1)+'월 '+n.getDate()+'일 ('+wd+')';
-    document.getElementById('meal-day').textContent=
-      (n.getMonth()+1)+'/'+n.getDate()+' ('+wd+')';
-  }
-  setInterval(tick,1000); tick();
-
-  /* D-Day 계산은 applyDdayToUI()로 처리 */
-  function dday(ds){const t=new Date();t.setHours(0,0,0,0);const d=Math.round((new Date(ds)-t)/86400000);return d>0?'D-'+d:d===0?'D-Day':'D+'+Math.abs(d);}
-
-  /* 명언 */
-  const Q=[
-    {t:'노력은 배신하지 않는다. 다만 결과는 우리가 원하는 시기보다 늦게 올 뿐이다.',a:'작자미상'},
-    {t:'천 리 길도 한 걸음부터.',a:'노자'},
-    {t:'오늘 할 수 있는 일에 전력을 다하라. 그러면 내일에는 한 걸음 더 나아가 있을 것이다.',a:'아이작 뉴턴'},
-    {t:'성공은 열정을 잃지 않고 실패에서 실패로 걸어가는 것이다.',a:'윈스턴 처칠'},
-    {t:'당신이 할 수 있다고 믿든, 할 수 없다고 믿든, 당신의 믿음이 맞다.',a:'헨리 포드'},
-    {t:'작은 일에도 최선을 다하라. 작은 일들이 쌓여 큰 성취를 이룬다.',a:'공자'},
-    {t:'지금 이 순간에도 어딘가에서 누군가는 열심히 노력하고 있다.',a:'작자미상'},
-    {t:'꿈이 있다면 포기하지 마라. 지금 이 힘든 시간이 훗날 자랑이 된다.',a:'작자미상'},
-    {t:'시작이 반이다.',a:'아리스토텔레스'},
-    {t:'오늘 걷지 않으면 내일은 뛰어야 한다.',a:'작자미상'},
-    {t:'실패는 성공의 어머니다.',a:'토마스 에디슨'},
-    {t:'배움에는 끝이 없다. 삶이 곧 배움이다.',a:'레오나르도 다빈치'},
-    {t:'자신을 믿어라. 당신 안에 있는 힘은 생각보다 훨씬 강하다.',a:'작자미상'},
-    {t:'어제의 나보다 오늘의 내가 조금 더 성장했다면, 그것으로 충분하다.',a:'작자미상'},
-    {t:'고통이 없으면 얻는 것도 없다. 땀 없이는 영광도 없다.',a:'벤자민 프랭클린'},
-    {t:'불가능이란 아무것도 하지 않는 사람의 변명이다.',a:'나폴레옹'},
-    {t:'나무를 자르는 데 여섯 시간이 주어진다면, 나는 네 시간을 도끼를 가는 데 쓰겠다.',a:'에이브러햄 링컨'},
-    {t:'독서는 완성된 인간을 만들고, 대화는 재치 있는 인간을 만들고, 쓰기는 정확한 인간을 만든다.',a:'프랜시스 베이컨'},
-    {t:'행복은 목적지가 아니라 여행하는 방식이다.',a:'마거릿 리 런벡'},
-    {t:'지식에 투자하는 것이 가장 이익이 높다.',a:'벤자민 프랭클린'},
-    {t:'나는 실패한 것이 아니다. 작동하지 않는 방법을 만 가지 발견한 것이다.',a:'토마스 에디슨'},
-    {t:'포기하지 않는 한 실패란 없다.',a:'작자미상'},
-    {t:'기회는 준비된 마음을 좋아한다.',a:'루이 파스퇴르'},
-    {t:'가장 어두운 밤도 결국 끝나고, 태양은 다시 뜬다.',a:'빅토르 위고'},
-    {t:'별이 빛나려면 어둠이 필요하다. 너의 어둠이 곧 빛날 무대다.',a:'작자미상'},
-    {t:'힘든 길을 걷는 사람은 강해진다. 쉬운 길은 약한 자를 위한 것이 아니다.',a:'작자미상'},
-    {t:'꽃이 피는 데는 시간이 걸린다. 너도 지금 피어나는 중이다.',a:'작자미상'},
-    {t:'한 글자씩, 한 걸음씩. 그것이 모든 위대함의 시작이다.',a:'작자미상'},
-    {t:'두려움은 꿈의 반대편이 아니라, 꿈을 향한 문이다.',a:'작자미상'},
-    {t:'나 자신을 이기는 것이 가장 위대한 승리다.',a:'플라톤'},
-  ];
-  const now=new Date();
-  const qi=(now.getFullYear()*366+now.getMonth()*31+now.getDate())%Q.length;
-  document.getElementById('quote-text').textContent=Q[qi].t;
-  document.getElementById('quote-author').textContent='— '+Q[qi].a;
-
-  /* 급식 렌더 */
-  function renderMeal(items,kcal){
-    const g=document.getElementById('meal-grid');
-    if(!items.length){
-      g.innerHTML='<div class="meal-item" style="color:var(--text-muted)">급식 정보가 없습니다</div>';
-      document.getElementById('meal-kcal').textContent='';
-      return;
-    }
-    g.innerHTML=items.map(m=>`<div class="meal-item"><div class="meal-dot"></div>${m}</div>`).join('');
-    document.getElementById('meal-kcal').textContent=kcal?'열량: '+kcal:'';
-    const tt='🍱 오늘 급식: '+items.join(' · ');
-    ['ticker-meal1','ticker-meal2'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=tt;});
-  }
-
-  /* 급식 편집 */
-  function openMealEditor(){
-    const saved=localStorage.getItem('meal_items');
-    document.getElementById('meal-input').value=saved?JSON.parse(saved).join('\n'):'';
-    document.getElementById('kcal-input').value=localStorage.getItem('meal_kcal')||'';
-    document.getElementById('meal-modal').classList.add('open');
-  }
-  function closeMealEditor(){document.getElementById('meal-modal').classList.remove('open');}
-  function saveMeal(){
-    const items=document.getElementById('meal-input').value.split('\n').map(s=>s.trim()).filter(Boolean);
-    const kcal=document.getElementById('kcal-input').value.trim();
-    localStorage.setItem('meal_items',JSON.stringify(items));
-    localStorage.setItem('meal_kcal',kcal);
-    localStorage.setItem('meal_date',new Date().toDateString());
-    renderMeal(items,kcal);
-    closeMealEditor();
-  }
-  document.getElementById('meal-modal').addEventListener('click',function(e){if(e.target===this)closeMealEditor();});
-
-  function loadSavedMeal(){
-    if(localStorage.getItem('meal_date')===new Date().toDateString()){
-      const items=JSON.parse(localStorage.getItem('meal_items')||'[]');
-      const kcal=localStorage.getItem('meal_kcal')||'';
-      if(items.length){renderMeal(items,kcal);return true;}
-    }
-    return false;
-  }
-
-  /* NEIS JSONP */
-  function neisCallback(json){
-    try{
-      const row=json?.mealServiceDietInfo?.[1]?.row?.[0];
-      if(!row){renderMeal([]);return;}
-      const items=row.DDISH_NM.split('<br/>').map(s=>s.replace(/\([0-9.,]+\)/g,'').trim()).filter(Boolean);
-      renderMeal(items,row.CAL_INFO||'');
-    }catch(e){renderMeal([]);}
-  }
-  function loadNeisOrEmpty(){
-    const KEY='f5ba09e01b8e4dc4baffdb81d1edc682';
-    const n=new Date();
-    const ymd=n.getFullYear()+String(n.getMonth()+1).padStart(2,'0')+String(n.getDate()).padStart(2,'0');
-    const s=document.createElement('script');
-    s.src='https://open.neis.go.kr/hub/mealServiceDietInfo?KEY='+KEY+'&Type=jsonp&pIndex=1&pSize=1&ATPT_OFCDC_SC_CODE=B10&SD_SCHUL_CODE=B100000415&MLSV_YMD='+ymd+'&MMEAL_SC_CODE=2&callback=neisCallback';
-    s.onerror=()=>renderMeal([]);
-    document.head.appendChild(s);
-    setTimeout(()=>{const g=document.getElementById('meal-grid');if(g.querySelector('span')&&g.querySelector('span').textContent.includes('중'))renderMeal([]);},5000);
-  }
-  if(!loadSavedMeal())loadNeisOrEmpty();
-
-  /* PDF 뷰어 */
-  let pdfDoc=null,curPage=1,totalPages=1;
-
-  function loadPDF(input){
-    const file=input.files[0];
-    if(!file)return;
-    document.getElementById('pdf-filename').textContent=file.name;
-    const reader=new FileReader();
-    reader.onload=function(e){
-      pdfjsLib.getDocument({data:new Uint8Array(e.target.result)}).promise.then(function(pdf){
-        pdfDoc=pdf; totalPages=pdf.numPages; curPage=1;
-        renderPage(1);
-        document.getElementById('pdf-empty').style.display='none';
-        document.getElementById('pdf-canvas').style.display='block';
-        const nav=document.getElementById('pdf-nav');
-        totalPages>1?nav.classList.add('visible'):nav.classList.remove('visible');
-      });
-    };
-    reader.readAsArrayBuffer(file);
-  }
-
-  function renderPage(num){
-    pdfDoc.getPage(num).then(function(page){
-      const body=document.getElementById('pdf-body');
-      const canvas=document.getElementById('pdf-canvas');
-      const vw=body.clientWidth-24, vh=body.clientHeight-24;
-      const vp0=page.getViewport({scale:1});
-      const scale=Math.min(vw/vp0.width, vh/vp0.height);
-      const vp=page.getViewport({scale});
-      canvas.width=vp.width; canvas.height=vp.height;
-      page.render({canvasContext:canvas.getContext('2d'),viewport:vp});
-      document.getElementById('page-info').textContent=num+' / '+totalPages;
-      document.getElementById('btn-prev').disabled=num<=1;
-      document.getElementById('btn-next').disabled=num>=totalPages;
-    });
-  }
-
-  function changePage(delta){
-    const next=curPage+delta;
-    if(next<1||next>totalPages)return;
-    curPage=next; renderPage(curPage);
-  }
-
-  /* ── 공지사항 관리 ── */
-  const DEFAULT_NOTICES = [
-    {badge:'중요', text:'생활기록부 자율활동 기재 마감 — 담임 선생님께 제출', date:'2026.04.02'},
-    {badge:'안내', text:'4월 학부모 상담 주간 운영 (4/14 ~ 4/18)', date:'2026.04.01'},
-    {badge:'안내', text:'진로탐색 보고서 제출 기한: 4월 10일(금)까지', date:'2026.03.31'},
-    {badge:'안내', text:'수시 학생부종합전형 설명회 — 4월 24일(금) 방과후', date:'2026.03.30'},
-  ];
-
-  function loadNotices() {
-    const saved = localStorage.getItem('notices');
-    return saved ? JSON.parse(saved) : DEFAULT_NOTICES;
-  }
-
-  function saveNotices(arr) {
-    localStorage.setItem('notices', JSON.stringify(arr));
-  }
-
-  function renderNotices() {
-    const notices = loadNotices();
-    const list = document.getElementById('notice-list');
-    if (!notices.length) {
-      list.innerHTML = '<div style="color:var(--text-muted);font-size:13px;padding:8px 0">공지사항이 없습니다</div>';
-      return;
-    }
-    list.innerHTML = notices.map((n, i) => `
-      <div class="notice-item">
-        <div class="notice-badge">${n.badge}</div>
-        <div class="notice-item-inner">
-          <div class="notice-text">${n.text}</div>
-          <div class="notice-date">${n.date}</div>
-        </div>
-        <button class="notice-del-btn" onclick="deleteNotice(${i})" title="삭제">✕</button>
-      </div>
-    `).join('');
-  }
-
-  function deleteNotice(idx) {
-    const notices = loadNotices();
-    notices.splice(idx, 1);
-    saveNotices(notices);
-    renderNotices();
-  }
-
-  function openNoticeEditor() {
-    document.getElementById('notice-input').value = '';
-    // 날짜 오늘 날짜 자동 입력
-    const now = new Date();
-    const dateStr = now.getFullYear() + '.' +
-      String(now.getMonth()+1).padStart(2,'0') + '.' +
-      String(now.getDate()).padStart(2,'0');
-    document.getElementById('notice-date-input').value = dateStr;
-    document.querySelector('input[name="nbadge"][value="안내"]').checked = true;
-    document.getElementById('notice-modal').classList.add('open');
-    setTimeout(() => document.getElementById('notice-input').focus(), 100);
-  }
-
-  function closeNoticeEditor() {
-    document.getElementById('notice-modal').classList.remove('open');
-  }
-
-  function saveNotice() {
-    const text = document.getElementById('notice-input').value.trim();
-    if (!text) { document.getElementById('notice-input').focus(); return; }
-    const badge = document.querySelector('input[name="nbadge"]:checked').value;
-    const date  = document.getElementById('notice-date-input').value.trim();
-    const notices = loadNotices();
-    // 최신 공지가 위에 오도록 맨 앞에 추가
-    notices.unshift({ badge, text, date });
-    saveNotices(notices);
-    renderNotices();
-    closeNoticeEditor();
-  }
-
-  document.getElementById('notice-modal').addEventListener('click', function(e) {
-    if (e.target === this) closeNoticeEditor();
-  });
-
-  // 초기 렌더
-  renderNotices();
-
-
-  /* ── D-Day 편집 ── */
-  const DDAY_DEFAULT = {
-    main: { name:'2026학년도 수능', date:'2026-11-19' },
-    subs: [
-      { name:'6월 모의고사',  date:'2026-06-04' },
-      { name:'9월 모의고사',  date:'2026-09-03' },
-      { name:'1학기 기말고사', date:'2026-07-02' },
-    ]
-  };
-
-  function loadDdayData() {
-    const saved = localStorage.getItem('dday_data');
-    return saved ? JSON.parse(saved) : DDAY_DEFAULT;
-  }
-
-  function saveDdayData(data) {
-    localStorage.setItem('dday_data', JSON.stringify(data));
-  }
-
-  function calcDdayStr(dateStr) {
-    if (!dateStr) return '';
-    const t = new Date(); t.setHours(0,0,0,0);
-    const d = Math.round((new Date(dateStr) - t) / 86400000);
-    return d > 0 ? 'D-' + d : d === 0 ? 'D-Day' : 'D+' + Math.abs(d);
-  }
-
-  function applyDdayToUI(data) {
-    // 메인 수능
-    const mainStr = calcDdayStr(data.main.date);
-    document.getElementById('dday-num').textContent =
-      (mainStr === 'D-Day') ? 'Day' : mainStr.replace(/D[-+]/, '');
-    document.getElementById('suneung-prefix').textContent =
-      (mainStr === 'D-Day') ? '' : mainStr.startsWith('D+') ? 'D+' : 'D-';
-    // 이벤트명·날짜 표시
-    const evEl = document.querySelector('.dday-event');
-    if (evEl) evEl.textContent = data.main.name;
-    const subEl = document.querySelector('.dday-sub');
-    if (subEl && data.main.date) {
-      const d = new Date(data.main.date);
-      const wds = ['일','월','화','수','목','금','토'];
-      subEl.textContent = d.getFullYear() + '. ' +
-        String(d.getMonth()+1).padStart(2,'0') + '. ' +
-        String(d.getDate()).padStart(2,'0') + ' (' + wds[d.getDay()] + ')';
-    }
-    // 서브 시험
-    const items = document.querySelectorAll('.dday-item');
-    data.subs.forEach((sub, i) => {
-      if (!items[i]) return;
-      items[i].querySelector('.dday-item-name').textContent = sub.name || '';
-      items[i].querySelector('.dday-item-count').textContent = sub.date ? calcDdayStr(sub.date) : '-';
-    });
-  }
-
-  function openDdayEditor() {
-    const data = loadDdayData();
-    // 메인
-    document.getElementById('d-main-name').value = data.main.name;
-    document.getElementById('d-main-date').value = data.main.date;
-    // 서브
-    data.subs.forEach((sub, i) => {
-      const n = i + 1;
-      document.getElementById('d-sub' + n + '-name').value = sub.name || '';
-      document.getElementById('d-sub' + n + '-date').value = sub.date || '';
-    });
-    updatePreviews();
-    document.getElementById('dday-modal').classList.add('open');
-  }
-
-  function closeDdayEditor() {
-    document.getElementById('dday-modal').classList.remove('open');
-  }
-
-  function updatePreviews() {
-    // 메인 미리보기
-    document.getElementById('d-main-preview').textContent =
-      calcDdayStr(document.getElementById('d-main-date').value);
-    // 서브 미리보기
-    [1,2,3].forEach(n => {
-      const dateVal = document.getElementById('d-sub' + n + '-date').value;
-      document.getElementById('d-sub' + n + '-preview').textContent =
-        dateVal ? calcDdayStr(dateVal) : '';
-    });
-  }
-
-  // 날짜 바뀔 때마다 미리보기 업데이트
-  ['d-main-date','d-sub1-date','d-sub2-date','d-sub3-date'].forEach(id => {
-    document.getElementById(id).addEventListener('change', updatePreviews);
-  });
-
-  function saveDday() {
-    const data = {
-      main: {
-        name: document.getElementById('d-main-name').value.trim() || '수능',
-        date: document.getElementById('d-main-date').value,
-      },
-      subs: [1,2,3].map(n => ({
-        name: document.getElementById('d-sub' + n + '-name').value.trim(),
-        date: document.getElementById('d-sub' + n + '-date').value,
-      }))
-    };
-    saveDdayData(data);
-    applyDdayToUI(data);
-    closeDdayEditor();
-  }
-
-  document.getElementById('dday-modal').addEventListener('click', function(e) {
-    if (e.target === this) closeDdayEditor();
-  });
-
-  // 초기 적용 (localStorage 또는 기본값)
-  applyDdayToUI(loadDdayData());
-
-</script>
-
-<!-- 공지 편집 모달 -->
-<div class="notice-modal-overlay" id="notice-modal">
-  <div class="notice-modal">
-    <div class="notice-modal-title">공지사항 추가</div>
-    <div class="notice-modal-sub">배지 유형과 내용을 입력하세요</div>
-    <div class="notice-badge-row">
-      <label class="badge-opt"><input type="radio" name="nbadge" value="중요" checked> 🔴 중요</label>
-      <label class="badge-opt"><input type="radio" name="nbadge" value="안내"> 🔵 안내</label>
+<!-- ② 공지 추가 모달 -->
+<div class="modal-overlay" id="notice-modal">
+  <div class="modal-box">
+    <div class="modal-title">공지사항 추가</div>
+    <div class="modal-sub">배지 유형과 내용을 입력하세요</div>
+    <div class="badge-row">
+      <label class="badge-opt"><input type="radio" name="nbadge" value="중요"> 🔴 중요</label>
+      <label class="badge-opt"><input type="radio" name="nbadge" value="안내" checked> 🔵 안내</label>
       <label class="badge-opt"><input type="radio" name="nbadge" value="일정"> 🟢 일정</label>
     </div>
     <textarea id="notice-input" placeholder="공지 내용을 입력하세요"></textarea>
-    <div class="notice-modal-date">
+    <div class="notice-date-row">
       <label>날짜</label>
       <input type="text" id="notice-date-input" placeholder="예: 2026.04.02">
     </div>
-    <div class="notice-modal-btns">
-      <button class="nbtn-cancel" onclick="closeNoticeEditor()">취소</button>
-      <button class="nbtn-save" onclick="saveNotice()">추가</button>
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeNoticeModal()">취소</button>
+      <button class="btn-save-accent" onclick="saveNotice()">추가</button>
     </div>
   </div>
 </div>
 
+<!-- ③ D-Day 편집 모달 -->
+<div class="modal-overlay" id="dday-modal">
+  <div class="modal-box" style="width:480px;">
+    <div class="modal-title">시험 D-Day 편집</div>
+    <div class="modal-sub">시험명과 날짜를 수정하면 D-Day가 자동 계산됩니다</div>
 
-<!-- D-Day 편집 모달 -->
-<div class="dday-modal-overlay" id="dday-modal">
-  <div class="dday-modal">
-    <div class="dday-modal-title">시험 D-Day 편집</div>
-    <div class="dday-modal-sub">시험명과 날짜를 수정하세요</div>
-
-    <div class="dday-section-label">수능 (메인)</div>
-    <div class="dday-row">
-      <input type="text" id="d-main-name" placeholder="시험명" value="2026학년도 수능">
-      <input type="date" id="d-main-date">
-      <span class="col-label" id="d-main-preview" style="min-width:48px;font-family:'DM Mono',monospace;font-size:13px;font-weight:700;color:var(--text-primary)"></span>
+    <div class="dday-section-lbl">수능 (메인)</div>
+    <div class="dday-input-row">
+      <input type="text" id="dm-name" placeholder="시험명">
+      <input type="date" id="dm-date">
+      <span class="dday-preview" id="dm-preview"></span>
     </div>
 
     <hr class="dday-divider">
-    <div class="dday-section-label">추가 시험 목록</div>
+    <div class="dday-section-lbl">추가 시험</div>
 
-    <div class="dday-row">
-      <input type="text" id="d-sub1-name" placeholder="시험명">
-      <input type="date" id="d-sub1-date">
-      <span class="col-label" id="d-sub1-preview" style="min-width:48px;font-family:'DM Mono',monospace;font-size:13px;font-weight:700;color:var(--text-primary)"></span>
+    <div class="dday-input-row">
+      <input type="text" id="ds1-name" placeholder="시험명">
+      <input type="date" id="ds1-date">
+      <span class="dday-preview" id="ds1-preview"></span>
     </div>
-    <div class="dday-row">
-      <input type="text" id="d-sub2-name" placeholder="시험명">
-      <input type="date" id="d-sub2-date">
-      <span class="col-label" id="d-sub2-preview" style="min-width:48px;font-family:'DM Mono',monospace;font-size:13px;font-weight:700;color:var(--text-primary)"></span>
+    <div class="dday-input-row">
+      <input type="text" id="ds2-name" placeholder="시험명">
+      <input type="date" id="ds2-date">
+      <span class="dday-preview" id="ds2-preview"></span>
     </div>
-    <div class="dday-row">
-      <input type="text" id="d-sub3-name" placeholder="시험명">
-      <input type="date" id="d-sub3-date">
-      <span class="col-label" id="d-sub3-preview" style="min-width:48px;font-family:'DM Mono',monospace;font-size:13px;font-weight:700;color:var(--text-primary)"></span>
+    <div class="dday-input-row">
+      <input type="text" id="ds3-name" placeholder="시험명">
+      <input type="date" id="ds3-date">
+      <span class="dday-preview" id="ds3-preview"></span>
     </div>
 
-    <div class="dday-modal-btns">
-      <button class="dbtn-cancel" onclick="closeDdayEditor()">취소</button>
-      <button class="dbtn-save" onclick="saveDday()">저장</button>
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeDdayModal()">취소</button>
+      <button class="btn-save-dark" onclick="saveDday()">저장</button>
     </div>
   </div>
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script>
+'use strict';
+
+/* =========================================
+   1. 시계
+   ========================================= */
+const WD = ['일','월','화','수','목','금','토'];
+function tick() {
+  const n = new Date();
+  document.getElementById('clock').textContent =
+    String(n.getHours()).padStart(2,'0') + ':' +
+    String(n.getMinutes()).padStart(2,'0') + ':' +
+    String(n.getSeconds()).padStart(2,'0');
+  const wd = WD[n.getDay()];
+  document.getElementById('date').textContent =
+    n.getFullYear() + '년 ' + (n.getMonth()+1) + '월 ' + n.getDate() + '일 (' + wd + ')';
+  document.getElementById('meal-day').textContent =
+    (n.getMonth()+1) + '/' + n.getDate() + ' (' + wd + ')';
+}
+setInterval(tick, 1000);
+tick();
+
+/* =========================================
+   2. 오늘의 명언
+   ========================================= */
+const QUOTES = [
+  {t:'노력은 배신하지 않는다. 다만 결과는 우리가 원하는 시기보다 늦게 올 뿐이다.',a:'작자미상'},
+  {t:'천 리 길도 한 걸음부터.',a:'노자'},
+  {t:'오늘 할 수 있는 일에 전력을 다하라.',a:'아이작 뉴턴'},
+  {t:'성공은 열정을 잃지 않고 실패에서 실패로 걸어가는 것이다.',a:'윈스턴 처칠'},
+  {t:'당신이 할 수 있다고 믿든 할 수 없다고 믿든, 당신의 믿음이 맞다.',a:'헨리 포드'},
+  {t:'작은 일에도 최선을 다하라. 작은 일들이 쌓여 큰 성취를 이룬다.',a:'공자'},
+  {t:'지금 이 순간에도 어딘가에서 누군가는 열심히 노력하고 있다.',a:'작자미상'},
+  {t:'꿈이 있다면 포기하지 마라. 지금 이 힘든 시간이 훗날 자랑이 된다.',a:'작자미상'},
+  {t:'시작이 반이다.',a:'아리스토텔레스'},
+  {t:'오늘 걷지 않으면 내일은 뛰어야 한다.',a:'작자미상'},
+  {t:'실패는 성공의 어머니다.',a:'토마스 에디슨'},
+  {t:'배움에는 끝이 없다. 삶이 곧 배움이다.',a:'레오나르도 다빈치'},
+  {t:'자신을 믿어라. 당신 안에 있는 힘은 생각보다 훨씬 강하다.',a:'작자미상'},
+  {t:'어제의 나보다 오늘의 내가 조금 더 성장했다면, 그것으로 충분하다.',a:'작자미상'},
+  {t:'고통이 없으면 얻는 것도 없다. 땀 없이는 영광도 없다.',a:'벤자민 프랭클린'},
+  {t:'불가능이란 아무것도 하지 않는 사람의 변명이다.',a:'나폴레옹'},
+  {t:'나무를 자르는 데 여섯 시간이 주어진다면, 네 시간을 도끼 가는 데 쓰겠다.',a:'에이브러햄 링컨'},
+  {t:'행복은 목적지가 아니라 여행하는 방식이다.',a:'마거릿 리 런벡'},
+  {t:'지식에 투자하는 것이 가장 이익이 높다.',a:'벤자민 프랭클린'},
+  {t:'나는 실패한 것이 아니다. 작동하지 않는 방법을 만 가지 발견한 것이다.',a:'토마스 에디슨'},
+  {t:'포기하지 않는 한 실패란 없다.',a:'작자미상'},
+  {t:'기회는 준비된 마음을 좋아한다.',a:'루이 파스퇴르'},
+  {t:'가장 어두운 밤도 결국 끝나고, 태양은 다시 뜬다.',a:'빅토르 위고'},
+  {t:'꽃이 피는 데는 시간이 걸린다. 너도 지금 피어나는 중이다.',a:'작자미상'},
+  {t:'한 글자씩, 한 걸음씩. 그것이 모든 위대함의 시작이다.',a:'작자미상'},
+  {t:'나 자신을 이기는 것이 가장 위대한 승리다.',a:'플라톤'},
+  {t:'두려움은 꿈의 반대편이 아니라, 꿈을 향한 문이다.',a:'작자미상'},
+  {t:'별이 빛나려면 어둠이 필요하다. 너의 어둠이 곧 빛날 무대다.',a:'작자미상'},
+  {t:'힘든 길을 걷는 사람은 강해진다.',a:'작자미상'},
+  {t:'독서는 완성된 인간을 만들고, 대화는 재치 있는 인간을 만든다.',a:'프랜시스 베이컨'},
+];
+(function() {
+  const n = new Date();
+  const i = (n.getFullYear()*366 + n.getMonth()*31 + n.getDate()) % QUOTES.length;
+  document.getElementById('quote-text').textContent = QUOTES[i].t;
+  document.getElementById('quote-author').textContent = '— ' + QUOTES[i].a;
+})();
+
+/* =========================================
+   3. D-Day
+   ========================================= */
+const DDAY_DEFAULT = {
+  main: { name:'2026학년도 수능', date:'2026-11-19' },
+  subs: [
+    { name:'6월 모의고사',   date:'2026-06-04' },
+    { name:'9월 모의고사',   date:'2026-09-03' },
+    { name:'1학기 기말고사', date:'2026-07-02' },
+  ]
+};
+
+function calcD(dateStr) {
+  if (!dateStr) return '';
+  const today = new Date(); today.setHours(0,0,0,0);
+  const diff = Math.round((new Date(dateStr) - today) / 86400000);
+  if (diff > 0)  return 'D-' + diff;
+  if (diff === 0) return 'D-Day';
+  return 'D+' + Math.abs(diff);
+}
+
+function getDdayData() {
+  try {
+    const s = localStorage.getItem('dday_data');
+    return s ? JSON.parse(s) : DDAY_DEFAULT;
+  } catch(e) { return DDAY_DEFAULT; }
+}
+
+function applyDday(data) {
+  const s = calcD(data.main.date);
+  if (s === 'D-Day') {
+    document.getElementById('dday-prefix').textContent = '';
+    document.getElementById('dday-num').textContent = 'Day';
+  } else {
+    document.getElementById('dday-prefix').textContent = s.startsWith('D+') ? 'D+' : 'D-';
+    document.getElementById('dday-num').textContent = s.replace(/D[-+]/, '');
+  }
+  document.getElementById('dday-event-name').textContent = data.main.name;
+  if (data.main.date) {
+    const d = new Date(data.main.date);
+    document.getElementById('dday-date-display').textContent =
+      d.getFullYear() + '. ' + String(d.getMonth()+1).padStart(2,'0') + '. ' +
+      String(d.getDate()).padStart(2,'0') + ' (' + WD[d.getDay()] + ')';
+  }
+  data.subs.forEach(function(sub, i) {
+    const n = i + 1;
+    document.getElementById('sub'+n+'-name').textContent = sub.name || '';
+    document.getElementById('sub'+n+'-count').textContent = sub.date ? calcD(sub.date) : '-';
+  });
+}
+
+function openDdayModal() {
+  const data = getDdayData();
+  document.getElementById('dm-name').value  = data.main.name;
+  document.getElementById('dm-date').value  = data.main.date;
+  data.subs.forEach(function(sub, i) {
+    const n = i + 1;
+    document.getElementById('ds'+n+'-name').value = sub.name || '';
+    document.getElementById('ds'+n+'-date').value = sub.date || '';
+  });
+  refreshDdayPreviews();
+  document.getElementById('dday-modal').classList.add('open');
+}
+
+function closeDdayModal() {
+  document.getElementById('dday-modal').classList.remove('open');
+}
+
+function refreshDdayPreviews() {
+  document.getElementById('dm-preview').textContent = calcD(document.getElementById('dm-date').value);
+  [1,2,3].forEach(function(n) {
+    const v = document.getElementById('ds'+n+'-date').value;
+    document.getElementById('ds'+n+'-preview').textContent = v ? calcD(v) : '';
+  });
+}
+
+function saveDday() {
+  const data = {
+    main: {
+      name: document.getElementById('dm-name').value.trim() || '수능',
+      date: document.getElementById('dm-date').value,
+    },
+    subs: [1,2,3].map(function(n) {
+      return {
+        name: document.getElementById('ds'+n+'-name').value.trim(),
+        date: document.getElementById('ds'+n+'-date').value,
+      };
+    })
+  };
+  localStorage.setItem('dday_data', JSON.stringify(data));
+  applyDday(data);
+  closeDdayModal();
+}
+
+// 날짜 변경 시 미리보기
+['dm-date','ds1-date','ds2-date','ds3-date'].forEach(function(id) {
+  document.getElementById(id).addEventListener('change', refreshDdayPreviews);
+});
+document.getElementById('dday-modal').addEventListener('click', function(e) {
+  if (e.target === this) closeDdayModal();
+});
+
+// 초기 적용
+applyDday(getDdayData());
+
+/* =========================================
+   4. 급식
+   ========================================= */
+function renderMeal(items, kcal) {
+  const g = document.getElementById('meal-grid');
+  if (!items || !items.length) {
+    g.innerHTML = '<div class="meal-item" style="color:var(--text-muted)">급식 정보가 없습니다</div>';
+    document.getElementById('meal-kcal').textContent = '';
+    return;
+  }
+  g.innerHTML = items.map(function(m) {
+    return '<div class="meal-item"><div class="meal-dot"></div>' + m + '</div>';
+  }).join('');
+  document.getElementById('meal-kcal').textContent = kcal ? '열량: ' + kcal : '';
+  const tt = '🍱 오늘 급식: ' + items.join(' · ');
+  ['ticker-meal1','ticker-meal2'].forEach(function(id) {
+    const el = document.getElementById(id);
+    if (el) el.textContent = tt;
+  });
+}
+
+function openMealModal() {
+  const saved = localStorage.getItem('meal_items');
+  document.getElementById('meal-input').value = saved ? JSON.parse(saved).join('\n') : '';
+  document.getElementById('kcal-input').value = localStorage.getItem('meal_kcal') || '';
+  document.getElementById('meal-modal').classList.add('open');
+}
+function closeMealModal() {
+  document.getElementById('meal-modal').classList.remove('open');
+}
+function saveMeal() {
+  const items = document.getElementById('meal-input').value
+    .split('\n').map(function(s){ return s.trim(); }).filter(Boolean);
+  const kcal = document.getElementById('kcal-input').value.trim();
+  localStorage.setItem('meal_items', JSON.stringify(items));
+  localStorage.setItem('meal_kcal', kcal);
+  localStorage.setItem('meal_date', new Date().toDateString());
+  renderMeal(items, kcal);
+  closeMealModal();
+}
+document.getElementById('meal-modal').addEventListener('click', function(e) {
+  if (e.target === this) closeMealModal();
+});
+
+// 저장된 급식 우선, 없으면 NEIS JSONP
+function loadSavedMeal() {
+  if (localStorage.getItem('meal_date') === new Date().toDateString()) {
+    const items = JSON.parse(localStorage.getItem('meal_items') || '[]');
+    const kcal  = localStorage.getItem('meal_kcal') || '';
+    if (items.length) { renderMeal(items, kcal); return true; }
+  }
+  return false;
+}
+function neisCallback(json) {
+  try {
+    const row = json && json.mealServiceDietInfo && json.mealServiceDietInfo[1] &&
+                json.mealServiceDietInfo[1].row && json.mealServiceDietInfo[1].row[0];
+    if (!row) { renderMeal([]); return; }
+    const items = row.DDISH_NM.split('<br/>').map(function(s) {
+      return s.replace(/\([0-9.,]+\)/g, '').trim();
+    }).filter(Boolean);
+    renderMeal(items, row.CAL_INFO || '');
+  } catch(e) { renderMeal([]); }
+}
+if (!loadSavedMeal()) {
+  const n = new Date();
+  const ymd = n.getFullYear() + String(n.getMonth()+1).padStart(2,'0') + String(n.getDate()).padStart(2,'0');
+  const s = document.createElement('script');
+  s.src = 'https://open.neis.go.kr/hub/mealServiceDietInfo?KEY=f5ba09e01b8e4dc4baffdb81d1edc682&Type=jsonp&pIndex=1&pSize=1&ATPT_OFCDC_SC_CODE=B10&SD_SCHUL_CODE=B100000415&MLSV_YMD=' + ymd + '&MMEAL_SC_CODE=2&callback=neisCallback';
+  s.onerror = function() { renderMeal([]); };
+  document.head.appendChild(s);
+  setTimeout(function() {
+    const g = document.getElementById('meal-grid');
+    if (g.querySelector('span') && g.querySelector('span').textContent.includes('중')) renderMeal([]);
+  }, 5000);
+}
+
+/* =========================================
+   5. 공지사항
+   ========================================= */
+const NOTICE_DEFAULT = [
+  {badge:'중요', text:'생활기록부 자율활동 기재 마감 — 담임 선생님께 제출', date:'2026.04.02'},
+  {badge:'안내', text:'4월 학부모 상담 주간 운영 (4/14 ~ 4/18)', date:'2026.04.01'},
+  {badge:'안내', text:'진로탐색 보고서 제출 기한: 4월 10일(금)까지', date:'2026.03.31'},
+  {badge:'안내', text:'수시 학생부종합전형 설명회 — 4월 24일(금) 방과후', date:'2026.03.30'},
+];
+
+function getNotices() {
+  try {
+    const s = localStorage.getItem('notices');
+    return s ? JSON.parse(s) : NOTICE_DEFAULT;
+  } catch(e) { return NOTICE_DEFAULT; }
+}
+
+function renderNotices() {
+  const list = document.getElementById('notice-list');
+  const notices = getNotices();
+  if (!notices.length) {
+    list.innerHTML = '<div style="color:var(--text-muted);font-size:13px;padding:8px 0">공지사항이 없습니다</div>';
+  } else {
+    list.innerHTML = notices.map(function(n, i) {
+      return '<div class="notice-item">' +
+        '<div class="notice-badge">' + n.badge + '</div>' +
+        '<div class="notice-item-inner">' +
+          '<div class="notice-text">' + n.text + '</div>' +
+          '<div class="notice-date">' + n.date + '</div>' +
+        '</div>' +
+        '<button class="notice-del-btn" onclick="deleteNotice(' + i + ')">✕</button>' +
+      '</div>';
+    }).join('');
+  }
+  renderTicker(); // 공지 바뀔 때마다 티커도 갱신
+}
+
+function renderTicker() {
+  const notices = getNotices();
+  const track = document.getElementById('ticker-track');
+  if (!track) return;
+
+  // 공지 아이템 만들기 (최대 5개)
+  const noticePart = notices.slice(0, 5).map(function(n) {
+    return '<span class="ticker-item">📌 ' + n.text + '</span>';
+  }).join('<span class="ticker-sep">·</span>');
+
+  // 급식 아이템 (id 유지)
+  const mealPart1 = '<span class="ticker-item" id="ticker-meal1">🍱 급식 정보 로딩 중...</span>';
+  const mealPart2 = '<span class="ticker-item" id="ticker-meal2">🍱 급식 정보 로딩 중...</span>';
+  const sep = '<span class="ticker-sep">·</span>';
+
+  // 기존 급식 텍스트 보존 (이미 로드된 경우)
+  const existingMeal1 = document.getElementById('ticker-meal1');
+  const mealText = existingMeal1 ? existingMeal1.textContent : '🍱 급식 정보 로딩 중...';
+  const mealSpan1 = '<span class="ticker-item" id="ticker-meal1">' + mealText + '</span>';
+  const mealSpan2 = '<span class="ticker-item" id="ticker-meal2">' + mealText + '</span>';
+
+  // 공지 없으면 기본 텍스트
+  const content = notices.length
+    ? noticePart + sep + mealSpan1 + sep + noticePart + sep + mealSpan2
+    : mealSpan1 + sep + mealSpan2;
+
+  track.innerHTML = content;
+}
+
+function deleteNotice(idx) {
+  const notices = getNotices();
+  notices.splice(idx, 1);
+  localStorage.setItem('notices', JSON.stringify(notices));
+  
+/* =========================================
+   한마디 편집
+   ========================================= */
+function getQuote() {
+  try {
+    const s = localStorage.getItem('custom_quote');
+    return s ? JSON.parse(s) : null;
+  } catch(e) { return null; }
+}
+
+function applyQuote(q) {
+  document.getElementById('quote-text').textContent = q.text;
+  document.getElementById('quote-author').textContent = '— ' + (q.author || '작자미상');
+}
+
+function openQuoteModal() {
+  const q = getQuote();
+  document.getElementById('quote-input').value = q ? q.text : document.getElementById('quote-text').textContent;
+  const authorEl = document.getElementById('quote-author').textContent;
+  document.getElementById('quote-author-input').value = q ? (q.author || '') : authorEl.replace('— ','');
+  document.getElementById('quote-modal').classList.add('open');
+  setTimeout(function(){ document.getElementById('quote-input').focus(); }, 100);
+}
+
+function closeQuoteModal() {
+  document.getElementById('quote-modal').classList.remove('open');
+}
+
+function saveQuote() {
+  const text = document.getElementById('quote-input').value.trim();
+  if (!text) { document.getElementById('quote-input').focus(); return; }
+  const author = document.getElementById('quote-author-input').value.trim() || '작자미상';
+  const q = { text: text, author: author };
+  localStorage.setItem('custom_quote', JSON.stringify(q));
+  applyQuote(q);
+  closeQuoteModal();
+}
+
+document.getElementById('quote-modal').addEventListener('click', function(e) {
+  if (e.target === this) closeQuoteModal();
+});
+
+// 초기 로드: 저장된 한마디 있으면 우선 적용, 없으면 오늘의 명언 유지
+(function() {
+  const saved = getQuote();
+  if (saved) applyQuote(saved);
+})();
+
+renderNotices();
+}
+
+function openNoticeModal() {
+  document.getElementById('notice-input').value = '';
+  const n = new Date();
+  document.getElementById('notice-date-input').value =
+    n.getFullYear() + '.' + String(n.getMonth()+1).padStart(2,'0') + '.' + String(n.getDate()).padStart(2,'0');
+  document.querySelector('input[name="nbadge"][value="안내"]').checked = true;
+  document.getElementById('notice-modal').classList.add('open');
+  setTimeout(function() { document.getElementById('notice-input').focus(); }, 100);
+}
+function closeNoticeModal() {
+  document.getElementById('notice-modal').classList.remove('open');
+}
+function saveNotice() {
+  const text = document.getElementById('notice-input').value.trim();
+  if (!text) { document.getElementById('notice-input').focus(); return; }
+  const badge = document.querySelector('input[name="nbadge"]:checked').value;
+  const date  = document.getElementById('notice-date-input').value.trim();
+  const notices = getNotices();
+  notices.unshift({ badge: badge, text: text, date: date });
+  localStorage.setItem('notices', JSON.stringify(notices));
+  renderNotices();
+  closeNoticeModal();
+}
+document.getElementById('notice-modal').addEventListener('click', function(e) {
+  if (e.target === this) closeNoticeModal();
+});
+renderNotices();
+
+/* =========================================
+   6. PDF 뷰어
+   ========================================= */
+pdfjsLib.GlobalWorkerOptions.workerSrc =
+  'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+var pdfDoc = null, curPage = 1, totalPages = 1;
+
+function onPdfSelected(input) {
+  var file = input.files[0];
+  if (!file) return;
+  document.getElementById('pdf-filename').textContent = file.name;
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    pdfjsLib.getDocument({ data: new Uint8Array(e.target.result) }).promise.then(function(pdf) {
+      pdfDoc = pdf;
+      totalPages = pdf.numPages;
+      curPage = 1;
+      renderPdfPage(1);
+      document.getElementById('pdf-empty').style.display = 'none';
+      document.getElementById('pdf-canvas').style.display = 'block';
+      var nav = document.getElementById('pdf-nav');
+      totalPages > 1 ? nav.classList.add('visible') : nav.classList.remove('visible');
+    });
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function renderPdfPage(num) {
+  pdfDoc.getPage(num).then(function(page) {
+    var body   = document.getElementById('pdf-body');
+    var canvas = document.getElementById('pdf-canvas');
+    var vw = body.clientWidth - 24, vh = body.clientHeight - 24;
+    var vp0 = page.getViewport({ scale: 1 });
+    var scale = Math.min(vw / vp0.width, vh / vp0.height);
+    var vp = page.getViewport({ scale: scale });
+    canvas.width  = vp.width;
+    canvas.height = vp.height;
+    page.render({ canvasContext: canvas.getContext('2d'), viewport: vp });
+    document.getElementById('page-info').textContent = num + ' / ' + totalPages;
+    document.getElementById('btn-prev').disabled = num <= 1;
+    document.getElementById('btn-next').disabled = num >= totalPages;
+  });
+}
+
+function changePage(delta) {
+  var next = curPage + delta;
+  if (next < 1 || next > totalPages) return;
+  curPage = next;
+  renderPdfPage(curPage);
+}
+
+/* =========================================
+   7. 자동 새로고침 (GitHub Pages용)
+      5분마다 파일 변경 여부 확인 후 갱신
+   ========================================= */
+(function() {
+  var lastModified = '';
+  var CHECK_MS = 5 * 60 * 1000;
+  function checkReload() {
+    fetch(location.href, { method: 'HEAD', cache: 'no-cache' })
+      .then(function(res) {
+        var m = res.headers.get('last-modified') || res.headers.get('etag') || '';
+        if (lastModified && m && lastModified !== m) location.reload();
+        lastModified = m;
+      }).catch(function() {});
+  }
+  checkReload();
+  setInterval(checkReload, CHECK_MS);
+})();
+</script>
+
+<!-- ④ 한마디 편집 모달 -->
+<div class="modal-overlay" id="quote-modal">
+  <div class="modal-box">
+    <div class="modal-title">이번주의 한마디 편집</div>
+    <div class="modal-sub">이번 주 학생들에게 전하고 싶은 말을 입력하세요</div>
+    <textarea id="quote-input" style="width:100%;height:100px;border:1px solid var(--border);border-radius:9px;padding:11px 13px;font-family:'Noto Sans KR',sans-serif;font-size:13px;line-height:1.7;resize:none;outline:none;background:var(--bg);" placeholder="예: 오늘도 최선을 다하자!"></textarea>
+    <div style="display:flex;align-items:center;gap:8px;margin-top:8px;">
+      <label style="font-size:11px;color:var(--text-secondary);white-space:nowrap;">출처</label>
+      <input type="text" id="quote-author-input" placeholder="예: 작자미상  또는  선생님" style="flex:1;border:1px solid var(--border);border-radius:7px;padding:6px 11px;font-size:12px;outline:none;background:var(--bg);font-family:'Noto Sans KR',sans-serif;">
+    </div>
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeQuoteModal()">취소</button>
+      <button style="padding:7px 20px;border:none;border-radius:7px;font-size:12px;font-weight:700;cursor:pointer;background:var(--amber);color:#fff;" onclick="saveQuote()">저장</button>
+    </div>
+  </div>
+</div>
 </body>
 </html>
