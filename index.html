@@ -372,6 +372,16 @@
 <script>
 'use strict';
 
+/* 파일 버전 — 업로드할 때마다 숫자를 1씩 올리세요 (예: v2, v3...)
+   버전이 바뀌면 모든 기기의 localStorage가 자동 초기화됩니다.     */
+(function() {
+  var FILE_VERSION = 'v1';
+  if (localStorage.getItem('file_version') !== FILE_VERSION) {
+    localStorage.clear();
+    localStorage.setItem('file_version', FILE_VERSION);
+  }
+})();
+
 /* =========================================
    1. 시계
    ========================================= */
@@ -437,13 +447,13 @@ const QUOTES = [
    3. D-Day
    ========================================= */
 const DDAY_DEFAULT = {
-  main: { name:'2026학년도 수능', date:'2026-11-19' },
-  subs: [
-    { name:'6월 모의고사',   date:'2026-06-04' },
-    { name:'9월 모의고사',   date:'2026-09-03' },
-    { name:'1학기 기말고사', date:'2026-07-02' },
-  ]
-};
+    main: { name:'2026학년도 수능', date:'2026-11-19' },
+    subs: [
+      { name:'1학기 중간고사',     date:'2026-04-24' },
+      { name:'5월 학력평가',       date:'2026-05-07' },
+      { name:'6월 학력평가(미정)', date:'2026-06-04' },
+    ]
+  };
 
 function calcD(dateStr) {
   if (!dateStr) return '';
@@ -608,6 +618,7 @@ if (!loadSavedMeal()) {
   const s = document.createElement('script');
   s.src = 'https://open.neis.go.kr/hub/mealServiceDietInfo?KEY=f5ba09e01b8e4dc4baffdb81d1edc682&Type=jsonp&pIndex=1&pSize=1&ATPT_OFCDC_SC_CODE=B10&SD_SCHUL_CODE=B100000415&MLSV_YMD=' + ymd + '&MMEAL_SC_CODE=2&callback=neisCallback';
   s.onerror = function() { renderMeal([]); };
+  // NEIS 연동 실패 시 편집 버튼으로 직접 입력하세요
   document.head.appendChild(s);
   setTimeout(function() {
     const g = document.getElementById('meal-grid');
@@ -619,10 +630,7 @@ if (!loadSavedMeal()) {
    5. 공지사항
    ========================================= */
 const NOTICE_DEFAULT = [
-  {badge:'중요', text:'생활기록부 자율활동 기재 마감 — 담임 선생님께 제출', date:'2026.04.02'},
-  {badge:'안내', text:'4월 학부모 상담 주간 운영 (4/14 ~ 4/18)', date:'2026.04.01'},
-  {badge:'안내', text:'진로탐색 보고서 제출 기한: 4월 10일(금)까지', date:'2026.03.31'},
-  {badge:'안내', text:'수시 학생부종합전형 설명회 — 4월 24일(금) 방과후', date:'2026.03.30'},
+  {badge:'안내', text:'미오블로그', date:'2026.04.03'},
 ];
 
 function getNotices() {
@@ -728,10 +736,18 @@ document.getElementById('quote-modal').addEventListener('click', function(e) {
   if (e.target === this) closeQuoteModal();
 });
 
-// 초기 로드: 저장된 한마디 있으면 우선 적용, 없으면 오늘의 명언 유지
+// 초기 로드: 저장된 한마디 있으면 우선 적용, 없으면 파일 기본값 표시
 (function() {
   const saved = getQuote();
-  if (saved) applyQuote(saved);
+  if (saved) {
+    applyQuote(saved);
+  } else {
+    // 파일 기본값 (편집 버튼으로 언제든 변경 가능)
+    applyQuote({
+      text: '자신을 믿어라. 당신 안에 있는 힘은 생각보다 훨씬 강하다.',
+      author: '작자미상'
+    });
+  }
 })();
 
 renderNotices();
