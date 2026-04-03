@@ -592,39 +592,51 @@ document.getElementById('meal-modal').addEventListener('click', function(e) {
   if (e.target === this) closeMealModal();
 });
 
-// 저장된 급식 우선, 없으면 NEIS JSONP
-function loadSavedMeal() {
-  if (localStorage.getItem('meal_date') === new Date().toDateString()) {
-    const items = JSON.parse(localStorage.getItem('meal_items') || '[]');
-    const kcal  = localStorage.getItem('meal_kcal') || '';
-    if (items.length) { renderMeal(items, kcal); return true; }
+// ── 구글 시트에서 급식 로드 ──
+var MEAL_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTQj5B0CsHrYNyFlDCtQuaN3KboIz01TJvzLxitzr6sfZ5eOFMERsWNKJRig8YmcURuIJHBW_GCCN6u/pub?gid=0&single=true&output=csv';
+
+function parseMealCSV(csv) {
+  var lines = csv.trim().split('\n');
+  // 1행: 헤더(날짜,메뉴1,...,열량) 스킵
+  var today = new Date();
+  var todayStr = today.getFullYear() + '-' +
+    String(today.getMonth()+1).padStart(2,'0') + '-' +
+    String(today.getDate()).padStart(2,'0');
+
+  for (var i = 1; i < lines.length; i++) {
+    var cols = lines[i].split(',').map(function(c){ return c.trim().replace(/^"|"$/g,''); });
+    var dateCol = cols[0] || '';
+    if (dateCol === todayStr) {
+      // B~F열: 메뉴1~5 (빈 값 제외), G열: 열량
+      var items = cols.slice(1, cols.length - 1).filter(Boolean);
+      var kcal  = cols[cols.length - 1] || '';
+      return { items: items, kcal: kcal };
+    }
   }
-  return false;
+  return null;
 }
-function neisCallback(json) {
-  try {
-    const row = json && json.mealServiceDietInfo && json.mealServiceDietInfo[1] &&
-                json.mealServiceDietInfo[1].row && json.mealServiceDietInfo[1].row[0];
-    if (!row) { renderMeal([]); return; }
-    const items = row.DDISH_NM.split('<br/>').map(function(s) {
-      return s.replace(/\([0-9.,]+\)/g, '').trim();
-    }).filter(Boolean);
-    renderMeal(items, row.CAL_INFO || '');
-  } catch(e) { renderMeal([]); }
+
+function loadMealFromSheet() {
+  fetch(MEAL_CSV_URL + '&t=' + Date.now())
+    .then(function(r) { return r.text(); })
+    .then(function(csv) {
+      var result = parseMealCSV(csv);
+      if (result && result.items.length) {
+        renderMeal(result.items, result.kcal);
+      } else {
+        // 오늘 날짜 데이터 없으면 편집 버튼으로 직접 입력 안내
+        renderMeal([]);
+        document.getElementById('meal-grid').innerHTML =
+          '<div class="meal-item" style="color:var(--text-muted);font-size:11px">구글 시트에 오늘 날짜(' + new Date().toLocaleDateString('ko-KR') + ') 급식을 입력해 주세요</div>';
+      }
+    })
+    .catch(function() {
+      renderMeal([]);
+    });
 }
-if (!loadSavedMeal()) {
-  const n = new Date();
-  const ymd = n.getFullYear() + String(n.getMonth()+1).padStart(2,'0') + String(n.getDate()).padStart(2,'0');
-  const s = document.createElement('script');
-  s.src = 'https://open.neis.go.kr/hub/mealServiceDietInfo?KEY=f5ba09e01b8e4dc4baffdb81d1edc682&Type=jsonp&pIndex=1&pSize=1&ATPT_OFCDC_SC_CODE=B10&SD_SCHUL_CODE=B100000415&MLSV_YMD=' + ymd + '&MMEAL_SC_CODE=2&callback=neisCallback';
-  s.onerror = function() { renderMeal([]); };
-  // NEIS 연동 실패 시 편집 버튼으로 직접 입력하세요
-  document.head.appendChild(s);
-  setTimeout(function() {
-    const g = document.getElementById('meal-grid');
-    if (g.querySelector('span') && g.querySelector('span').textContent.includes('중')) renderMeal([]);
-  }, 5000);
-}
+loadMealFromSheet();
+// 30분마다 자동 갱신
+setInterval(loadMealFromSheet, 30 * 60 * 1000);
 
 /* =========================================
    5. 공지사항
@@ -633,11 +645,39 @@ const NOTICE_DEFAULT = [
   {badge:'안내', text:'미오블로그', date:'2026.04.03'},
 ];
 
+// ── 구글 시트에서 공지 로드 ──
+var NOTICE_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTQj5B0CsHrYNyFlDCtQuaN3KboIz01TJvzLxitzr6sfZ5eOFMERsWNKJRig8YmcURuIJHBW_GCCN6u/pub?gid=1959432936&single=true&output=csv';
+
 function getNotices() {
   try {
     const s = localStorage.getItem('notices');
     return s ? JSON.parse(s) : NOTICE_DEFAULT;
   } catch(e) { return NOTICE_DEFAULT; }
+}
+
+function loadNoticesFromSheet() {
+  fetch(NOTICE_CSV_URL + '&t=' + Date.now())
+    .then(function(r) { return r.text(); })
+    .then(function(csv) {
+      var lines = csv.trim().split('\n');
+      // 1행: 헤더(분류,내용,날짜) 스킵
+      var notices = [];
+      for (var i = 1; i < lines.length; i++) {
+        var cols = lines[i].split(',').map(function(c){ return c.trim().replace(/^"|"$/g,''); });
+        var badge = cols[0] || '안내';
+        var text  = cols[1] || '';
+        var date  = cols[2] || '';
+        if (text) notices.push({ badge: badge, text: text, date: date });
+      }
+      if (notices.length) {
+        // 구글 시트 데이터를 localStorage에도 저장 (편집 버튼용)
+        localStorage.setItem('notices', JSON.stringify(notices));
+        renderNotices();
+      }
+    })
+    .catch(function() {
+      renderNotices(); // 실패 시 localStorage 데이터 사용
+    });
 }
 
 function renderNotices() {
@@ -780,6 +820,9 @@ document.getElementById('notice-modal').addEventListener('click', function(e) {
   if (e.target === this) closeNoticeModal();
 });
 renderNotices();
+loadNoticesFromSheet(); // 구글 시트에서 최신 공지 로드
+// 1시간마다 자동 갱신
+setInterval(loadNoticesFromSheet, 60 * 60 * 1000);
 
 /* =========================================
    6. PDF 뷰어
