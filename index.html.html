@@ -1,0 +1,1125 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<title>학급 디지털 게시판</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#F2F1EE; --surface:#FFF; --border:#E4E2DC;
+    --text-primary:#1A1A1A; --text-secondary:#6B6860; --text-muted:#AAA89F;
+    --accent:#2D5BE3; --accent-soft:#EEF2FD;
+    --red:#D94F3D; --green:#2A7A52; --green-soft:#E8F5EE;
+    --amber:#B07028; --amber-soft:#FBF3E6;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--bg);font-family:"Noto Sans KR",sans-serif;color:var(--text-primary);height:100vh;overflow:hidden;display:grid;grid-template-rows:auto 1fr auto;}
+
+  /* 헤더 */
+  header{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;padding:13px 36px;background:var(--surface);border-bottom:1px solid var(--border);}
+  .school-name{font-size:11px;font-weight:500;color:var(--text-secondary);letter-spacing:.06em;}
+  .class-name{font-size:19px;font-weight:900;letter-spacing:-.02em;margin-top:1px;}
+  .header-center{text-align:center;}
+  .board-title{font-size:clamp(26px,3.2vw,42px);font-weight:900;letter-spacing:-.03em;color:var(--text-primary);line-height:1;}
+  .board-title-sub{margin-top:5px;display:flex;align-items:center;justify-content:center;gap:5px;}
+  .live-dot{display:inline-block;width:6px;height:6px;background:var(--red);border-radius:50%;margin-right:5px;animation:pulse 2s infinite;}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.25}}
+  .live-label{font-size:10px;font-weight:600;color:var(--text-muted);letter-spacing:.12em;text-transform:uppercase;}
+  .datetime-block{text-align:right;}
+  #clock{font-family:"DM Mono",monospace;font-size:24px;font-weight:400;letter-spacing:-.02em;}
+  #date{font-size:11px;color:var(--text-secondary);margin-top:2px;}
+
+  /* 메인 */
+  main{display:grid;grid-template-columns:1fr 1fr;gap:13px;padding:13px 36px;overflow:hidden;min-height:0;}
+  .left-col{display:grid;grid-template-rows:auto auto 1fr;gap:11px;min-height:0;}
+  .mid-row{display:grid;grid-template-columns:1fr 1fr;gap:11px;min-height:0;}
+
+  /* 카드 */
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:13px;padding:15px 19px;display:flex;flex-direction:column;overflow:hidden;}
+  .card-label{font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;margin-bottom:10px;flex-shrink:0;}
+
+  /* D-Day 카드 */
+  .card-dday{background:var(--text-primary);border-color:var(--text-primary);color:white;flex-direction:row;align-items:stretch;padding:20px 26px;gap:0;}
+  .dday-main{display:flex;flex-direction:column;justify-content:center;padding-right:26px;margin-right:26px;border-right:1px solid rgba(255,255,255,.1);flex-shrink:0;}
+  .dday-top-row{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px;}
+  .dday-label-txt{font-size:10px;font-weight:700;letter-spacing:.12em;color:rgba(255,255,255,.3);text-transform:uppercase;}
+  .dday-edit-btn{font-size:9px;font-weight:700;color:rgba(255,255,255,.55);background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);border-radius:5px;padding:2px 8px;cursor:pointer;white-space:nowrap;flex-shrink:0;}
+  .dday-edit-btn:hover{background:rgba(255,255,255,.2);color:#fff;}
+  .dday-event{font-size:11px;color:rgba(255,255,255,.4);margin-bottom:4px;white-space:nowrap;}
+  .dday-number{font-family:"DM Mono",monospace;font-size:clamp(48px,6.5vw,78px);font-weight:300;line-height:1;letter-spacing:-.04em;color:#fff;white-space:nowrap;}
+  .dday-number .pre{font-size:.36em;font-weight:500;vertical-align:super;color:rgba(255,255,255,.4);}
+  .dday-sub{font-family:"DM Mono",monospace;font-size:10px;color:rgba(255,255,255,.22);margin-top:7px;}
+  .dday-list{display:flex;flex-direction:column;justify-content:center;gap:9px;flex:1;}
+  .dday-item{display:flex;justify-content:space-between;align-items:center;padding:8px 13px;background:rgba(255,255,255,.05);border-radius:8px;border:1px solid rgba(255,255,255,.07);}
+  .dday-item-name{font-size:12px;color:rgba(255,255,255,.5);}
+  .dday-item-count{font-family:"DM Mono",monospace;font-size:16px;font-weight:400;color:rgba(255,255,255,.9);}
+
+  /* 급식 카드 */
+  .card-meal{position:relative;}
+  .card-meal .card-label{color:var(--green);}
+  .meal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+  .meal-header .card-label{margin-bottom:0;}
+  .meal-day{font-size:10px;color:var(--green);font-weight:600;background:var(--green-soft);padding:2px 8px;border-radius:20px;font-family:"DM Mono",monospace;}
+  .meal-list{display:flex;flex-direction:column;gap:4px;flex:1;overflow:hidden;}
+  .meal-item{display:flex;align-items:center;gap:6px;padding:5px 8px;background:var(--bg);border-radius:6px;font-size:12px;}
+  .meal-dot{width:4px;height:4px;border-radius:50%;background:var(--green);flex-shrink:0;}
+  .meal-kcal{text-align:center;margin-top:5px;font-size:10px;color:var(--text-muted);font-family:"DM Mono",monospace;flex-shrink:0;}
+  .meal-edit-btn{position:absolute;top:12px;right:13px;font-size:9px;font-weight:700;color:var(--green);background:var(--green-soft);border:1px solid #B8DDD0;border-radius:5px;padding:2px 7px;cursor:pointer;opacity:0;transition:opacity .2s;}
+  .card-meal:hover .meal-edit-btn{opacity:1;}
+
+  /* 한마디 카드 */
+  .card-quote{background:var(--amber-soft);border-color:#E2C99A;position:relative;}
+  .quote-edit-btn{position:absolute;top:12px;right:13px;font-size:9px;font-weight:700;color:var(--amber);background:rgba(176,112,40,.12);border:1px solid rgba(176,112,40,.25);border-radius:5px;padding:2px 7px;cursor:pointer;opacity:0;transition:opacity .2s;}
+  .card-quote:hover .quote-edit-btn{opacity:1;}
+  .card-quote .card-label{color:var(--amber);}
+  .quote-body{flex:1;display:flex;flex-direction:column;justify-content:center;}
+  .quote-mark{font-size:28px;font-weight:900;color:var(--amber);opacity:.18;line-height:.8;margin-bottom:4px;}
+  .quote-text{font-size:12px;font-weight:500;line-height:1.7;letter-spacing:-.01em;}
+  .quote-author{font-size:10px;color:var(--amber);font-weight:600;letter-spacing:.04em;text-align:right;margin-top:8px;flex-shrink:0;}
+
+  /* 공지사항 카드 */
+  .card-notice .card-label{color:var(--accent);}
+  .notice-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
+  .notice-header .card-label{margin-bottom:0;}
+  .notice-add-btn{font-size:9px;font-weight:700;color:var(--accent);background:var(--accent-soft);border:1px solid #C8D8F8;border-radius:5px;padding:2px 8px;cursor:pointer;}
+  .notice-add-btn:hover{background:#DDE8FB;}
+  .notice-list{display:flex;flex-direction:column;gap:8px;flex:1;overflow:hidden;}
+  .notice-item{display:flex;align-items:flex-start;gap:8px;padding:10px 12px;background:var(--accent-soft);border-radius:9px;border-left:3px solid var(--accent);flex-shrink:0;}
+  .notice-badge{font-size:9px;font-weight:700;background:var(--accent);color:white;padding:2px 6px;border-radius:3px;white-space:nowrap;margin-top:1px;letter-spacing:.04em;flex-shrink:0;}
+  .notice-item-inner{flex:1;min-width:0;}
+  .notice-text{font-size:13px;line-height:1.5;color:var(--text-primary);}
+  .notice-date{font-size:10px;color:var(--text-muted);margin-top:3px;font-family:"DM Mono",monospace;}
+  .notice-del-btn{font-size:11px;color:var(--text-muted);background:none;border:none;cursor:pointer;padding:0 2px;flex-shrink:0;margin-top:1px;line-height:1;}
+  .notice-del-btn:hover{color:var(--red);}
+
+  /* 수시일정 패널 */
+  .schedule-panel{background:var(--surface);border:1px solid var(--border);border-radius:13px;display:flex;flex-direction:column;overflow:hidden;}
+  .schedule-toolbar{display:flex;align-items:center;justify-content:space-between;padding:10px 18px;border-bottom:1px solid var(--border);flex-shrink:0;}
+  .schedule-label{font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);}
+  .schedule-today{font-size:11px;color:var(--text-secondary);font-family:"DM Mono",monospace;}
+  .schedule-filter{display:flex;gap:5px;flex-wrap:wrap;}
+  .filter-btn{font-size:9px;font-weight:700;padding:2px 7px;border-radius:10px;border:1px solid var(--border);background:#fff;cursor:pointer;color:var(--text-secondary);transition:all .15s;}
+  .filter-btn.active{color:#fff;border-color:transparent;}
+  .filter-btn[data-cat="원서접수마감"].active{background:#D94F3D;}
+  .filter-btn[data-cat="서류마감"].active{background:#E07B2A;}
+  .filter-btn[data-cat="1단계합격"].active{background:#2D5BE3;}
+  .filter-btn[data-cat="면접"].active{background:#2A7A52;}
+  .filter-btn[data-cat="논술"].active{background:#7C3AED;}
+  .filter-btn[data-cat="실기"].active{background:#B07028;}
+  .filter-btn[data-cat="최종합격"].active{background:#1A1A1A;}
+  .filter-btn[data-cat="all"].active{background:var(--accent);}
+  .schedule-body{flex:1;overflow-y:auto;padding:10px 14px;}
+  .schedule-body::-webkit-scrollbar{width:4px;}
+  .schedule-body::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
+  .day-group{margin-bottom:14px;}
+  .day-header{display:flex;align-items:center;gap:8px;margin-bottom:6px;position:sticky;top:0;background:var(--surface);padding:4px 0;z-index:1;}
+  .day-label{font-size:12px;font-weight:700;color:var(--text-primary);font-family:"DM Mono",monospace;}
+  .day-label.today-label{color:var(--accent);}
+  .day-count{font-size:10px;color:var(--text-muted);background:var(--bg);padding:1px 7px;border-radius:10px;}
+  .day-divider{flex:1;height:1px;background:var(--border);}
+  .sched-item{display:flex;align-items:flex-start;gap:8px;padding:6px 10px;border-radius:8px;margin-bottom:4px;border-left:3px solid transparent;}
+  .sched-item:hover{background:var(--bg);}
+  .sched-item[data-cat="원서접수마감"]{border-color:#D94F3D;background:#FDF0EE;}
+  .sched-item[data-cat="서류마감"]{border-color:#E07B2A;background:#FDF5EC;}
+  .sched-item[data-cat="1단계합격"]{border-color:#2D5BE3;background:#EEF2FD;}
+  .sched-item[data-cat="면접"]{border-color:#2A7A52;background:#E8F5EE;}
+  .sched-item[data-cat="논술"]{border-color:#7C3AED;background:#F3EFFE;}
+  .sched-item[data-cat="실기"]{border-color:#B07028;background:#FBF3E6;}
+  .sched-item[data-cat="최종합격"]{border-color:#1A1A1A;background:#F4F4F2;}
+  .sched-cat{font-size:9px;font-weight:700;padding:1px 6px;border-radius:3px;color:#fff;white-space:nowrap;flex-shrink:0;margin-top:2px;}
+  .sched-cat[data-cat="원서접수마감"]{background:#D94F3D;}
+  .sched-cat[data-cat="서류마감"]{background:#E07B2A;}
+  .sched-cat[data-cat="1단계합격"]{background:#2D5BE3;}
+  .sched-cat[data-cat="면접"]{background:#2A7A52;}
+  .sched-cat[data-cat="논술"]{background:#7C3AED;}
+  .sched-cat[data-cat="실기"]{background:#B07028;}
+  .sched-cat[data-cat="최종합격"]{background:#1A1A1A;}
+  .sched-info{flex:1;min-width:0;}
+  .sched-univ{font-size:12px;font-weight:600;color:var(--text-primary);}
+  .sched-detail{font-size:10px;color:var(--text-secondary);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .no-schedule{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:8px;color:var(--text-muted);}
+  .no-schedule-icon{font-size:32px;opacity:.25;}
+  .no-schedule-text{font-size:13px;}
+  .schedule-range{display:flex;align-items:center;gap:6px;}
+  .range-btn{font-size:10px;font-weight:600;color:var(--accent);background:var(--accent-soft);border:1px solid #C8D8F8;border-radius:5px;padding:2px 8px;cursor:pointer;}
+  .range-btn:hover{background:#DDE8FB;}
+  .range-info{font-size:10px;color:var(--text-muted);font-family:"DM Mono",monospace;}
+
+  /* 티커 */
+  footer{background:var(--surface);border-top:1px solid var(--border);padding:8px 36px;display:flex;align-items:center;overflow:hidden;}
+  .ticker-label{font-size:10px;font-weight:700;letter-spacing:.1em;color:white;background:var(--accent);padding:3px 10px;border-radius:4px;margin-right:18px;white-space:nowrap;flex-shrink:0;}
+  .ticker-wrap{flex:1;overflow:hidden;}
+  .ticker-track{display:flex;gap:56px;animation:ticker 32s linear infinite;white-space:nowrap;}
+  @keyframes ticker{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+  .ticker-item{font-size:12px;color:var(--text-secondary);flex-shrink:0;}
+  .ticker-sep{color:var(--border);margin:0 6px;}
+
+  /* 모달 공통 */
+  .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.48);z-index:300;align-items:center;justify-content:center;}
+  .modal-overlay.open{display:flex;}
+  .modal-box{background:#fff;border-radius:18px;padding:26px 26px 22px;width:420px;max-width:93vw;}
+  .modal-title{font-size:15px;font-weight:700;margin-bottom:3px;}
+  .modal-sub{font-size:11px;color:var(--text-muted);margin-bottom:16px;}
+  .modal-btns{display:flex;gap:8px;margin-top:16px;justify-content:flex-end;}
+  .btn-cancel{padding:7px 16px;border:1px solid var(--border);border-radius:7px;font-size:12px;font-weight:500;cursor:pointer;background:#fff;color:var(--text-secondary);}
+  .btn-cancel:hover{background:var(--bg);}
+
+  /* 급식 모달 */
+  #meal-modal textarea{width:100%;height:160px;border:1px solid var(--border);border-radius:9px;padding:11px 13px;font-family:"Noto Sans KR",sans-serif;font-size:13px;line-height:1.7;resize:none;outline:none;background:var(--bg);}
+  #meal-modal textarea:focus{border-color:var(--green);}
+  .meal-kcal-row{display:flex;align-items:center;gap:8px;margin-top:8px;}
+  .meal-kcal-row label{font-size:11px;color:var(--text-secondary);white-space:nowrap;}
+  .meal-kcal-row input{flex:1;border:1px solid var(--border);border-radius:7px;padding:6px 11px;font-size:12px;font-family:"DM Mono",monospace;outline:none;background:var(--bg);}
+  .meal-kcal-row input:focus{border-color:var(--green);}
+  .btn-save-green{padding:7px 20px;border:none;border-radius:7px;font-size:12px;font-weight:700;cursor:pointer;background:var(--green);color:#fff;}
+
+  /* 공지 모달 */
+  .badge-row{display:flex;gap:10px;margin-bottom:12px;}
+  .badge-opt{display:flex;align-items:center;gap:5px;cursor:pointer;font-size:12px;font-weight:500;}
+  .badge-opt input{accent-color:var(--accent);}
+  #notice-modal textarea{width:100%;height:80px;border:1px solid var(--border);border-radius:9px;padding:10px 12px;font-family:"Noto Sans KR",sans-serif;font-size:13px;line-height:1.65;resize:none;outline:none;background:var(--bg);}
+  #notice-modal textarea:focus{border-color:var(--accent);}
+  .notice-date-row{display:flex;align-items:center;gap:8px;margin-top:8px;}
+  .notice-date-row label{font-size:11px;color:var(--text-secondary);white-space:nowrap;}
+  .notice-date-row input{flex:1;border:1px solid var(--border);border-radius:7px;padding:6px 10px;font-size:12px;font-family:"DM Mono",monospace;outline:none;background:var(--bg);}
+  .notice-date-row input:focus{border-color:var(--accent);}
+  .btn-save-accent{padding:7px 20px;border:none;border-radius:7px;font-size:12px;font-weight:700;cursor:pointer;background:var(--accent);color:#fff;}
+
+  /* D-Day 모달 */
+  .dday-section-lbl{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px;margin-top:14px;}
+  .dday-section-lbl:first-of-type{margin-top:0;}
+  .dday-input-row{display:grid;grid-template-columns:1fr 148px 52px;gap:7px;align-items:center;margin-bottom:8px;}
+  .dday-input-row input[type=text]{border:1px solid var(--border);border-radius:8px;padding:8px 11px;font-size:13px;font-family:"Noto Sans KR",sans-serif;outline:none;background:var(--bg);width:100%;}
+  .dday-input-row input[type=text]:focus{border-color:var(--accent);}
+  .dday-input-row input[type=date]{border:1px solid var(--border);border-radius:8px;padding:7px 8px;font-size:12px;font-family:"DM Mono",monospace;outline:none;background:var(--bg);width:100%;}
+  .dday-input-row input[type=date]:focus{border-color:var(--accent);}
+  .dday-preview{font-family:"DM Mono",monospace;font-size:13px;font-weight:700;color:var(--accent);text-align:center;}
+  hr.dday-divider{border:none;border-top:1px solid var(--border);margin:12px 0 4px;}
+  .btn-save-dark{padding:7px 22px;border:none;border-radius:7px;font-size:12px;font-weight:700;cursor:pointer;background:var(--text-primary);color:#fff;}
+</style>
+</head>
+<body>
+
+<!-- 헤더 -->
+<header>
+  <div>
+    <div class="school-name">대진여자고등학교</div>
+    <div class="class-name">3학년 11반</div>
+  </div>
+  <div class="header-center">
+    <div class="board-title">학급 게시판</div>
+    <div class="board-title-sub"><span class="live-dot"></span><span class="live-label">Live</span></div>
+  </div>
+  <div class="datetime-block">
+    <div id="clock">00:00:00</div>
+    <div id="date">로딩 중...</div>
+  </div>
+</header>
+
+<main>
+  <!-- 왼쪽 -->
+  <div class="left-col">
+
+    <!-- D-Day 카드 -->
+    <div class="card card-dday">
+      <div class="dday-main">
+        <div class="dday-top-row">
+          <span class="dday-label-txt">수능 D-Day</span>
+          <button class="dday-edit-btn" onclick="openDdayModal()">✏ 편집</button>
+        </div>
+        <div class="dday-event" id="dday-event-name">2026학년도 수능</div>
+        <div class="dday-number">
+          <span class="pre" id="dday-prefix">D-</span><span id="dday-num">---</span>
+        </div>
+        <div class="dday-sub" id="dday-date-display">2026. 11. 19 (목)</div>
+      </div>
+      <div class="dday-list" id="dday-sub-list">
+        <div class="dday-item">
+          <span class="dday-item-name" id="sub1-name">6월 모의고사</span>
+          <span class="dday-item-count" id="sub1-count">D-?</span>
+        </div>
+        <div class="dday-item">
+          <span class="dday-item-name" id="sub2-name">9월 모의고사</span>
+          <span class="dday-item-count" id="sub2-count">D-?</span>
+        </div>
+        <div class="dday-item">
+          <span class="dday-item-name" id="sub3-name">1학기 기말고사</span>
+          <span class="dday-item-count" id="sub3-count">D-?</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 급식 + 한마디 -->
+    <div class="mid-row">
+      <div class="card card-meal">
+        <button class="meal-edit-btn" onclick="openMealModal()">✏ 편집</button>
+        <div class="meal-header">
+          <div class="card-label">오늘의 급식</div>
+          <div class="meal-day" id="meal-day">오늘</div>
+        </div>
+        <div class="meal-list" id="meal-grid">
+          <div class="meal-item"><div class="meal-dot"></div><span>불러오는 중…</span></div>
+        </div>
+        <div class="meal-kcal" id="meal-kcal"></div>
+      </div>
+      <div class="card card-quote">
+        <button class="quote-edit-btn" onclick="openQuoteModal()">✏ 편집</button>
+        <div class="card-label">이번주의 한마디</div>
+        <div class="quote-body">
+          <div class="quote-mark">"</div>
+          <div class="quote-text" id="quote-text"></div>
+        </div>
+        <div class="quote-author" id="quote-author"></div>
+      </div>
+    </div>
+
+    <!-- 공지사항 -->
+    <div class="card card-notice">
+      <div class="notice-header">
+        <div class="card-label">공지사항</div>
+        <button class="notice-add-btn" onclick="openNoticeModal()">+ 공지 추가</button>
+      </div>
+      <div class="notice-list" id="notice-list"></div>
+    </div>
+
+  </div>
+
+  <!-- 수시일정 패널 -->
+  <div class="schedule-panel">
+    <div class="schedule-toolbar">
+      <div>
+        <div class="schedule-label">2027 수시 일정</div>
+        <div class="schedule-today" id="schedule-today-info"></div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:5px;align-items:flex-end;">
+        <div class="schedule-range">
+          <button class="range-btn" onclick="changeRange(-7)">◀ 이전</button>
+          <span class="range-info" id="range-info">오늘~7일</span>
+          <button class="range-btn" onclick="changeRange(7)">다음 ▶</button>
+        </div>
+        <div class="schedule-filter">
+          <button class="filter-btn active" data-cat="all" onclick="toggleFilter('all')">전체</button>
+          <button class="filter-btn" data-cat="원서접수마감" onclick="toggleFilter('원서접수마감')">원서</button>
+          <button class="filter-btn" data-cat="서류마감" onclick="toggleFilter('서류마감')">서류</button>
+          <button class="filter-btn" data-cat="1단계합격" onclick="toggleFilter('1단계합격')">1단계</button>
+          <button class="filter-btn" data-cat="면접" onclick="toggleFilter('면접')">면접</button>
+          <button class="filter-btn" data-cat="논술" onclick="toggleFilter('논술')">논술</button>
+          <button class="filter-btn" data-cat="실기" onclick="toggleFilter('실기')">실기</button>
+          <button class="filter-btn" data-cat="최종합격" onclick="toggleFilter('최종합격')">최종</button>
+        </div>
+      </div>
+    </div>
+    <div class="schedule-body" id="schedule-body"></div>
+  </div>
+
+</main>
+
+<!-- 티커 -->
+<footer>
+  <div class="ticker-label">TODAY</div>
+  <div class="ticker-wrap">
+    <div class="ticker-track" id="ticker-track"></div>
+  </div>
+</footer>
+
+<!-- ① 급식 편집 모달 -->
+<div class="modal-overlay" id="meal-modal">
+  <div class="modal-box">
+    <div class="modal-title">오늘의 급식 편집</div>
+    <div class="modal-sub">메뉴를 한 줄에 하나씩 입력하세요</div>
+    <textarea id="meal-input" placeholder="흑미밥&#10;된장찌개&#10;제육볶음&#10;깍두기&#10;오이무침&#10;우유"></textarea>
+    <div class="meal-kcal-row">
+      <label>열량</label>
+      <input type="text" id="kcal-input" placeholder="예: 875.3 Kcal">
+    </div>
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeMealModal()">취소</button>
+      <button class="btn-save-green" onclick="saveMeal()">저장</button>
+    </div>
+  </div>
+</div>
+
+<!-- ② 공지 추가 모달 -->
+<div class="modal-overlay" id="notice-modal">
+  <div class="modal-box">
+    <div class="modal-title">공지사항 추가</div>
+    <div class="modal-sub">배지 유형과 내용을 입력하세요</div>
+    <div class="badge-row">
+      <label class="badge-opt"><input type="radio" name="nbadge" value="중요"> 🔴 중요</label>
+      <label class="badge-opt"><input type="radio" name="nbadge" value="안내" checked> 🔵 안내</label>
+      <label class="badge-opt"><input type="radio" name="nbadge" value="일정"> 🟢 일정</label>
+    </div>
+    <textarea id="notice-input" placeholder="공지 내용을 입력하세요"></textarea>
+    <div class="notice-date-row">
+      <label>날짜</label>
+      <input type="text" id="notice-date-input" placeholder="예: 2026.04.02">
+    </div>
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeNoticeModal()">취소</button>
+      <button class="btn-save-accent" onclick="saveNotice()">추가</button>
+    </div>
+  </div>
+</div>
+
+<!-- ④ 한마디 편집 모달 -->
+<div class="modal-overlay" id="quote-modal">
+  <div class="modal-box">
+    <div class="modal-title">이번주의 한마디 편집</div>
+    <div class="modal-sub">이번 주 학생들에게 전하고 싶은 말을 입력하세요</div>
+    <textarea id="quote-input" style="width:100%;height:100px;border:1px solid var(--border);border-radius:9px;padding:11px 13px;font-family:'Noto Sans KR',sans-serif;font-size:13px;line-height:1.7;resize:none;outline:none;background:var(--bg);" placeholder="예: 오늘도 최선을 다하자!"></textarea>
+    <div style="display:flex;align-items:center;gap:8px;margin-top:8px;">
+      <label style="font-size:11px;color:var(--text-secondary);white-space:nowrap;">출처</label>
+      <input type="text" id="quote-author-input" placeholder="예: 작자미상  또는  선생님" style="flex:1;border:1px solid var(--border);border-radius:7px;padding:6px 11px;font-size:12px;outline:none;background:var(--bg);font-family:'Noto Sans KR',sans-serif;">
+    </div>
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeQuoteModal()">취소</button>
+      <button style="padding:7px 20px;border:none;border-radius:7px;font-size:12px;font-weight:700;cursor:pointer;background:var(--amber);color:#fff;" onclick="saveQuote()">저장</button>
+    </div>
+  </div>
+
+<!-- ③ D-Day 편집 모달 -->
+<div class="modal-overlay" id="dday-modal">
+  <div class="modal-box" style="width:480px;">
+    <div class="modal-title">시험 D-Day 편집</div>
+    <div class="modal-sub">시험명과 날짜를 수정하면 D-Day가 자동 계산됩니다</div>
+
+    <div class="dday-section-lbl">수능 (메인)</div>
+    <div class="dday-input-row">
+      <input type="text" id="dm-name" placeholder="시험명">
+      <input type="date" id="dm-date">
+      <span class="dday-preview" id="dm-preview"></span>
+    </div>
+
+    <hr class="dday-divider">
+    <div class="dday-section-lbl">추가 시험</div>
+
+    <div class="dday-input-row">
+      <input type="text" id="ds1-name" placeholder="시험명">
+      <input type="date" id="ds1-date">
+      <span class="dday-preview" id="ds1-preview"></span>
+    </div>
+    <div class="dday-input-row">
+      <input type="text" id="ds2-name" placeholder="시험명">
+      <input type="date" id="ds2-date">
+      <span class="dday-preview" id="ds2-preview"></span>
+    </div>
+    <div class="dday-input-row">
+      <input type="text" id="ds3-name" placeholder="시험명">
+      <input type="date" id="ds3-date">
+      <span class="dday-preview" id="ds3-preview"></span>
+    </div>
+
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeDdayModal()">취소</button>
+      <button class="btn-save-dark" onclick="saveDday()">저장</button>
+    </div>
+  </div>
+</div>
+
+<script>
+'use strict';
+
+/* 파일 버전 — 업로드할 때마다 숫자를 1씩 올리세요 (예: v2, v3...)
+   버전이 바뀌면 모든 기기의 localStorage가 자동 초기화됩니다.     */
+(function() {
+  var FILE_VERSION = 'v1';
+  if (localStorage.getItem('file_version') !== FILE_VERSION) {
+    localStorage.clear();
+    localStorage.setItem('file_version', FILE_VERSION);
+  }
+})();
+
+/* =========================================
+   1. 시계
+   ========================================= */
+const WD = ['일','월','화','수','목','금','토'];
+function tick() {
+  const n = new Date();
+  document.getElementById('clock').textContent =
+    String(n.getHours()).padStart(2,'0') + ':' +
+    String(n.getMinutes()).padStart(2,'0') + ':' +
+    String(n.getSeconds()).padStart(2,'0');
+  const wd = WD[n.getDay()];
+  document.getElementById('date').textContent =
+    n.getFullYear() + '년 ' + (n.getMonth()+1) + '월 ' + n.getDate() + '일 (' + wd + ')';
+  document.getElementById('meal-day').textContent =
+    (n.getMonth()+1) + '/' + n.getDate() + ' (' + wd + ')';
+}
+setInterval(tick, 1000);
+tick();
+
+/* =========================================
+   2. 오늘의 명언
+   ========================================= */
+const QUOTES = [
+  {t:'노력은 배신하지 않는다. 다만 결과는 우리가 원하는 시기보다 늦게 올 뿐이다.',a:'작자미상'},
+  {t:'천 리 길도 한 걸음부터.',a:'노자'},
+  {t:'오늘 할 수 있는 일에 전력을 다하라.',a:'아이작 뉴턴'},
+  {t:'성공은 열정을 잃지 않고 실패에서 실패로 걸어가는 것이다.',a:'윈스턴 처칠'},
+  {t:'당신이 할 수 있다고 믿든 할 수 없다고 믿든, 당신의 믿음이 맞다.',a:'헨리 포드'},
+  {t:'작은 일에도 최선을 다하라. 작은 일들이 쌓여 큰 성취를 이룬다.',a:'공자'},
+  {t:'지금 이 순간에도 어딘가에서 누군가는 열심히 노력하고 있다.',a:'작자미상'},
+  {t:'꿈이 있다면 포기하지 마라. 지금 이 힘든 시간이 훗날 자랑이 된다.',a:'작자미상'},
+  {t:'시작이 반이다.',a:'아리스토텔레스'},
+  {t:'오늘 걷지 않으면 내일은 뛰어야 한다.',a:'작자미상'},
+  {t:'실패는 성공의 어머니다.',a:'토마스 에디슨'},
+  {t:'배움에는 끝이 없다. 삶이 곧 배움이다.',a:'레오나르도 다빈치'},
+  {t:'자신을 믿어라. 당신 안에 있는 힘은 생각보다 훨씬 강하다.',a:'작자미상'},
+  {t:'어제의 나보다 오늘의 내가 조금 더 성장했다면, 그것으로 충분하다.',a:'작자미상'},
+  {t:'고통이 없으면 얻는 것도 없다. 땀 없이는 영광도 없다.',a:'벤자민 프랭클린'},
+  {t:'불가능이란 아무것도 하지 않는 사람의 변명이다.',a:'나폴레옹'},
+  {t:'나무를 자르는 데 여섯 시간이 주어진다면, 네 시간을 도끼 가는 데 쓰겠다.',a:'에이브러햄 링컨'},
+  {t:'행복은 목적지가 아니라 여행하는 방식이다.',a:'마거릿 리 런벡'},
+  {t:'지식에 투자하는 것이 가장 이익이 높다.',a:'벤자민 프랭클린'},
+  {t:'나는 실패한 것이 아니다. 작동하지 않는 방법을 만 가지 발견한 것이다.',a:'토마스 에디슨'},
+  {t:'포기하지 않는 한 실패란 없다.',a:'작자미상'},
+  {t:'기회는 준비된 마음을 좋아한다.',a:'루이 파스퇴르'},
+  {t:'가장 어두운 밤도 결국 끝나고, 태양은 다시 뜬다.',a:'빅토르 위고'},
+  {t:'꽃이 피는 데는 시간이 걸린다. 너도 지금 피어나는 중이다.',a:'작자미상'},
+  {t:'한 글자씩, 한 걸음씩. 그것이 모든 위대함의 시작이다.',a:'작자미상'},
+  {t:'나 자신을 이기는 것이 가장 위대한 승리다.',a:'플라톤'},
+  {t:'두려움은 꿈의 반대편이 아니라, 꿈을 향한 문이다.',a:'작자미상'},
+  {t:'별이 빛나려면 어둠이 필요하다. 너의 어둠이 곧 빛날 무대다.',a:'작자미상'},
+  {t:'힘든 길을 걷는 사람은 강해진다.',a:'작자미상'},
+  {t:'독서는 완성된 인간을 만들고, 대화는 재치 있는 인간을 만든다.',a:'프랜시스 베이컨'},
+];
+(function() {
+  const n = new Date();
+  const i = (n.getFullYear()*366 + n.getMonth()*31 + n.getDate()) % QUOTES.length;
+  document.getElementById('quote-text').textContent = QUOTES[i].t;
+  document.getElementById('quote-author').textContent = '— ' + QUOTES[i].a;
+})();
+
+/* =========================================
+   3. D-Day
+   ========================================= */
+const DDAY_DEFAULT = {
+    main: { name:'2026학년도 수능', date:'2026-11-19' },
+    subs: [
+      { name:'1학기 중간고사',     date:'2026-04-24' },
+      { name:'5월 학력평가',       date:'2026-05-07' },
+      { name:'6월 학력평가(미정)', date:'2026-06-04' },
+    ]
+  };
+
+function calcD(dateStr) {
+  if (!dateStr) return '';
+  const today = new Date(); today.setHours(0,0,0,0);
+  const diff = Math.round((new Date(dateStr) - today) / 86400000);
+  if (diff > 0)  return 'D-' + diff;
+  if (diff === 0) return 'D-Day';
+  return 'D+' + Math.abs(diff);
+}
+
+function getDdayData() {
+  try {
+    const s = localStorage.getItem('dday_data');
+    return s ? JSON.parse(s) : DDAY_DEFAULT;
+  } catch(e) { return DDAY_DEFAULT; }
+}
+
+function applyDday(data) {
+  const s = calcD(data.main.date);
+  if (s === 'D-Day') {
+    document.getElementById('dday-prefix').textContent = '';
+    document.getElementById('dday-num').textContent = 'Day';
+  } else {
+    document.getElementById('dday-prefix').textContent = s.startsWith('D+') ? 'D+' : 'D-';
+    document.getElementById('dday-num').textContent = s.replace(/D[-+]/, '');
+  }
+  document.getElementById('dday-event-name').textContent = data.main.name;
+  if (data.main.date) {
+    const d = new Date(data.main.date);
+    document.getElementById('dday-date-display').textContent =
+      d.getFullYear() + '. ' + String(d.getMonth()+1).padStart(2,'0') + '. ' +
+      String(d.getDate()).padStart(2,'0') + ' (' + WD[d.getDay()] + ')';
+  }
+  data.subs.forEach(function(sub, i) {
+    const n = i + 1;
+    document.getElementById('sub'+n+'-name').textContent = sub.name || '';
+    document.getElementById('sub'+n+'-count').textContent = sub.date ? calcD(sub.date) : '-';
+  });
+}
+
+function openDdayModal() {
+  const data = getDdayData();
+  document.getElementById('dm-name').value  = data.main.name;
+  document.getElementById('dm-date').value  = data.main.date;
+  data.subs.forEach(function(sub, i) {
+    const n = i + 1;
+    document.getElementById('ds'+n+'-name').value = sub.name || '';
+    document.getElementById('ds'+n+'-date').value = sub.date || '';
+  });
+  refreshDdayPreviews();
+  document.getElementById('dday-modal').classList.add('open');
+}
+
+function closeDdayModal() {
+  document.getElementById('dday-modal').classList.remove('open');
+}
+
+function refreshDdayPreviews() {
+  document.getElementById('dm-preview').textContent = calcD(document.getElementById('dm-date').value);
+  [1,2,3].forEach(function(n) {
+    const v = document.getElementById('ds'+n+'-date').value;
+    document.getElementById('ds'+n+'-preview').textContent = v ? calcD(v) : '';
+  });
+}
+
+function saveDday() {
+  const data = {
+    main: {
+      name: document.getElementById('dm-name').value.trim() || '수능',
+      date: document.getElementById('dm-date').value,
+    },
+    subs: [1,2,3].map(function(n) {
+      return {
+        name: document.getElementById('ds'+n+'-name').value.trim(),
+        date: document.getElementById('ds'+n+'-date').value,
+      };
+    })
+  };
+  localStorage.setItem('dday_data', JSON.stringify(data));
+  applyDday(data);
+  closeDdayModal();
+}
+
+// 날짜 변경 시 미리보기
+['dm-date','ds1-date','ds2-date','ds3-date'].forEach(function(id) {
+  document.getElementById(id).addEventListener('change', refreshDdayPreviews);
+});
+(function() {
+  var el = document.getElementById('dday-modal');
+  if (el) el.addEventListener('click', function(e) {
+    if (e.target === this) closeDdayModal();
+  });
+})();
+
+// ── 구글 시트에서 D-Day 로드 ──
+var DDAY_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTQj5B0CsHrYNyFlDCtQuaN3KboIz01TJvzLxitzr6sfZ5eOFMERsWNKJRig8YmcURuIJHBW_GCCN6u/pub?gid=548968173&single=true&output=csv';
+
+function loadDdayFromSheet() {
+  fetch(DDAY_CSV_URL + '&t=' + Date.now())
+    .then(function(r) { return r.text(); })
+    .then(function(csv) {
+      var lines = csv.trim().split('\n');
+      // 1행: 헤더(시험명,날짜) 스킵
+      var rows = [];
+      for (var i = 1; i < lines.length; i++) {
+        var cols = lines[i].split(',').map(function(c) {
+          return c.trim().replace(/^"|"$/g, '');
+        });
+        if (cols[0] && cols[1]) {
+          rows.push({ name: cols[0], date: cols[1] });
+        }
+      }
+      if (rows.length) {
+        var data = {
+          main: { name: rows[0].name, date: rows[0].date },
+          subs: [
+            rows[1] || { name: '', date: '' },
+            rows[2] || { name: '', date: '' },
+            rows[3] || { name: '', date: '' },
+          ]
+        };
+        localStorage.setItem('dday_data', JSON.stringify(data));
+        applyDday(data);
+      }
+    })
+    .catch(function() {
+      // 실패 시 localStorage 또는 기본값 사용
+      applyDday(getDdayData());
+    });
+}
+// 초기 적용
+loadDdayFromSheet();
+// 1시간마다 자동 갱신
+setInterval(loadDdayFromSheet, 60 * 60 * 1000);
+
+/* =========================================
+   4. 급식
+   ========================================= */
+function renderMeal(items, kcal) {
+  const g = document.getElementById('meal-grid');
+  if (!items || !items.length) {
+    g.innerHTML = '<div class="meal-item" style="color:var(--text-muted)">급식 정보가 없습니다</div>';
+    document.getElementById('meal-kcal').textContent = '';
+    return;
+  }
+  g.innerHTML = items.map(function(m) {
+    return '<div class="meal-item"><div class="meal-dot"></div>' + m + '</div>';
+  }).join('');
+  document.getElementById('meal-kcal').textContent = kcal ? '열량: ' + kcal : '';
+  const tt = '🍱 오늘 급식: ' + items.join(' · ');
+  ['ticker-meal1','ticker-meal2'].forEach(function(id) {
+    const el = document.getElementById(id);
+    if (el) el.textContent = tt;
+  });
+}
+
+function openMealModal() {
+  const saved = localStorage.getItem('meal_items');
+  document.getElementById('meal-input').value = saved ? JSON.parse(saved).join('\n') : '';
+  document.getElementById('kcal-input').value = localStorage.getItem('meal_kcal') || '';
+  document.getElementById('meal-modal').classList.add('open');
+}
+function closeMealModal() {
+  document.getElementById('meal-modal').classList.remove('open');
+}
+function saveMeal() {
+  const items = document.getElementById('meal-input').value
+    .split('\n').map(function(s){ return s.trim(); }).filter(Boolean);
+  const kcal = document.getElementById('kcal-input').value.trim();
+  localStorage.setItem('meal_items', JSON.stringify(items));
+  localStorage.setItem('meal_kcal', kcal);
+  localStorage.setItem('meal_date', new Date().toDateString());
+  renderMeal(items, kcal);
+  closeMealModal();
+}
+(function() {
+  var el = document.getElementById('meal-modal');
+  if (el) el.addEventListener('click', function(e) {
+    if (e.target === this) closeMealModal();
+  });
+})();
+
+// ── 구글 시트에서 급식 로드 ──
+var MEAL_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTQj5B0CsHrYNyFlDCtQuaN3KboIz01TJvzLxitzr6sfZ5eOFMERsWNKJRig8YmcURuIJHBW_GCCN6u/pub?gid=0&single=true&output=csv';
+
+function parseMealCSV(csv) {
+  var lines = csv.trim().split('\n');
+  // 1행: 헤더(날짜,메뉴1,...,열량) 스킵
+  var today = new Date();
+  var todayStr = today.getFullYear() + '-' +
+    String(today.getMonth()+1).padStart(2,'0') + '-' +
+    String(today.getDate()).padStart(2,'0');
+
+  for (var i = 1; i < lines.length; i++) {
+    var cols = lines[i].split(',').map(function(c){ return c.trim().replace(/^"|"$/g,''); });
+    var dateCol = cols[0] || '';
+    if (dateCol === todayStr) {
+      // B~F열: 메뉴1~5 (빈 값 제외), G열: 열량
+      var items = cols.slice(1, cols.length - 1).filter(Boolean);
+      var kcal  = cols[cols.length - 1] || '';
+      return { items: items, kcal: kcal };
+    }
+  }
+  return null;
+}
+
+function loadMealFromSheet() {
+  fetch(MEAL_CSV_URL + '&t=' + Date.now())
+    .then(function(r) { return r.text(); })
+    .then(function(csv) {
+      var result = parseMealCSV(csv);
+      if (result && result.items.length) {
+        renderMeal(result.items, result.kcal);
+      } else {
+        // 오늘 날짜 데이터 없으면 편집 버튼으로 직접 입력 안내
+        renderMeal([]);
+        document.getElementById('meal-grid').innerHTML =
+          '<div class="meal-item" style="color:var(--text-muted);font-size:11px">구글 시트에 오늘 날짜(' + new Date().toLocaleDateString('ko-KR') + ') 급식을 입력해 주세요</div>';
+      }
+    })
+    .catch(function() {
+      renderMeal([]);
+    });
+}
+loadMealFromSheet();
+// 30분마다 자동 갱신
+setInterval(loadMealFromSheet, 30 * 60 * 1000);
+
+/* =========================================
+   5. 공지사항
+   ========================================= */
+const NOTICE_DEFAULT = [
+  {badge:'안내', text:'미오블로그', date:'2026.04.03'},
+];
+
+// ── 구글 시트에서 공지 로드 ──
+var NOTICE_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTQj5B0CsHrYNyFlDCtQuaN3KboIz01TJvzLxitzr6sfZ5eOFMERsWNKJRig8YmcURuIJHBW_GCCN6u/pub?gid=584526684&single=true&output=csv';
+
+function getNotices() {
+  try {
+    const s = localStorage.getItem('notices');
+    return s ? JSON.parse(s) : NOTICE_DEFAULT;
+  } catch(e) { return NOTICE_DEFAULT; }
+}
+
+function loadNoticesFromSheet() {
+  fetch(NOTICE_CSV_URL + '&t=' + Date.now())
+    .then(function(r) { return r.text(); })
+    .then(function(csv) {
+      var lines = csv.trim().split('\n');
+      // 1행: 헤더(분류,내용,날짜) 스킵
+      var notices = [];
+      for (var i = 1; i < lines.length; i++) {
+        var cols = lines[i].split(',').map(function(c){ return c.trim().replace(/^"|"$/g,''); });
+        var badge = cols[0] || '안내';
+        var text  = cols[1] || '';
+        var date  = cols[2] || '';
+        if (text) notices.push({ badge: badge, text: text, date: date });
+      }
+      if (notices.length) {
+        // 구글 시트 데이터를 localStorage에도 저장 (편집 버튼용)
+        localStorage.setItem('notices', JSON.stringify(notices));
+        renderNotices();
+      }
+    })
+    .catch(function() {
+      renderNotices(); // 실패 시 localStorage 데이터 사용
+    });
+}
+
+function renderNotices() {
+  const list = document.getElementById('notice-list');
+  const notices = getNotices();
+  if (!notices.length) {
+    list.innerHTML = '<div style="color:var(--text-muted);font-size:13px;padding:8px 0">공지사항이 없습니다</div>';
+  } else {
+    list.innerHTML = notices.map(function(n, i) {
+      return '<div class="notice-item">' +
+        '<div class="notice-badge">' + n.badge + '</div>' +
+        '<div class="notice-item-inner">' +
+          '<div class="notice-text">' + n.text + '</div>' +
+          '<div class="notice-date">' + n.date + '</div>' +
+        '</div>' +
+        '<button class="notice-del-btn" onclick="deleteNotice(' + i + ')">✕</button>' +
+      '</div>';
+    }).join('');
+  }
+  renderTicker(); // 공지 바뀔 때마다 티커도 갱신
+}
+
+function renderTicker() {
+  const notices = getNotices();
+  const track = document.getElementById('ticker-track');
+  if (!track) return;
+
+  // 공지 아이템 만들기 (최대 5개)
+  const noticePart = notices.slice(0, 5).map(function(n) {
+    return '<span class="ticker-item">📌 ' + n.text + '</span>';
+  }).join('<span class="ticker-sep">·</span>');
+
+  // 급식 아이템 (id 유지)
+  const mealPart1 = '<span class="ticker-item" id="ticker-meal1">🍱 급식 정보 로딩 중...</span>';
+  const mealPart2 = '<span class="ticker-item" id="ticker-meal2">🍱 급식 정보 로딩 중...</span>';
+  const sep = '<span class="ticker-sep">·</span>';
+
+  // 기존 급식 텍스트 보존 (이미 로드된 경우)
+  const existingMeal1 = document.getElementById('ticker-meal1');
+  const mealText = existingMeal1 ? existingMeal1.textContent : '🍱 급식 정보 로딩 중...';
+  const mealSpan1 = '<span class="ticker-item" id="ticker-meal1">' + mealText + '</span>';
+  const mealSpan2 = '<span class="ticker-item" id="ticker-meal2">' + mealText + '</span>';
+
+  // 공지 없으면 기본 텍스트
+  const content = notices.length
+    ? noticePart + sep + mealSpan1 + sep + noticePart + sep + mealSpan2
+    : mealSpan1 + sep + mealSpan2;
+
+  track.innerHTML = content;
+}
+
+function deleteNotice(idx) {
+  const notices = getNotices();
+  notices.splice(idx, 1);
+  localStorage.setItem('notices', JSON.stringify(notices));
+  
+/* =========================================
+   한마디 편집
+   ========================================= */
+function getQuote() {
+  try {
+    const s = localStorage.getItem('custom_quote');
+    return s ? JSON.parse(s) : null;
+  } catch(e) { return null; }
+}
+
+function applyQuote(q) {
+  document.getElementById('quote-text').textContent = q.text;
+  document.getElementById('quote-author').textContent = '— ' + (q.author || '작자미상');
+}
+
+function openQuoteModal() {
+  const q = getQuote();
+  document.getElementById('quote-input').value = q ? q.text : document.getElementById('quote-text').textContent;
+  const authorEl = document.getElementById('quote-author').textContent;
+  document.getElementById('quote-author-input').value = q ? (q.author || '') : authorEl.replace('— ','');
+  document.getElementById('quote-modal').classList.add('open');
+  setTimeout(function(){ document.getElementById('quote-input').focus(); }, 100);
+}
+
+function closeQuoteModal() {
+  document.getElementById('quote-modal').classList.remove('open');
+}
+
+function saveQuote() {
+  const text = document.getElementById('quote-input').value.trim();
+  if (!text) { document.getElementById('quote-input').focus(); return; }
+  const author = document.getElementById('quote-author-input').value.trim() || '작자미상';
+  const q = { text: text, author: author };
+  localStorage.setItem('custom_quote', JSON.stringify(q));
+  applyQuote(q);
+  closeQuoteModal();
+}
+
+// quote-modal 클릭 이벤트 (DOM 로드 후 안전하게 등록)
+document.addEventListener('DOMContentLoaded', function() {
+  var qm = document.getElementById('quote-modal');
+  if (qm) qm.addEventListener('click', function(e) {
+    if (e.target === this) closeQuoteModal();
+  });
+});
+// 이미 로드된 경우 즉시 등록
+(function() {
+  var qm = document.getElementById('quote-modal');
+  if (qm) qm.addEventListener('click', function(e) {
+    if (e.target === this) closeQuoteModal();
+  });
+})();
+
+// ── 구글 시트에서 좋은글 로드 ──
+var QUOTE_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTQj5B0CsHrYNyFlDCtQuaN3KboIz01TJvzLxitzr6sfZ5eOFMERsWNKJRig8YmcURuIJHBW_GCCN6u/pub?gid=1446893502&single=true&output=csv';
+
+function parseCSVLine(line) {
+  // 쌍따옴표 포함된 CSV도 올바르게 파싱
+  var result = [];
+  var cur = '';
+  var inQuote = false;
+  for (var i = 0; i < line.length; i++) {
+    var ch = line[i];
+    if (ch === '"') {
+      inQuote = !inQuote;
+    } else if (ch === ',' && !inQuote) {
+      result.push(cur.trim());
+      cur = '';
+    } else {
+      cur += ch;
+    }
+  }
+  result.push(cur.trim());
+  return result;
+}
+
+function loadQuoteFromSheet() {
+  fetch(QUOTE_CSV_URL + '&t=' + Date.now())
+    .then(function(r) { return r.text(); })
+    .then(function(csv) {
+      var lines = csv.trim().split('\n');
+      // 1행: 헤더 스킵, 2행 데이터
+      if (lines.length >= 2) {
+        var cols = parseCSVLine(lines[1]);
+        var text   = (cols[0] || '').replace(/^"|"$/g, '').trim();
+        var author = (cols[1] || '작자미상').replace(/^"|"$/g, '').trim();
+        if (text) {
+          applyQuote({ text: text, author: author });
+          localStorage.setItem('custom_quote', JSON.stringify({ text: text, author: author }));
+          console.log('좋은글 로드 성공:', text);
+        } else {
+          console.log('좋은글 내용이 비어있음. CSV:', lines[1]);
+        }
+      }
+    })
+    .catch(function(e) {
+      console.log('좋은글 로드 실패:', e);
+      var saved = getQuote();
+      if (saved) applyQuote(saved);
+    });
+}
+// 초기 로드
+loadQuoteFromSheet();
+// 1시간마다 자동 갱신
+setInterval(loadQuoteFromSheet, 60 * 60 * 1000);
+
+renderNotices();
+}
+
+function openNoticeModal() {
+  document.getElementById('notice-input').value = '';
+  const n = new Date();
+  document.getElementById('notice-date-input').value =
+    n.getFullYear() + '.' + String(n.getMonth()+1).padStart(2,'0') + '.' + String(n.getDate()).padStart(2,'0');
+  document.querySelector('input[name="nbadge"][value="안내"]').checked = true;
+  document.getElementById('notice-modal').classList.add('open');
+  setTimeout(function() { document.getElementById('notice-input').focus(); }, 100);
+}
+function closeNoticeModal() {
+  document.getElementById('notice-modal').classList.remove('open');
+}
+function saveNotice() {
+  const text = document.getElementById('notice-input').value.trim();
+  if (!text) { document.getElementById('notice-input').focus(); return; }
+  const badge = document.querySelector('input[name="nbadge"]:checked').value;
+  const date  = document.getElementById('notice-date-input').value.trim();
+  const notices = getNotices();
+  notices.unshift({ badge: badge, text: text, date: date });
+  localStorage.setItem('notices', JSON.stringify(notices));
+  renderNotices();
+  closeNoticeModal();
+}
+(function() {
+  var el = document.getElementById('notice-modal');
+  if (el) el.addEventListener('click', function(e) {
+    if (e.target === this) closeNoticeModal();
+  });
+})();
+renderNotices();
+loadNoticesFromSheet(); // 구글 시트에서 최신 공지 로드
+// 1시간마다 자동 갱신
+setInterval(loadNoticesFromSheet, 60 * 60 * 1000);
+
+/* =========================================
+   6. 수시 일정 뷰어
+   ========================================= */
+var SCHEDULE_DATA = [{"d": "2026-09-01", "c": "면접", "u": "육군사관학교", "p": "전체", "t": ""}, {"d": "2026-09-01", "c": "면접", "u": "해군사관학교", "p": "전체", "t": ""}, {"d": "2026-09-03", "c": "면접", "u": "경찰대학교", "p": "전체", "t": ""}, {"d": "2026-09-07", "c": "원서접수마감", "u": "가야대", "p": "전체", "t": "09:00"}, {"d": "2026-09-07", "c": "원서접수마감", "u": "경남대", "p": "전체", "t": "09:00"}, {"d": "2026-09-07", "c": "원서접수마감", "u": "국민대", "p": "전체", "t": "10:00"}, {"d": "2026-09-07", "c": "원서접수마감", "u": "대구한의대", "p": "전체", "t": "09:00"}, {"d": "2026-09-07", "c": "원서접수마감", "u": "루터대", "p": "전체", "t": ""}, {"d": "2026-09-07", "c": "원서접수마감", "u": "상명대", "p": "전체", "t": "10:00"}, {"d": "2026-09-07", "c": "원서접수마감", "u": "서원대", "p": "전체", "t": "09:00"}, {"d": "2026-09-07", "c": "원서접수마감", "u": "순천향대", "p": "전체", "t": "10:00"}, {"d": "2026-09-07", "c": "원서접수마감", "u": "예수대", "p": "전체", "t": "09:00"}, {"d": "2026-09-07", "c": "원서접수마감", "u": "인하대", "p": "모든 전형", "t": "09:00"}, {"d": "2026-09-07", "c": "원서접수마감", "u": "창신대", "p": "전체", "t": ""}, {"d": "2026-09-07", "c": "원서접수마감", "u": "한밭대", "p": "전체", "t": "10:00"}, {"d": "2026-09-07", "c": "원서접수마감", "u": "홍익대", "p": "전체", "t": "10:00"}, {"d": "2026-09-08", "c": "원서접수마감", "u": "한국교원대", "p": "전체", "t": "10:00"}, {"d": "2026-09-08", "c": "최종합격", "u": "한예종", "p": "특별전형", "t": "17:00"}, {"d": "2026-09-08", "c": "최종합격", "u": "한예종", "p": "일반전형 무용원", "t": "17:00"}, {"d": "2026-09-09", "c": "원서접수마감", "u": "KAIST", "p": "Early/Regular Admission", "t": "18:00"}, {"d": "2026-09-09", "c": "원서접수마감", "u": "POSTECH", "p": "", "t": "18:00"}, {"d": "2026-09-09", "c": "원서접수마감", "u": "고려대", "p": "전체", "t": "17:00"}, {"d": "2026-09-09", "c": "원서접수마감", "u": "서울대", "p": "지역균형", "t": "18:00"}, {"d": "2026-09-09", "c": "원서접수마감", "u": "서울대", "p": "일반전형", "t": "18:00"}, {"d": "2026-09-09", "c": "원서접수마감", "u": "서울대", "p": "일반전형(음악대학)", "t": "18:00"}, {"d": "2026-09-09", "c": "원서접수마감", "u": "서울대", "p": "기회균형특별(사회통합)", "t": "18:00"}, {"d": "2026-09-09", "c": "원서접수마감", "u": "연세대", "p": "전체", "t": "17:00"}, {"d": "2026-09-09", "c": "원서접수마감", "u": "영선선학대", "p": "일반전형", "t": ""}, {"d": "2026-09-10", "c": "원서접수마감", "u": "DGIST", "p": "수시 전체", "t": "18:00"}, {"d": "2026-09-10", "c": "원서접수마감", "u": "UNIST", "p": "공통(탐구우수·그릿인재 제외)", "t": "18:00"}, {"d": "2026-09-10", "c": "원서접수마감", "u": "서울시립대", "p": "공통", "t": "18:00"}, {"d": "2026-09-10", "c": "원서접수마감", "u": "수원가톨릭대", "p": "전체 전형", "t": "17:00"}, {"d": "2026-09-10", "c": "원서접수마감", "u": "이화여대", "p": "학생부종합(사회기여자전형)", "t": "17:00"}, {"d": "2026-09-10", "c": "원서접수마감", "u": "한국체대", "p": "전체", "t": "16:00"}, {"d": "2026-09-10", "c": "서류마감", "u": "서울대", "p": "지역균형", "t": "18:00"}, {"d": "2026-09-10", "c": "서류마감", "u": "서울대", "p": "일반전형", "t": "18:00"}, {"d": "2026-09-10", "c": "서류마감", "u": "서울대", "p": "일반전형(음악대학)", "t": "18:00"}, {"d": "2026-09-10", "c": "서류마감", "u": "서울대", "p": "기회균형특별(사회통합)", "t": "18:00"}, {"d": "2026-09-10", "c": "서류마감", "u": "연세대", "p": "전체", "t": "17:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "GIST", "p": "수시 전체", "t": "18:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "KENTECH", "p": "수시", "t": "18:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "UNIST", "p": "탐구우수·그릿인재", "t": "18:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "가야대", "p": "전체", "t": "18:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "가천대", "p": "전체", "t": "18:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "가톨릭관동대", "p": "공통", "t": "18:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "가톨릭꽃동네대", "p": "공통", "t": "21:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "가톨릭대", "p": "", "t": "18:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "감리교신학대", "p": "전체", "t": "17:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "강남대", "p": "전체", "t": "18:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "강서대", "p": "공통", "t": "17:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "강원대(강릉원주)", "p": "전체", "t": "20:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "강원대(춘천삼척)", "p": "공통", "t": "20:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "건국대", "p": "전체 전형", "t": "17:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "건국대(글로컬)", "p": "전체", "t": "19:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "건양대", "p": "", "t": "19:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "경기대", "p": "공통", "t": "17:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "경남대", "p": "전체", "t": "18:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "경동대", "p": "전체", "t": "24:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "경북대", "p": "모든 전형", "t": "18:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "경상국립대", "p": "공통", "t": "19:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "경성대", "p": "", "t": "18:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "경운대", "p": "전체", "t": "20:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "경인교대", "p": "전체", "t": "18:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "경일대", "p": "공통", "t": "18:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "경희대", "p": "공통", "t": "18:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "계명대", "p": "전체 전형", "t": "18:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "고려대(세종)", "p": "전 전형", "t": "18:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "고신대", "p": "공통", "t": "18:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "공주교대", "p": "전체", "t": "16:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "공주대", "p": "모든 전형", "t": "18:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "광운대", "p": "공통", "t": "17:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "광주가톨릭대", "p": "", "t": "17:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "광주대", "p": "전체", "t": "18:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "광주여대", "p": "전체", "t": "20:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "국립경국대", "p": "전체", "t": "21:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "국립목포대(미확정)", "p": "공통", "t": "18:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "국립창원대(거창)", "p": "전체 전형", "t": "18:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "국립창원대(남해)", "p": "전문인재", "t": "18:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "국립창원대(남해전형기간자율화)", "p": "전문인재전형", "t": "18:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "국립창원대(창원)", "p": "공통", "t": "18:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "국민대", "p": "전체", "t": "18:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "군산대", "p": "전체", "t": "20:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "극동대", "p": "모든 전형", "t": "17:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "금강대", "p": "공통", "t": "20:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "금오공대", "p": "", "t": "19:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "김천대", "p": "전체", "t": "17:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "나사렛대", "p": "전체", "t": ""}, {"d": "2026-09-11", "c": "원서접수마감", "u": "남부대", "p": "공통", "t": ""}, {"d": "2026-09-11", "c": "원서접수마감", "u": "남서울대", "p": "전체", "t": "18:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "단국대", "p": "공통", "t": "18:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "대구가톨릭대", "p": "전체 전형", "t": "18:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "대구교대", "p": "전체", "t": "18:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "대구대", "p": "전 전형", "t": "18:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "대구예대", "p": "전 모집단위", "t": "18:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "대구한의대", "p": "전체", "t": "18:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "대전가톨릭대", "p": "전체", "t": "17:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "대전대", "p": "모든 전형", "t": "20:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "대진대", "p": "공통", "t": "18:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "덕성여대", "p": "", "t": "18:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "동국대", "p": "전체", "t": "17:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "동국대(WISE)", "p": "전체", "t": "18:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "동덕여대", "p": "공통", "t": "18:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "동명대", "p": "전체", "t": "18:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "동서대", "p": "공통", "t": "18:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "동신대", "p": "전체 전형", "t": "18:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "동아대", "p": "전체", "t": "18:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "동양대", "p": "전 전형", "t": "20:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "동의대", "p": "공통", "t": "18:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "루터대", "p": "전체", "t": ""}, {"d": "2026-09-11", "c": "원서접수마감", "u": "명지대", "p": "전체", "t": "17:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "목원대", "p": "모든 전형", "t": "21:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "목포가톨릭대", "p": "공통", "t": "18:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "목포해양대", "p": "", "t": "18:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "배재대", "p": "전체", "t": "21:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "백석대", "p": "전체", "t": "18:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "부경대", "p": "공통", "t": "18:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "부산가톨릭대", "p": "전체", "t": "18:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "부산교대", "p": "공통", "t": "17:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "부산대", "p": "전체 전형", "t": "17:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "부산외대", "p": "전체", "t": "18:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "부산장신대", "p": "전 전형", "t": "21:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "삼육대", "p": "공통", "t": "18:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "상명대", "p": "전체", "t": "18:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "상명대(천안)", "p": "전체", "t": "18:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "상지대", "p": "모든 전형", "t": "22:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "서강대", "p": "공통", "t": "18:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "서경대", "p": "", "t": "18:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "서울과기대", "p": "전체", "t": "18:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "서울교대", "p": "전체", "t": "18:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "서울기독대", "p": "공통", "t": ""}, {"d": "2026-09-11", "c": "원서접수마감", "u": "서울신학대", "p": "전체 전형", "t": "18:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "서울여대", "p": "전체", "t": "18:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "서울장신대", "p": "전 전형(인터넷)", "t": "23:59"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "서울한영대", "p": "공통", "t": "18:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "서원대", "p": "전체", "t": "21:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "선문대", "p": "전체", "t": "19:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "성결대", "p": "모든 전형", "t": "18:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "성공회대", "p": "공통", "t": "18:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "성균관대", "p": "", "t": "18:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "성신여대", "p": "전체", "t": "18:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "세명대", "p": "전체", "t": "22:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "세종대", "p": "공통", "t": "18:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "세한대", "p": "전체", "t": "18:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "송원대", "p": "공통", "t": "18:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "수원대", "p": "전체", "t": "18:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "숙명여대", "p": "전 전형(인터넷)", "t": "17:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "순천대", "p": "공통", "t": "18:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "순천향대", "p": "전체", "t": "19:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "숭실대", "p": "전체", "t": "18:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "신경주대", "p": "모든 전형", "t": "18:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "신라대", "p": "공통", "t": "18:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "신한대", "p": "", "t": "23:59"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "아신대", "p": "전체", "t": "18:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "아주대", "p": "전체", "t": "18:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "안양대", "p": "공통", "t": "18:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "연세대(미래)", "p": "공통", "t": "17:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "영남대", "p": "전체 전형", "t": "18:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "영남신학대", "p": "전체", "t": ""}, {"d": "2026-09-11", "c": "원서접수마감", "u": "영산대", "p": "전 전형", "t": "18:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "예수대", "p": "전체", "t": "18:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "예원예술대", "p": "전체", "t": "18:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "용인대", "p": "모든 전형", "t": "18:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "우석대", "p": "공통", "t": "18:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "우송대", "p": "", "t": "19:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "울산대", "p": "전체", "t": "18:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "원광대", "p": "전체", "t": "18:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "위덕대", "p": "공통", "t": ""}, {"d": "2026-09-11", "c": "원서접수마감", "u": "을지대", "p": "공통", "t": "18:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "이화여대", "p": "전체 전형(사회기여자 제외)", "t": "17:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "인제대", "p": "전체", "t": "18:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "인천가톨릭대", "p": "신학대학(강화캠퍼스)", "t": "18:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "인천가톨릭대", "p": "조형예술·간호·자유전공(송도국제캠퍼스)", "t": "16:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "인천대", "p": "공통", "t": "18:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "인하대", "p": "전체", "t": "18:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "장로회신학대", "p": "전체", "t": "18:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "전남대", "p": "모든 전형", "t": "18:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "전북대", "p": "공통", "t": "19:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "전주교대", "p": "", "t": "17:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "전주대", "p": "전체", "t": "18:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "제주국제대", "p": "전체", "t": "18:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "제주대", "p": "공통", "t": "18:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "조선대", "p": "전체", "t": "18:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "중부대", "p": "공통", "t": ""}, {"d": "2026-09-11", "c": "원서접수마감", "u": "중앙대", "p": "전체 전형", "t": "18:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "중앙승가대", "p": "수시", "t": "16:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "진주교대", "p": "학생부종합전형", "t": "18:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "차의과학대", "p": "공통", "t": "18:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "창신대", "p": "전체", "t": "18:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "청운대", "p": "전체", "t": "19:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "청주교대", "p": "모든 전형", "t": "17:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "청주대", "p": "공통", "t": "21:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "초당대", "p": "", "t": ""}, {"d": "2026-09-11", "c": "원서접수마감", "u": "총신대", "p": "전체", "t": "18:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "추계예술대", "p": "전체", "t": "18:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "춘천교대", "p": "공통", "t": "17:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "충남대", "p": "전체", "t": "18:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "충북대", "p": "공통", "t": "19:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "칼빈대", "p": "전체 전형", "t": "16:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "평택대", "p": "전체", "t": "18:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "한경국립대", "p": "전 전형", "t": "18:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "한국공학대", "p": "공통", "t": "18:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "한국교원대", "p": "전체", "t": "18:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "한국교통대", "p": "전체", "t": "18:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "한국기술교대", "p": "모든 전형", "t": "19:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "한국성서대", "p": "공통", "t": "18:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "한국외대", "p": "", "t": "17:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "한국침례신학대", "p": "공통", "t": "18:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "한국항공대", "p": "전체", "t": "18:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "한국해양대", "p": "공통", "t": "18:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "한남대", "p": "전체 전형", "t": "19:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "한동대", "p": "전체", "t": "18:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "한라대", "p": "전 전형", "t": "23:59"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "한림대", "p": "모든 전형", "t": "20:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "한밭대", "p": "전체", "t": "18:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "한서대", "p": "전체", "t": "18:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "한성대", "p": "모든 전형", "t": "18:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "한세대", "p": "공통", "t": "18:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "한신대", "p": "", "t": "18:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "한양대", "p": "전 전형 공통", "t": "18:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "한양대(ERICA)", "p": "전체", "t": "18:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "협성대", "p": "공통", "t": "18:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "호남대", "p": "전체 전형", "t": "18:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "호남신대", "p": "전체", "t": "17:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "호서대", "p": "전 전형", "t": "18:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "호원대", "p": "공통", "t": "18:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "홍익대", "p": "전체", "t": "18:00"}, {"d": "2026-09-11", "c": "원서접수마감", "u": "화성의과학대", "p": "전체", "t": "19:00"}, {"d": "2026-09-11", "c": "서류마감", "u": "GIST", "p": "수시 전체", "t": "18:00"}, {"d": "2026-09-11", "c": "서류마감", "u": "UNIST", "p": "전체", "t": "18:00"}, {"d": "2026-09-11", "c": "서류마감", "u": "고려대", "p": "전체", "t": ""}, {"d": "2026-09-11", "c": "서류마감", "u": "고려대(세종)", "p": "전 전형(온라인)", "t": "21:00"}, {"d": "2026-09-11", "c": "서류마감", "u": "서울시립대", "p": "해당자", "t": ""}, {"d": "2026-09-11", "c": "서류마감", "u": "서울장신대", "p": "인터넷 원서접수자", "t": "18:00"}, {"d": "2026-09-11", "c": "서류마감", "u": "중앙대", "p": "학생부종합/실기·실적(해당자)", "t": "18:00"}, {"d": "2026-09-12", "c": "서류마감", "u": "가천대", "p": "전체", "t": "13:00"}, {"d": "2026-09-12", "c": "서류마감", "u": "성균관대", "p": "해당자", "t": "14:00"}, {"d": "2026-09-14", "c": "서류마감", "u": "KENTECH", "p": "수시", "t": "18:00"}, {"d": "2026-09-14", "c": "서류마감", "u": "가톨릭관동대", "p": "해당자", "t": ""}, {"d": "2026-09-14", "c": "서류마감", "u": "가톨릭대", "p": "해당자", "t": ""}, {"d": "2026-09-14", "c": "서류마감", "u": "강남대", "p": "서류제출 대상자", "t": "17:00"}, {"d": "2026-09-14", "c": "서류마감", "u": "강남대", "p": "학생부 대체서식 입력", "t": "14:00"}, {"d": "2026-09-14", "c": "서류마감", "u": "강원대(강릉원주)", "p": "전체", "t": "14:00"}, {"d": "2026-09-14", "c": "서류마감", "u": "강원대(춘천삼척)", "p": "해당자", "t": "14:00"}, {"d": "2026-09-14", "c": "서류마감", "u": "건국대(글로컬)", "p": "전체", "t": "17:00"}, {"d": "2026-09-14", "c": "서류마감", "u": "경동대", "p": "해당자", "t": ""}, {"d": "2026-09-14", "c": "서류마감", "u": "경상국립대", "p": "공통(해당자)", "t": "18:00"}, {"d": "2026-09-14", "c": "서류마감", "u": "계명대", "p": "전체 전형", "t": "18:00"}, {"d": "2026-09-14", "c": "서류마감", "u": "공주교대", "p": "해당자", "t": ""}, {"d": "2026-09-14", "c": "서류마감", "u": "광운대", "p": "공통(해당자)", "t": ""}, {"d": "2026-09-14", "c": "서류마감", "u": "단국대", "p": "해당자", "t": "18:00"}, {"d": "2026-09-14", "c": "서류마감", "u": "동국대", "p": "해당자", "t": ""}, {"d": "2026-09-14", "c": "서류마감", "u": "동국대(WISE)", "p": "전체", "t": "17:00"}, {"d": "2026-09-14", "c": "서류마감", "u": "명지대", "p": "전체", "t": ""}, {"d": "2026-09-14", "c": "서류마감", "u": "부산대", "p": "해당자 등기제출", "t": ""}, {"d": "2026-09-14", "c": "서류마감", "u": "삼육대", "p": "해당자", "t": "17:00"}, {"d": "2026-09-14", "c": "서류마감", "u": "상명대(천안)", "p": "해당자", "t": "17:00"}, {"d": "2026-09-14", "c": "서류마감", "u": "상지대", "p": "대상자", "t": "16:00"}, {"d": "2026-09-14", "c": "서류마감", "u": "세종대", "p": "해당자", "t": "18:00"}, {"d": "2026-09-14", "c": "서류마감", "u": "숙명여대", "p": "학생부 대체자료 등", "t": "17:00"}, {"d": "2026-09-14", "c": "서류마감", "u": "숭실대", "p": "전체", "t": "17:00"}, {"d": "2026-09-14", "c": "서류마감", "u": "연세대(미래)", "p": "해당자", "t": "17:00"}, {"d": "2026-09-14", "c": "서류마감", "u": "전북대", "p": "공통(해당자)", "t": "18:00"}, {"d": "2026-09-14", "c": "서류마감", "u": "진주교대", "p": "해당자", "t": ""}, {"d": "2026-09-14", "c": "서류마감", "u": "차의과학대", "p": "해당자", "t": "17:00"}, {"d": "2026-09-14", "c": "서류마감", "u": "청주교대", "p": "해당자", "t": "18:00"}, {"d": "2026-09-14", "c": "서류마감", "u": "충남대", "p": "전체", "t": "18:00"}, {"d": "2026-09-14", "c": "서류마감", "u": "한국기술교대", "p": "해당 전형", "t": ""}, {"d": "2026-09-14", "c": "서류마감", "u": "한국외대", "p": "해당자", "t": "17:00"}, {"d": "2026-09-14", "c": "서류마감", "u": "한국체대", "p": "첨부서류 해당전형", "t": "18:00"}, {"d": "2026-09-14", "c": "서류마감", "u": "한동대", "p": "전체", "t": "18:00"}, {"d": "2026-09-14", "c": "서류마감", "u": "한림대", "p": "모든 전형(일부 제외)", "t": "17:00"}, {"d": "2026-09-14", "c": "서류마감", "u": "한성대", "p": "해당자", "t": "18:00"}, {"d": "2026-09-14", "c": "서류마감", "u": "한양대", "p": "제출서류 있는 전형", "t": ""}, {"d": "2026-09-14", "c": "서류마감", "u": "한양대(ERICA)", "p": "온라인 서류제출", "t": "18:00"}, {"d": "2026-09-14", "c": "서류마감", "u": "홍익대", "p": "해당자", "t": "18:00"}, {"d": "2026-09-14", "c": "최종합격", "u": "국군간호사관학교", "p": "신체검사·체력검정·면접", "t": ""}, {"d": "2026-09-15", "c": "서류마감", "u": "건국대", "p": "전체 전형(PDF 업로드)", "t": "17:00"}, {"d": "2026-09-15", "c": "서류마감", "u": "경기대", "p": "공통(원본서류)", "t": "17:00"}, {"d": "2026-09-15", "c": "서류마감", "u": "경인교대", "p": "서류제출 대상자", "t": ""}, {"d": "2026-09-15", "c": "서류마감", "u": "경희대", "p": "해당자", "t": "17:00"}, {"d": "2026-09-15", "c": "서류마감", "u": "공주대", "p": "해당자", "t": "18:00"}, {"d": "2026-09-15", "c": "서류마감", "u": "국립경국대", "p": "전체", "t": "18:00"}, {"d": "2026-09-15", "c": "서류마감", "u": "국민대", "p": "모든 전형(해당자)", "t": "18:00"}, {"d": "2026-09-15", "c": "서류마감", "u": "군산대", "p": "해당자", "t": "18:00"}, {"d": "2026-09-15", "c": "서류마감", "u": "동덕여대", "p": "각 전형별 제출서류", "t": "18:00"}, {"d": "2026-09-15", "c": "서류마감", "u": "상명대", "p": "해당자", "t": "17:00"}, {"d": "2026-09-15", "c": "서류마감", "u": "서강대", "p": "공통", "t": "18:00"}, {"d": "2026-09-15", "c": "서류마감", "u": "서울신학대", "p": "해당자(도착분 기준)", "t": "16:00"}, {"d": "2026-09-15", "c": "서류마감", "u": "서울여대", "p": "해당자", "t": "10:00"}, {"d": "2026-09-15", "c": "서류마감", "u": "성신여대", "p": "해당자", "t": "18:00"}, {"d": "2026-09-15", "c": "서류마감", "u": "순천향대", "p": "해당 전형", "t": "17:00"}, {"d": "2026-09-15", "c": "서류마감", "u": "아주대", "p": "전체", "t": ""}, {"d": "2026-09-15", "c": "서류마감", "u": "울산대", "p": "해당자", "t": "18:00"}, {"d": "2026-09-15", "c": "서류마감", "u": "인제대", "p": "전체", "t": "17:00"}, {"d": "2026-09-15", "c": "서류마감", "u": "인천대", "p": "온라인 업로드", "t": "18:00"}, {"d": "2026-09-15", "c": "서류마감", "u": "전남대", "p": "해당자", "t": "18:00"}, {"d": "2026-09-15", "c": "서류마감", "u": "전주교대", "p": "해당자", "t": "18:00"}, {"d": "2026-09-15", "c": "서류마감", "u": "전주대", "p": "해당자", "t": "18:00"}, {"d": "2026-09-15", "c": "서류마감", "u": "중앙대", "p": "논술(일반형/창의형)(해당자)", "t": "16:00"}, {"d": "2026-09-15", "c": "서류마감", "u": "충북대", "p": "해당자", "t": "18:00"}, {"d": "2026-09-15", "c": "서류마감", "u": "한국공학대", "p": "해당자", "t": "17:00"}, {"d": "2026-09-15", "c": "서류마감", "u": "한국교원대", "p": "해당자", "t": "18:00"}, {"d": "2026-09-15", "c": "서류마감", "u": "한림대", "p": "지역인재·한림케어 등(기초/차상위/조손)", "t": "17:00"}, {"d": "2026-09-15", "c": "서류마감", "u": "협성대", "p": "해당자", "t": "16:00"}, {"d": "2026-09-15", "c": "추천명단마감", "u": "세명대", "p": "농어촌학생전형 지원자격확인서 입력", "t": "17:00"}, {"d": "2026-09-15", "c": "1단계합격", "u": "한예종", "p": "일반전형 음악원·전통예술원", "t": ""}, {"d": "2026-09-16", "c": "원서접수마감", "u": "한국전통문화대", "p": "수시모집", "t": "18:00"}, {"d": "2026-09-16", "c": "서류마감", "u": "경북대", "p": "모든 전형", "t": "18:00"}, {"d": "2026-09-16", "c": "서류마감", "u": "경일대", "p": "해당자", "t": "18:00"}, {"d": "2026-09-16", "c": "서류마감", "u": "국립목포대(미확정)", "p": "해당자", "t": "18:00"}, {"d": "2026-09-16", "c": "서류마감", "u": "국립창원대(거창)", "p": "구비서류 제출 대상자", "t": "18:00"}, {"d": "2026-09-16", "c": "서류마감", "u": "국립창원대(남해)", "p": "전문인재", "t": "18:00"}, {"d": "2026-09-16", "c": "서류마감", "u": "국립창원대(남해전형기간자율화)", "p": "", "t": "18:00"}, {"d": "2026-09-16", "c": "서류마감", "u": "국립창원대(창원)", "p": "구비서류", "t": "18:00"}, {"d": "2026-09-16", "c": "서류마감", "u": "극동대", "p": "추가서류 제출(해당자)", "t": "17:00"}, {"d": "2026-09-16", "c": "서류마감", "u": "금오공대", "p": "", "t": ""}, {"d": "2026-09-16", "c": "서류마감", "u": "남서울대", "p": "전체", "t": "18:00"}, {"d": "2026-09-16", "c": "서류마감", "u": "대구교대", "p": "전체", "t": "18:00"}, {"d": "2026-09-16", "c": "서류마감", "u": "대진대", "p": "공통(해당자)", "t": "17:00"}, {"d": "2026-09-16", "c": "서류마감", "u": "동명대", "p": "해당자", "t": "18:00"}, {"d": "2026-09-16", "c": "서류마감", "u": "배재대", "p": "해당자", "t": "17:00"}, {"d": "2026-09-16", "c": "서류마감", "u": "부산가톨릭대", "p": "해당자", "t": "17:00"}, {"d": "2026-09-16", "c": "서류마감", "u": "서경대", "p": "해당전형", "t": "16:00"}, {"d": "2026-09-16", "c": "서류마감", "u": "선문대", "p": "해당자", "t": "18:00"}, {"d": "2026-09-16", "c": "서류마감", "u": "성결대", "p": "해당자", "t": "16:00"}, {"d": "2026-09-16", "c": "서류마감", "u": "성공회대", "p": "공통(해당자)", "t": "17:00"}, {"d": "2026-09-16", "c": "서류마감", "u": "우석대", "p": "공통(해당자)", "t": ""}, {"d": "2026-09-16", "c": "서류마감", "u": "인천가톨릭대", "p": "송도국제캠퍼스", "t": "16:00"}, {"d": "2026-09-16", "c": "서류마감", "u": "인하대", "p": "해당 전형", "t": "17:00"}, {"d": "2026-09-16", "c": "서류마감", "u": "한경국립대", "p": "해당자", "t": "18:00"}, {"d": "2026-09-16", "c": "서류마감", "u": "한국항공대", "p": "전체", "t": ""}, {"d": "2026-09-16", "c": "서류마감", "u": "한세대", "p": "공통(해당자)", "t": "17:00"}, {"d": "2026-09-16", "c": "서류마감", "u": "호서대", "p": "해당자", "t": ""}, {"d": "2026-09-16", "c": "추천명단마감", "u": "DGIST", "p": "학교장추천전형", "t": "18:00"}, {"d": "2026-09-16", "c": "면접", "u": "서원대", "p": "창의면접전형(호텔외식조리학부)", "t": ""}, {"d": "2026-09-16", "c": "실기", "u": "서울대", "p": "일반전형(음악대학)", "t": ""}, {"d": "2026-09-17", "c": "원서접수마감", "u": "한예종", "p": "일반전형 연극원(연출·극작·연극학)·영상원·미술원", "t": "18:00"}, {"d": "2026-09-17", "c": "서류마감", "u": "나사렛대", "p": "전체", "t": "17:00"}, {"d": "2026-09-17", "c": "서류마감", "u": "대구가톨릭대", "p": "서류 제출 대상자", "t": "18:00"}, {"d": "2026-09-17", "c": "서류마감", "u": "덕성여대", "p": "해당자", "t": ""}, {"d": "2026-09-17", "c": "서류마감", "u": "부산교대", "p": "해당자", "t": ""}, {"d": "2026-09-17", "c": "서류마감", "u": "서울과기대", "p": "해당자", "t": "17:00"}, {"d": "2026-09-17", "c": "서류마감", "u": "서울한영대", "p": "전체", "t": "17:00"}, {"d": "2026-09-17", "c": "서류마감", "u": "영남대", "p": "제출서류 접수(우편 도착 기준)", "t": "17:00"}, {"d": "2026-09-17", "c": "서류마감", "u": "영산대", "p": "해당자", "t": "17:00"}, {"d": "2026-09-17", "c": "서류마감", "u": "장로회신학대", "p": "전체", "t": "18:00"}, {"d": "2026-09-17", "c": "서류마감", "u": "제주국제대", "p": "전체", "t": "17:00"}, {"d": "2026-09-17", "c": "서류마감", "u": "한국전통문화대", "p": "수시모집(구비서류)", "t": "18:00"}, {"d": "2026-09-17", "c": "서류마감", "u": "한밭대", "p": "첨부서류 대상자", "t": "17:00"}, {"d": "2026-09-17", "c": "면접", "u": "서원대", "p": "창의면접전형(경찰행정/소방행정/응급구조/사회복지/상담심리/뷰티/헬스케어/레저/웹툰/패션/컴퓨터)", "t": ""}, {"d": "2026-09-17", "c": "실기", "u": "가천대", "p": "연기예술학과(1단계)", "t": ""}, {"d": "2026-09-17", "c": "실기", "u": "동국대", "p": "국어국문·문예창작학부", "t": ""}, {"d": "2026-09-18", "c": "서류마감", "u": "가야대", "p": "서류제출 대상자", "t": "17:00"}, {"d": "2026-09-18", "c": "서류마감", "u": "가톨릭꽃동네대", "p": "공통(해당자)", "t": "17:00"}, {"d": "2026-09-18", "c": "서류마감", "u": "경남대", "p": "전체", "t": "18:00"}, {"d": "2026-09-18", "c": "서류마감", "u": "경성대", "p": "우편/방문", "t": ""}, {"d": "2026-09-18", "c": "서류마감", "u": "고신대", "p": "전체", "t": "18:00"}, {"d": "2026-09-18", "c": "서류마감", "u": "김천대", "p": "해당자", "t": "17:00"}, {"d": "2026-09-18", "c": "서류마감", "u": "대구대", "p": "해당자", "t": "17:00"}, {"d": "2026-09-18", "c": "서류마감", "u": "대구예대", "p": "전체", "t": "17:00"}, {"d": "2026-09-18", "c": "서류마감", "u": "대구한의대", "p": "전체(해당자)", "t": "17:00"}, {"d": "2026-09-18", "c": "서류마감", "u": "동아대", "p": "전체", "t": "17:00"}, {"d": "2026-09-18", "c": "서류마감", "u": "동양대", "p": "해당자", "t": ""}, {"d": "2026-09-18", "c": "서류마감", "u": "동의대", "p": "전체", "t": "17:00"}, {"d": "2026-09-18", "c": "서류마감", "u": "루터대", "p": "서류제출 대상자", "t": "17:00"}, {"d": "2026-09-18", "c": "서류마감", "u": "목포가톨릭대", "p": "공통(해당자)", "t": ""}, {"d": "2026-09-18", "c": "서류마감", "u": "백석대", "p": "전체", "t": "13:00"}, {"d": "2026-09-18", "c": "서류마감", "u": "부경대", "p": "해당자", "t": "18:00"}, {"d": "2026-09-18", "c": "서류마감", "u": "부산외대", "p": "전체", "t": "17:00"}, {"d": "2026-09-18", "c": "서류마감", "u": "부산장신대", "p": "해당자", "t": "17:00"}, {"d": "2026-09-18", "c": "서류마감", "u": "서울교대", "p": "지원자격 서류", "t": ""}, {"d": "2026-09-18", "c": "서류마감", "u": "송원대", "p": "해당자", "t": "18:00"}, {"d": "2026-09-18", "c": "서류마감", "u": "수원대", "p": "대상자", "t": ""}, {"d": "2026-09-18", "c": "서류마감", "u": "순천대", "p": "첨부서류", "t": "18:00"}, {"d": "2026-09-18", "c": "서류마감", "u": "신경주대", "p": "해당자", "t": "17:00"}, {"d": "2026-09-18", "c": "서류마감", "u": "신라대", "p": "공통(해당자)", "t": "17:00"}, {"d": "2026-09-18", "c": "서류마감", "u": "신한대", "p": "해당자", "t": "18:00"}, {"d": "2026-09-18", "c": "서류마감", "u": "안양대", "p": "해당자", "t": "17:00"}, {"d": "2026-09-18", "c": "서류마감", "u": "영남신학대", "p": "전체", "t": "17:00"}, {"d": "2026-09-18", "c": "서류마감", "u": "예수대", "p": "해당자", "t": ""}, {"d": "2026-09-18", "c": "서류마감", "u": "원광대", "p": "전체", "t": ""}, {"d": "2026-09-18", "c": "서류마감", "u": "을지대", "p": "해당자", "t": ""}, {"d": "2026-09-18", "c": "서류마감", "u": "제주대", "p": "해당자", "t": "18:00"}, {"d": "2026-09-18", "c": "서류마감", "u": "조선대", "p": "전체", "t": "17:00"}, {"d": "2026-09-18", "c": "서류마감", "u": "중부대", "p": "면접·실기고사 실시 전형", "t": "17:00"}, {"d": "2026-09-18", "c": "서류마감", "u": "창신대", "p": "구비서류 대상자", "t": ""}, {"d": "2026-09-18", "c": "서류마감", "u": "청운대", "p": "전체", "t": ""}, {"d": "2026-09-18", "c": "서류마감", "u": "춘천교대", "p": "해당자", "t": "18:00"}, {"d": "2026-09-18", "c": "서류마감", "u": "칼빈대", "p": "전체 전형", "t": "16:00"}, {"d": "2026-09-18", "c": "서류마감", "u": "평택대", "p": "대상자", "t": ""}, {"d": "2026-09-18", "c": "서류마감", "u": "한국교통대", "p": "학생부종합전형", "t": "18:00"}, {"d": "2026-09-18", "c": "서류마감", "u": "한국성서대", "p": "공통(해당자)", "t": "17:00"}, {"d": "2026-09-18", "c": "서류마감", "u": "한국침례신학대", "p": "해당자", "t": "17:00"}, {"d": "2026-09-18", "c": "서류마감", "u": "한남대", "p": "전체 전형(서류제출 및 입력)", "t": "17:00"}, {"d": "2026-09-18", "c": "서류마감", "u": "한라대", "p": "해당자", "t": ""}, {"d": "2026-09-18", "c": "서류마감", "u": "한서대", "p": "전체", "t": ""}, {"d": "2026-09-18", "c": "서류마감", "u": "호남신대", "p": "대상자", "t": ""}, {"d": "2026-09-18", "c": "서류마감", "u": "화성의과학대", "p": "전체", "t": ""}, {"d": "2026-09-18", "c": "추천명단마감", "u": "가톨릭관동대", "p": "학생부교과(지역균형)·학생부종합(학교장추천)", "t": "18:00"}, {"d": "2026-09-18", "c": "추천명단마감", "u": "가톨릭대", "p": "지역균형/학교장추천", "t": "18:00"}, {"d": "2026-09-18", "c": "추천명단마감", "u": "강남대", "p": "학생부교과(지역균형)", "t": "17:00"}, {"d": "2026-09-18", "c": "추천명단마감", "u": "건국대", "p": "학생부교과(KU지역균형)", "t": "18:00"}, {"d": "2026-09-18", "c": "추천명단마감", "u": "경기대", "p": "학교장추천 명단 입력", "t": "18:00"}, {"d": "2026-09-18", "c": "추천명단마감", "u": "경북대", "p": "학생부종합 지역인재 학교장추천", "t": "18:00"}, {"d": "2026-09-18", "c": "추천명단마감", "u": "경인교대", "p": "학생부교과(학교장추천)", "t": "18:00"}, {"d": "2026-09-18", "c": "추천명단마감", "u": "고려대", "p": "학교추천", "t": "18:00"}, {"d": "2026-09-18", "c": "추천명단마감", "u": "광운대", "p": "학생부교과(지역균형)", "t": "18:00"}, {"d": "2026-09-18", "c": "추천명단마감", "u": "국민대", "p": "교과우수자(학교장추천)", "t": "18:00"}, {"d": "2026-09-18", "c": "추천명단마감", "u": "덕성여대", "p": "고교추천전형", "t": "18:00"}, {"d": "2026-09-18", "c": "추천명단마감", "u": "동덕여대", "p": "학생부교과우수자 학교장추천서", "t": "18:00"}, {"d": "2026-09-18", "c": "추천명단마감", "u": "루터대", "p": "학생부교과(지역균형전형)", "t": "18:00"}, {"d": "2026-09-18", "c": "추천명단마감", "u": "명지대", "p": "학생부교과(학교장추천)", "t": "18:00"}, {"d": "2026-09-18", "c": "추천명단마감", "u": "삼육대", "p": "학교장추천서 입력", "t": ""}, {"d": "2026-09-18", "c": "추천명단마감", "u": "상명대", "p": "학생부교과(고교추천전형)", "t": "18:00"}, {"d": "2026-09-18", "c": "추천명단마감", "u": "서강대", "p": "학생부교과(지역균형)", "t": "18:00"}, {"d": "2026-09-18", "c": "추천명단마감", "u": "서울과기대", "p": "고교추천전형(학교장추천서)", "t": "18:00"}, {"d": "2026-09-18", "c": "추천명단마감", "u": "서울교대", "p": "학생부교과(학교장추천)", "t": "18:00"}, {"d": "2026-09-18", "c": "추천명단마감", "u": "서울대", "p": "지역균형", "t": "18:00"}, {"d": "2026-09-18", "c": "추천명단마감", "u": "서울시립대", "p": "고교추천전형", "t": ""}, {"d": "2026-09-18", "c": "추천명단마감", "u": "서울여대", "p": "교과우수자", "t": "18:00"}, {"d": "2026-09-18", "c": "추천명단마감", "u": "성균관대", "p": "학생부교과(추천인재)", "t": ""}, {"d": "2026-09-18", "c": "추천명단마감", "u": "성신여대", "p": "지역균형(학교장추천서)", "t": "18:00"}, {"d": "2026-09-18", "c": "추천명단마감", "u": "세종대", "p": "학생부교과(지역균형) 학교장추천서", "t": "18:00"}, {"d": "2026-09-18", "c": "추천명단마감", "u": "숙명여대", "p": "학생부교과 지역균형선발(학교장추천서)", "t": "18:00"}, {"d": "2026-09-18", "c": "추천명단마감", "u": "숭실대", "p": "교과우수자(학교장추천)", "t": "18:00"}, {"d": "2026-09-18", "c": "추천명단마감", "u": "아주대", "p": "학생부교과(고교추천)", "t": "18:00"}, {"d": "2026-09-18", "c": "추천명단마감", "u": "연세대", "p": "학생부교과(추천형)", "t": "18:00"}, {"d": "2026-09-18", "c": "추천명단마감", "u": "울산대", "p": "학교장추천서", "t": "18:00"}, {"d": "2026-09-18", "c": "추천명단마감", "u": "을지대", "p": "학생부교과-지역균형(학교장추천)", "t": "17:00"}, {"d": "2026-09-18", "c": "추천명단마감", "u": "이화여대", "p": "학생부교과(고교추천전형) 학교장 추천 등록", "t": ""}, {"d": "2026-09-18", "c": "추천명단마감", "u": "인천대", "p": "지역균형(학교장추천 입력·확인)", "t": "18:00"}, {"d": "2026-09-18", "c": "추천명단마감", "u": "인하대", "p": "학생부교과(지역균형)", "t": "18:00"}, {"d": "2026-09-18", "c": "추천명단마감", "u": "차의과학대", "p": "지역균형선발", "t": "18:00"}, {"d": "2026-09-18", "c": "추천명단마감", "u": "한경국립대", "p": "학교장추천전형", "t": "18:00"}, {"d": "2026-09-18", "c": "추천명단마감", "u": "한국외대", "p": "학교장추천전형", "t": "18:00"}, {"d": "2026-09-18", "c": "추천명단마감", "u": "한국항공대", "p": "학교장추천전형", "t": "18:00"}, {"d": "2026-09-18", "c": "추천명단마감", "u": "한양대", "p": "학생부교과(추천형)·학생부종합(추천형)", "t": ""}, {"d": "2026-09-18", "c": "추천명단마감", "u": "한양대(ERICA)", "p": "학생부교과(지역균형선발)", "t": "18:00"}, {"d": "2026-09-18", "c": "추천명단마감", "u": "홍익대", "p": "학교장추천자전형", "t": "18:00"}, {"d": "2026-09-18", "c": "면접", "u": "남서울대", "p": "학생부교과(교과+면접)", "t": ""}, {"d": "2026-09-18", "c": "실기", "u": "남서울대", "p": "체육", "t": ""}, {"d": "2026-09-19", "c": "면접", "u": "경일대", "p": "학생부교과(연접생)", "t": ""}, {"d": "2026-09-19", "c": "면접", "u": "국립창원대(남해)", "p": "전문인재(항공정비과)", "t": ""}, {"d": "2026-09-19", "c": "면접", "u": "국립창원대(남해전형기간자율화)", "p": "전문인재전형 항공정비과", "t": ""}, {"d": "2026-09-19", "c": "면접", "u": "서원대", "p": "창의면접전형(항공관광학과)", "t": ""}, {"d": "2026-09-19", "c": "면접", "u": "을지대", "p": "기회균형(정원외)농어촌학생·재외국민과외국인(2%제한)", "t": ""}, {"d": "2026-09-19", "c": "면접", "u": "협성대", "p": "에이블아트·스포츠학과(정원내외)", "t": ""}, {"d": "2026-09-19", "c": "실기", "u": "가천대", "p": "태권도전공", "t": ""}, {"d": "2026-09-19", "c": "실기", "u": "서울여대", "p": "실기우수자(체육)", "t": ""}, {"d": "2026-09-19", "c": "실기", "u": "숭실대", "p": "예체능우수인재(연기 1단계)", "t": ""}, {"d": "2026-09-19", "c": "실기", "u": "협성대", "p": "에이블아트·스포츠학과", "t": ""}, {"d": "2026-09-19", "c": "실기", "u": "호원대", "p": "간호학과·스포츠학과(주)", "t": ""}, {"d": "2026-09-20", "c": "서류마감", "u": "호원대", "p": "해당자", "t": "18:00"}, {"d": "2026-09-20", "c": "실기", "u": "삼육대", "p": "실기(체육)", "t": ""}, {"d": "2026-09-21", "c": "서류마감", "u": "감리교신학대", "p": "해당자", "t": "17:00"}, {"d": "2026-09-21", "c": "서류마감", "u": "금강대", "p": "공통(해당자)", "t": "17:00"}, {"d": "2026-09-21", "c": "서류마감", "u": "예원예술대", "p": "전체", "t": ""}, {"d": "2026-09-21", "c": "서류마감", "u": "호남대", "p": "수시모집 전체학부·학과", "t": "18:00"}, {"d": "2026-09-21", "c": "면접", "u": "경인교대", "p": "전체(면접평가 동영상 제출)", "t": "10:00"}, {"d": "2026-09-21", "c": "실기", "u": "대구한의대", "p": "실기/실적(체육학과)", "t": ""}, {"d": "2026-09-22", "c": "서류마감", "u": "건양대", "p": "", "t": "18:00"}, {"d": "2026-09-22", "c": "서류마감", "u": "동서대", "p": "해당자", "t": "17:00"}, {"d": "2026-09-22", "c": "서류마감", "u": "목원대", "p": "해당자", "t": "17:00"}, {"d": "2026-09-22", "c": "서류마감", "u": "서울기독대", "p": "추가서류", "t": ""}, {"d": "2026-09-22", "c": "서류마감", "u": "세명대", "p": "전형별 서류제출/사진 업로드 대상자", "t": ""}, {"d": "2026-09-22", "c": "서류마감", "u": "총신대", "p": "해당자", "t": "18:00"}, {"d": "2026-09-22", "c": "서류마감", "u": "한신대", "p": "해당자", "t": "17:00"}, {"d": "2026-09-22", "c": "1단계합격", "u": "수원대", "p": "면접위주교과", "t": ""}, {"d": "2026-09-23", "c": "서류마감", "u": "강서대", "p": "해당자", "t": "18:00"}, {"d": "2026-09-23", "c": "서류마감", "u": "대전대", "p": "군사학과전형", "t": "17:00"}, {"d": "2026-09-23", "c": "서류마감", "u": "용인대", "p": "일반학생·기타 특별전형", "t": "17:00"}, {"d": "2026-09-23", "c": "서류마감", "u": "위덕대", "p": "추가 제출 서류", "t": ""}, {"d": "2026-09-23", "c": "서류마감", "u": "청주대", "p": "공통(해당자)", "t": ""}, {"d": "2026-09-23", "c": "서류마감", "u": "추계예술대", "p": "해당자", "t": "17:00"}, {"d": "2026-09-23", "c": "서류마감", "u": "한국교통대", "p": "학생부종합 이외", "t": "18:00"}, {"d": "2026-09-23", "c": "서류마감", "u": "한국해양대", "p": "해당자", "t": "18:00"}, {"d": "2026-09-23", "c": "1단계합격", "u": "용인대", "p": "일반학생 전형 연극학과(단계별)", "t": ""}, {"d": "2026-09-27", "c": "실기", "u": "대구대", "p": "예체능실기 예능계(웹툰영상애니·시각디자인·디자인마케팅·산업디자인·패션·실내건축·게임엔터)", "t": ""}, {"d": "2026-09-28", "c": "서류마감", "u": "경운대", "p": "해당자", "t": "18:00"}, {"d": "2026-09-28", "c": "서류마감", "u": "서원대", "p": "검정고시/사회기여자/체육특기자/실기우수자/기회균등/농어촌", "t": "18:00"}, {"d": "2026-09-28", "c": "서류마감", "u": "중부대", "p": "면접·실기고사 미실시 전형", "t": "14:00"}, {"d": "2026-09-28", "c": "1단계합격", "u": "건양대", "p": "군사학과(남·여)", "t": "16:00"}, {"d": "2026-09-28", "c": "1단계합격", "u": "경남대", "p": "학생부교과(일반면접/군사학과)", "t": "17:00"}, {"d": "2026-09-28", "c": "1단계합격", "u": "대전대", "p": "군사학과전형", "t": "15:00"}, {"d": "2026-09-28", "c": "1단계합격", "u": "원광대", "p": "군사학과전형", "t": ""}, {"d": "2026-09-28", "c": "1단계합격", "u": "육군사관학교", "p": "전체", "t": "09:00"}, {"d": "2026-09-28", "c": "1단계합격", "u": "조선대", "p": "학생부교과 군사학과", "t": ""}, {"d": "2026-09-28", "c": "실기", "u": "대구대", "p": "예체능실기 예능계 뷰티학부", "t": ""}, {"d": "2026-09-29", "c": "서류마감", "u": "남부대", "p": "첨부서류", "t": "18:00"}, {"d": "2026-09-29", "c": "1단계합격", "u": "동덕여대", "p": "특기자", "t": "17:00"}, {"d": "2026-09-29", "c": "1단계합격", "u": "동명대", "p": "스포츠융합학과", "t": ""}, {"d": "2026-09-29", "c": "1단계합격", "u": "성균관대", "p": "실기/실적 연기예술(연기) 1단계", "t": ""}, {"d": "2026-09-29", "c": "1단계합격", "u": "청주대", "p": "군사학과(1단계)", "t": "14:00"}, {"d": "2026-09-29", "c": "실기", "u": "경일대", "p": "실기전형 스포츠레저·태권도학과", "t": ""}, {"d": "2026-09-29", "c": "실기", "u": "경희대", "p": "실기우수자(PostModern음악)", "t": ""}, {"d": "2026-09-29", "c": "실기", "u": "대구대", "p": "예체능실기 체능계 체육학과", "t": ""}, {"d": "2026-09-29", "c": "실기", "u": "동덕여대", "p": "실기우수자 공연예술대학", "t": ""}, {"d": "2026-09-29", "c": "실기", "u": "명지대", "p": "실기/실적(실기우수자)", "t": "15:00"}, {"d": "2026-09-29", "c": "실기", "u": "세종대", "p": "실기우수자 영화예술-연기예술 1단계", "t": ""}, {"d": "2026-09-29", "c": "실기", "u": "호서대", "p": "실기전형 스포츠과학과", "t": ""}, {"d": "2026-09-30", "c": "서류마감", "u": "광주대", "p": "해당자", "t": "18:00"}, {"d": "2026-09-30", "c": "서류마감", "u": "광주여대", "p": "전체", "t": ""}, {"d": "2026-09-30", "c": "서류마감", "u": "동신대", "p": "해당자만 제출", "t": "18:00"}, {"d": "2026-09-30", "c": "1단계합격", "u": "가천대", "p": "기회균형·농어촌(종합)·특성화고", "t": ""}, {"d": "2026-09-30", "c": "1단계합격", "u": "가천대", "p": "연기예술학과", "t": ""}, {"d": "2026-09-30", "c": "1단계합격", "u": "성결대", "p": "SKU창의전형", "t": ""}, {"d": "2026-09-30", "c": "면접", "u": "중부대", "p": "학교생활우수자전형(충청국제캠퍼스)", "t": ""}, {"d": "2026-09-30", "c": "실기", "u": "건양대", "p": "일반[실기] 재활퍼스널트레이닝학과", "t": ""}, {"d": "2026-09-30", "c": "실기", "u": "경일대", "p": "실기전형 스포츠재활의학·스포츠산업학과", "t": ""}, {"d": "2026-09-30", "c": "실기", "u": "대구대", "p": "예체능실기 체능계 스포츠레저학과", "t": ""}, {"d": "2026-09-30", "c": "실기", "u": "동명대", "p": "스포츠재활학과", "t": ""}, {"d": "2026-09-30", "c": "실기", "u": "수원대", "p": "연기예술 1단계(농어촌 포함)", "t": ""}, {"d": "2026-09-30", "c": "실기", "u": "호서대", "p": "실기전형 사회체육학과", "t": ""}, {"d": "2026-10-01", "c": "서류마감", "u": "세한대", "p": "항공운항학과", "t": "18:00"}, {"d": "2026-10-01", "c": "1단계합격", "u": "동명대", "p": "K-sports라온티칭학과", "t": ""}, {"d": "2026-10-01", "c": "1단계합격", "u": "인천대", "p": "실기우수자(디자인학부·스포츠의학부·체육교육과)", "t": ""}, {"d": "2026-10-01", "c": "1단계합격", "u": "호남대", "p": "학생부교과 면접중심[일반학생A](간호/물리치료)", "t": "13:00"}, {"d": "2026-10-01", "c": "면접", "u": "배재대", "p": "항공인재(항공서비스학과)", "t": ""}, {"d": "2026-10-01", "c": "면접", "u": "세한대", "p": "전체(면접/실기)", "t": ""}, {"d": "2026-10-01", "c": "실기", "u": "국민대", "p": "실기우수자(연기) 1단계", "t": ""}, {"d": "2026-10-01", "c": "실기", "u": "대구대", "p": "포트폴리오 웹툰영상애니메이션학부·뷰티학부", "t": ""}, {"d": "2026-10-01", "c": "실기", "u": "동덕여대", "p": "특기자 2단계", "t": ""}, {"d": "2026-10-01", "c": "실기", "u": "서경대", "p": "실기(모집단위별 9.19~11.15 분산)", "t": ""}, {"d": "2026-10-01", "c": "실기", "u": "세한대", "p": "실기/실적(일반학생)", "t": ""}, {"d": "2026-10-01", "c": "실기", "u": "중부대", "p": "경찰경호·스포츠재활복지·스포츠건강관리(충청국제)", "t": ""}, {"d": "2026-10-01", "c": "실기", "u": "호원대", "p": "K-POP·공연미디어·실용음악", "t": ""}, {"d": "2026-10-02", "c": "1단계합격", "u": "서울과기대", "p": "실기위주(실기전형)", "t": "14:00"}, {"d": "2026-10-02", "c": "1단계합격", "u": "안양대", "p": "아리학생부면접전형", "t": ""}, {"d": "2026-10-02", "c": "1단계합격", "u": "인천가톨릭대", "p": "송도국제캠퍼스", "t": "11:00"}, {"d": "2026-10-02", "c": "면접", "u": "강서대", "p": "신학과", "t": ""}, {"d": "2026-10-02", "c": "면접", "u": "영산대", "p": "면접전형(항공관광·레저스포츠관광·법행정 경찰행정) [해운대]", "t": "10:00"}, {"d": "2026-10-02", "c": "실기", "u": "가천대", "p": "체육전공", "t": ""}, {"d": "2026-10-02", "c": "실기", "u": "가천대", "p": "음악학부(현악/성악남)", "t": ""}, {"d": "2026-10-02", "c": "실기", "u": "경희대", "p": "실기우수자(연극·뮤지컬 연기) 1단계", "t": ""}, {"d": "2026-10-02", "c": "실기", "u": "광주대", "p": "실기/실적(실기일반)", "t": ""}, {"d": "2026-10-02", "c": "실기", "u": "대전대", "p": "실기위주 예능계열", "t": ""}, {"d": "2026-10-02", "c": "실기", "u": "동명대", "p": "게임학부", "t": ""}, {"d": "2026-10-02", "c": "실기", "u": "성균관대", "p": "연기예술(연기) 1단계", "t": ""}, {"d": "2026-10-02", "c": "실기", "u": "숙명여대", "p": "예능창의인재 무용과", "t": ""}, {"d": "2026-10-02", "c": "실기", "u": "영산대", "p": "실기전형 레저스포츠관광학과 [해운대]", "t": "10:00"}, {"d": "2026-10-02", "c": "실기", "u": "용인대", "p": "일반학생·기회균형·농어촌 전형(전형일)", "t": ""}, {"d": "2026-10-02", "c": "실기", "u": "울산대", "p": "예체능(예술학부)", "t": ""}, {"d": "2026-10-02", "c": "실기", "u": "인하대", "p": "실기/실적(연극영화학과-연기)", "t": ""}, {"d": "2026-10-02", "c": "실기", "u": "추계예술대", "p": "관현악과", "t": ""}, {"d": "2026-10-03", "c": "면접", "u": "가천대", "p": "기회균형·농어촌(종합)·특성화고", "t": ""}, {"d": "2026-10-03", "c": "면접", "u": "강서대", "p": "경영학과·상담심리학과", "t": ""}, {"d": "2026-10-03", "c": "면접", "u": "성결대", "p": "신학과(목회자추천자·미래인재전형)", "t": ""}, {"d": "2026-10-03", "c": "면접", "u": "신한대", "p": "학생부교과", "t": ""}, {"d": "2026-10-03", "c": "면접", "u": "영산대", "p": "면접전형 게임콘텐츠학과 [해운대]", "t": "10:00"}, {"d": "2026-10-03", "c": "면접", "u": "한신대", "p": "면접/실기 해당전형", "t": ""}, {"d": "2026-10-03", "c": "논술", "u": "서울시립대", "p": "논술전형", "t": "10:00"}, {"d": "2026-10-03", "c": "논술", "u": "성신여대", "p": "논술우수자(자연)", "t": ""}, {"d": "2026-10-03", "c": "논술", "u": "홍익대", "p": "논술위주(자연계열/캠퍼스자율전공 자연·예능)", "t": ""}, {"d": "2026-10-03", "c": "실기", "u": "가천대", "p": "음악학부(관악/성악여)", "t": ""}, {"d": "2026-10-03", "c": "실기", "u": "경희대", "p": "실기우수자(한국무용·현대무용·발레)", "t": ""}, {"d": "2026-10-03", "c": "실기", "u": "국민대", "p": "실기우수자(영화) 1단계", "t": ""}, {"d": "2026-10-03", "c": "실기", "u": "단국대", "p": "음악학부 등(현악·성악(여)·국악),영화전공 이론·연출·스탭", "t": ""}, {"d": "2026-10-03", "c": "실기", "u": "대구가톨릭대", "p": "실기일반(생활체육/디자인대학/체육교육)", "t": ""}, {"d": "2026-10-03", "c": "실기", "u": "동국대", "p": "미술학부", "t": ""}, {"d": "2026-10-03", "c": "실기", "u": "동아대", "p": "음악(예술체육대)", "t": ""}, {"d": "2026-10-03", "c": "실기", "u": "명지대", "p": "예술학부(피아노)", "t": ""}, {"d": "2026-10-03", "c": "실기", "u": "명지대", "p": "예술학부(뮤지컬-보컬)", "t": ""}, {"d": "2026-10-03", "c": "실기", "u": "성결대", "p": "연기예술학과·영화영상학과", "t": ""}, {"d": "2026-10-03", "c": "실기", "u": "세종대", "p": "실기우수자 영화예술-연출제작 1단계", "t": ""}, {"d": "2026-10-03", "c": "실기", "u": "수원대", "p": "미술 실기우수자(조형예술/디자인)", "t": ""}, {"d": "2026-10-03", "c": "실기", "u": "순천향대", "p": "실기/실적(실기우수자-공연영상학과 영화영상연출제작/연기)", "t": ""}, {"d": "2026-10-03", "c": "실기", "u": "숭실대", "p": "예체능우수인재(체육 당구/축구)", "t": ""}, {"d": "2026-10-03", "c": "실기", "u": "숭실대", "p": "예체능우수인재(연출 1단계)", "t": ""}, {"d": "2026-10-03", "c": "실기", "u": "영산대", "p": "실기전형(미용예술·K-공연방송미디어·웹툰·게임콘텐츠·만화애니메이션) [해운대]", "t": "10:00"}, {"d": "2026-10-03", "c": "실기", "u": "한신대", "p": "실기(체육실기) 등", "t": ""}, {"d": "2026-10-03", "c": "실기", "u": "한양대", "p": "실기/실적(음악특기자-관현악·국악)", "t": ""}, {"d": "2026-10-03", "c": "실기", "u": "한양대(ERICA)", "p": "재능우수자(실용음악)", "t": ""}, {"d": "2026-10-04", "c": "논술", "u": "성신여대", "p": "논술우수자(인문)", "t": ""}, {"d": "2026-10-04", "c": "논술", "u": "홍익대", "p": "논술위주(인문계열/예술학과/캠퍼스자율전공 인문·예능)", "t": ""}, {"d": "2026-10-04", "c": "실기", "u": "가천대", "p": "음악학부(피아노)", "t": ""}, {"d": "2026-10-04", "c": "실기", "u": "경희대", "p": "실기우수자(한국무용·현대무용·발레)", "t": ""}, {"d": "2026-10-04", "c": "실기", "u": "국민대", "p": "실기우수자(회화) 1단계", "t": ""}, {"d": "2026-10-04", "c": "실기", "u": "삼육대", "p": "실기(미술)", "t": ""}, {"d": "2026-10-04", "c": "실기", "u": "순천향대", "p": "실기/실적(실기우수자-디지털애니메이션학과)", "t": ""}, {"d": "2026-10-05", "c": "면접", "u": "강서대", "p": "사회복지학과·식품영양학과", "t": ""}, {"d": "2026-10-05", "c": "실기", "u": "가천대", "p": "음악학부(작곡)", "t": ""}, {"d": "2026-10-05", "c": "실기", "u": "경기대", "p": "체육특기자(체육·경호보안·스포츠과학) 면접", "t": ""}, {"d": "2026-10-05", "c": "실기", "u": "명지대", "p": "예술학부(성악)", "t": ""}, {"d": "2026-10-05", "c": "실기", "u": "삼육대", "p": "실기(음악)", "t": ""}, {"d": "2026-10-06", "c": "1단계합격", "u": "동국대", "p": "실기/실적 단계별(연극학부-실기형 기초실기)", "t": ""}, {"d": "2026-10-06", "c": "실기", "u": "대전대", "p": "실기위주 체능계열·특기자전형", "t": ""}, {"d": "2026-10-07", "c": "1단계합격", "u": "수원대", "p": "연기예술 실기우수자(농어촌-연기예술 포함)", "t": ""}, {"d": "2026-10-07", "c": "1단계합격", "u": "숙명여대", "p": "실기/실적 예능창의인재 미술대학", "t": "17:00"}, {"d": "2026-10-07", "c": "1단계합격", "u": "영남대", "p": "창의인재전형/실기전형(체육학부 체육)", "t": "17:00"}, {"d": "2026-10-07", "c": "1단계합격", "u": "협성대", "p": "음악학부", "t": ""}, {"d": "2026-10-07", "c": "면접", "u": "한국성서대", "p": "공통", "t": ""}, {"d": "2026-10-07", "c": "면접", "u": "한림대", "p": "외국어특기자·체육특기자", "t": ""}, {"d": "2026-10-07", "c": "면접", "u": "한양대", "p": "실기/실적(연기특기자)", "t": ""}, {"d": "2026-10-07", "c": "실기", "u": "신라대", "p": "실기우수자(체육학부)", "t": ""}, {"d": "2026-10-07", "c": "최종합격", "u": "경성대", "p": "체육특기자", "t": "15:00"}, {"d": "2026-10-08", "c": "서류마감", "u": "초당대", "p": "", "t": "18:00"}, {"d": "2026-10-08", "c": "서류마감", "u": "초당대", "p": "항공운항학과(항공신체검사)", "t": "18:00"}, {"d": "2026-10-08", "c": "1단계합격", "u": "서울대", "p": "일반전형(음악대학)", "t": "18:00"}, {"d": "2026-10-08", "c": "1단계합격", "u": "한양대(ERICA)", "p": "학생부종합(국방전략기술공학/조기취업형 계약학과)", "t": "18:00"}, {"d": "2026-10-08", "c": "실기", "u": "동덕여대", "p": "실기우수자 공연예술대학 외", "t": ""}, {"d": "2026-10-08", "c": "실기", "u": "수원대", "p": "체육 실기우수자", "t": ""}, {"d": "2026-10-09", "c": "면접", "u": "강서대", "p": "간호학과", "t": ""}, {"d": "2026-10-09", "c": "면접", "u": "수원대", "p": "면접위주교과 1단계(지능형SW·라이프케어)", "t": ""}, {"d": "2026-10-09", "c": "실기", "u": "가천대", "p": "연기예술학과(2단계)", "t": ""}, {"d": "2026-10-09", "c": "실기", "u": "가천대", "p": "미술·디자인학부(회화/조소/산업디자인)", "t": ""}, {"d": "2026-10-09", "c": "실기", "u": "경희대", "p": "실기우수자(디자인·도예)", "t": ""}, {"d": "2026-10-09", "c": "실기", "u": "대구가톨릭대", "p": "실기일반(음악공연예술대학)", "t": ""}, {"d": "2026-10-09", "c": "실기", "u": "동명대", "p": "문화레저관광학부", "t": ""}, {"d": "2026-10-09", "c": "실기", "u": "동서대", "p": "계열5(디자인·패션)", "t": ""}, {"d": "2026-10-09", "c": "실기", "u": "동아대", "p": "체육(예술체육대)", "t": ""}, {"d": "2026-10-09", "c": "실기", "u": "명지대", "p": "디자인학부(비주얼커뮤니케이션)", "t": ""}, {"d": "2026-10-09", "c": "실기", "u": "성결대", "p": "실기우수자·실용음악예술학과", "t": ""}, {"d": "2026-10-09", "c": "실기", "u": "수원대", "p": "영화예술 실기우수자", "t": ""}, {"d": "2026-10-09", "c": "실기", "u": "숙명여대", "p": "예능창의인재 관현악과", "t": ""}, {"d": "2026-10-09", "c": "실기", "u": "순천향대", "p": "실기/실적(실기우수자-스포츠응용산업학과)", "t": ""}, {"d": "2026-10-09", "c": "실기", "u": "안양대", "p": "실기우수자 스포츠과학과", "t": ""}, {"d": "2026-10-09", "c": "실기", "u": "인하대", "p": "실기/실적(조형예술학과-인물수채화)", "t": ""}, {"d": "2026-10-09", "c": "실기", "u": "협성대", "p": "음악학부(피아노/실용음악)", "t": ""}, {"d": "2026-10-10", "c": "면접", "u": "경남대", "p": "학생부교과(일반면접전형)", "t": "오전/오후"}, {"d": "2026-10-10", "c": "면접", "u": "수원대", "p": "면접위주교과 1단계(혁신공과)", "t": ""}, {"d": "2026-10-10", "c": "면접", "u": "안양대", "p": "아리학생부면접전형 2단계", "t": ""}, {"d": "2026-10-10", "c": "논술", "u": "연세대", "p": "논술전형", "t": ""}, {"d": "2026-10-10", "c": "실기", "u": "가천대", "p": "미술·디자인학부(시각디자인)", "t": ""}, {"d": "2026-10-10", "c": "실기", "u": "경희대", "p": "실기우수자(디자인·도예)", "t": ""}, {"d": "2026-10-10", "c": "실기", "u": "동서대", "p": "계열1(영화·뮤지컬·연기)", "t": ""}, {"d": "2026-10-10", "c": "실기", "u": "동의대", "p": "실기우수자(체육·디자인조형)", "t": ""}, {"d": "2026-10-10", "c": "실기", "u": "명지대", "p": "디자인학부(인더스트리얼)", "t": ""}, {"d": "2026-10-10", "c": "실기", "u": "목원대", "p": "실기/실적위주 음악대학·스포츠건강관리학과", "t": "09:00"}, {"d": "2026-10-10", "c": "실기", "u": "상지대", "p": "태권도학전공", "t": ""}, {"d": "2026-10-10", "c": "실기", "u": "서울장신대", "p": "실기/실적 및 기타(면접) 응시자", "t": "10:00"}, {"d": "2026-10-10", "c": "실기", "u": "성신여대", "p": "실기-디자인과", "t": ""}, {"d": "2026-10-10", "c": "실기", "u": "성신여대", "p": "실기-기악(피아노·현악)", "t": ""}, {"d": "2026-10-10", "c": "실기", "u": "성신여대", "p": "실기-작곡과", "t": ""}, {"d": "2026-10-10", "c": "실기", "u": "숙명여대", "p": "예능창의인재 체육교육과", "t": ""}, {"d": "2026-10-10", "c": "실기", "u": "숙명여대", "p": "예능창의인재 작곡과", "t": ""}, {"d": "2026-10-10", "c": "실기", "u": "순천향대", "p": "실기/실적(실기우수자-스포츠과학과)", "t": ""}, {"d": "2026-10-10", "c": "실기", "u": "울산대", "p": "예체능(디자인융합학부)", "t": ""}, {"d": "2026-10-10", "c": "실기", "u": "인하대", "p": "실기/실적(의류디자인학과)", "t": ""}, {"d": "2026-10-10", "c": "실기", "u": "추계예술대", "p": "국악과", "t": ""}, {"d": "2026-10-10", "c": "실기", "u": "추계예술대", "p": "성악과", "t": ""}, {"d": "2026-10-10", "c": "실기", "u": "협성대", "p": "음악학부(관현악/성악)", "t": ""}, {"d": "2026-10-11", "c": "면접", "u": "삼육대", "p": "신학특별", "t": ""}, {"d": "2026-10-11", "c": "면접", "u": "삼육대", "p": "신학특별", "t": ""}, {"d": "2026-10-11", "c": "면접", "u": "수원대", "p": "면접위주교과 1단계(자유전공·인문사회융합·경영공학)", "t": ""}, {"d": "2026-10-11", "c": "논술", "u": "가톨릭관동대", "p": "논술-자연공학계열·간호학과", "t": "09:30"}, {"d": "2026-10-11", "c": "논술", "u": "가톨릭관동대", "p": "논술-인문사회계열", "t": "14:30"}, {"d": "2026-10-11", "c": "논술", "u": "가톨릭대", "p": "논술(자연공학/간호)", "t": "09:30"}, {"d": "2026-10-11", "c": "논술", "u": "가톨릭대", "p": "논술(인문사회)", "t": "14:30"}, {"d": "2026-10-11", "c": "논술", "u": "중앙대", "p": "논술(창의형)", "t": "10:00"}, {"d": "2026-10-11", "c": "실기", "u": "동의대", "p": "실기우수자(레저스포츠·태권도)", "t": ""}, {"d": "2026-10-11", "c": "실기", "u": "명지대", "p": "디자인학부(영상/상황표현)", "t": ""}, {"d": "2026-10-11", "c": "실기", "u": "상지대", "p": "체육학전공", "t": ""}, {"d": "2026-10-11", "c": "실기", "u": "성신여대", "p": "실기-공예과", "t": ""}, {"d": "2026-10-11", "c": "실기", "u": "인하대", "p": "실기/실적(디자인융합학과)", "t": ""}, {"d": "2026-10-12", "c": "서류마감", "u": "아신대", "p": "해당자", "t": ""}, {"d": "2026-10-12", "c": "1단계합격", "u": "건양대", "p": "의학과[최저미적용]·지역[면접]", "t": "16:00"}, {"d": "2026-10-12", "c": "1단계합격", "u": "대전대", "p": "교과면접전형", "t": "15:00"}, {"d": "2026-10-12", "c": "실기", "u": "명지대", "p": "디자인학부(애니메이션/기초디자인)", "t": ""}, {"d": "2026-10-12", "c": "실기", "u": "청운대", "p": "일반·농어촌(연극예술/스포츠과학)", "t": ""}, {"d": "2026-10-12", "c": "실기", "u": "청주대", "p": "실기/실적(예체능)", "t": ""}, {"d": "2026-10-12", "c": "실기", "u": "한세대", "p": "실기/실적(실기우수자)·농어촌·특수교육대상자(예술학부, 면접 포함)", "t": ""}, {"d": "2026-10-12", "c": "실기", "u": "홍익대", "p": "공연예술우수자(1단계)", "t": ""}, {"d": "2026-10-12", "c": "최종합격", "u": "KAIST", "p": "Early Admission(창의도전/학교장추천)", "t": "10:00"}, {"d": "2026-10-13", "c": "1단계합격", "u": "수원가톨릭대", "p": "일반전형[일반학생]", "t": "11:00"}, {"d": "2026-10-13", "c": "1단계합격", "u": "숭실대", "p": "예체능우수인재(연기/연출 2단계)", "t": "10:00"}, {"d": "2026-10-13", "c": "1단계합격", "u": "중앙대", "p": "실기/실적(실기형)", "t": "14:00"}, {"d": "2026-10-13", "c": "1단계합격", "u": "한양대(ERICA)", "p": "재능우수자(디자인/실용음악 보컬)", "t": "18:00"}, {"d": "2026-10-13", "c": "1단계합격", "u": "한예종", "p": "일반전형 연극원 연기과", "t": "17:00"}, {"d": "2026-10-13", "c": "1단계합격", "u": "한예종", "p": "일반전형 음악원·전통예술원", "t": "17:00"}, {"d": "2026-10-13", "c": "면접", "u": "경일대", "p": "학생부종합(조기취업협약대학과)", "t": ""}, {"d": "2026-10-13", "c": "면접", "u": "중부대", "p": "학교생활우수자(항공서비스, 고양창의)", "t": ""}, {"d": "2026-10-13", "c": "실기", "u": "명지대", "p": "디자인학부(패션디자인)", "t": ""}, {"d": "2026-10-13", "c": "실기", "u": "세종대", "p": "예체능특기자 체육학과(골프·태권도·리듬체조·에어로빅)", "t": ""}, {"d": "2026-10-13", "c": "실기", "u": "안양대", "p": "실기우수자 예술학부 공연예술전공", "t": ""}, {"d": "2026-10-13", "c": "실기", "u": "한국교통대", "p": "스포츠산업학과(특기자)", "t": ""}, {"d": "2026-10-14", "c": "서류마감", "u": "목포해양대", "p": "전형서류/선원건강진단서(해사대학)", "t": "18:00"}, {"d": "2026-10-14", "c": "1단계합격", "u": "건국대(글로컬)", "p": "체육특기자", "t": ""}, {"d": "2026-10-14", "c": "1단계합격", "u": "경북대", "p": "실기전형(음악·체육교육)·특기자(체육)", "t": "16:00"}, {"d": "2026-10-14", "c": "1단계합격", "u": "부산가톨릭대", "p": "학생부종합(자기추천·가톨릭지도자추천)", "t": "14:00"}, {"d": "2026-10-14", "c": "1단계합격", "u": "협성대", "p": "미래창의인재·웨슬리", "t": ""}, {"d": "2026-10-14", "c": "면접", "u": "경남대", "p": "학생부교과(군사학과전형)", "t": ""}, {"d": "2026-10-14", "c": "면접", "u": "광주여대", "p": "전체(면접 실시 전형)", "t": ""}, {"d": "2026-10-14", "c": "면접", "u": "남부대", "p": "전체(대상 18p 참조)", "t": ""}, {"d": "2026-10-14", "c": "면접", "u": "동신대", "p": "학생부교과(면접전형)/실기위주(실기전형)", "t": ""}, {"d": "2026-10-14", "c": "면접", "u": "영남신학대", "p": "전체", "t": "11:35"}, {"d": "2026-10-14", "c": "면접", "u": "한남대", "p": "학생부교과 어학인재전형", "t": "13:00"}, {"d": "2026-10-14", "c": "실기", "u": "국립창원대(창원)", "p": "체육", "t": "10:00"}, {"d": "2026-10-14", "c": "실기", "u": "대전대", "p": "군사학과전형 2차전형(체력검정)", "t": ""}, {"d": "2026-10-14", "c": "실기", "u": "인천대", "p": "실기우수자(디자인학부)", "t": ""}, {"d": "2026-10-14", "c": "실기", "u": "중부대", "p": "산업디자인·만화애니메이션·연극영화·실용음악(고양창의)", "t": ""}, {"d": "2026-10-14", "c": "실기", "u": "한국교통대", "p": "음악학과", "t": ""}, {"d": "2026-10-14", "c": "실기", "u": "한서대", "p": "일반(영상애니메이션학과)", "t": ""}, {"d": "2026-10-14", "c": "최종합격", "u": "금강대", "p": "공통", "t": ""}, {"d": "2026-10-15", "c": "1단계합격", "u": "GIST", "p": "수시 전체", "t": "18:00"}, {"d": "2026-10-15", "c": "면접", "u": "건양대", "p": "군사학전형 2차평가(신체검사·면접)", "t": ""}, {"d": "2026-10-15", "c": "면접", "u": "극동대", "p": "항공정비·방사선·임상병리·작업치료학과", "t": ""}, {"d": "2026-10-15", "c": "면접", "u": "극동대", "p": "항공운항서비스학과·간호학과", "t": ""}, {"d": "2026-10-15", "c": "면접", "u": "백석대", "p": "백석인재/만학도 전 모집단위", "t": ""}, {"d": "2026-10-15", "c": "면접", "u": "백석대", "p": "관광학부(항공서비스)", "t": ""}, {"d": "2026-10-15", "c": "면접", "u": "상명대", "p": "학생부교과(고교추천 국가안보학과)", "t": ""}, {"d": "2026-10-15", "c": "면접", "u": "원광대", "p": "군사학과전형 2차평가(면접/신체검사)", "t": ""}, {"d": "2026-10-15", "c": "면접", "u": "조선대", "p": "학생부교과 군사학과", "t": ""}, {"d": "2026-10-15", "c": "면접", "u": "중앙승가대", "p": "수시", "t": "14:00"}, {"d": "2026-10-15", "c": "면접", "u": "한라대", "p": "일반학생(면접중심)·체육특기자", "t": ""}, {"d": "2026-10-15", "c": "실기", "u": "건국대(글로컬)", "p": "체능계(실기우수자)", "t": ""}, {"d": "2026-10-15", "c": "실기", "u": "극동대", "p": "스포츠재활학과", "t": ""}, {"d": "2026-10-15", "c": "실기", "u": "극동대", "p": "연극영화학과", "t": ""}, {"d": "2026-10-15", "c": "실기", "u": "대구예대", "p": "실기/포트폴리오/농어촌/장애인등 면접·실기", "t": "11:00"}, {"d": "2026-10-15", "c": "실기", "u": "백석대", "p": "스포츠과학부 모든전공", "t": ""}, {"d": "2026-10-15", "c": "실기", "u": "백석대", "p": "문화예술학부 실용음악", "t": ""}, {"d": "2026-10-15", "c": "실기", "u": "상명대", "p": "실기/실적(무용예술전공)", "t": ""}, {"d": "2026-10-15", "c": "실기", "u": "성신여대", "p": "실기-미디어영상연기학과(1단계)", "t": ""}, {"d": "2026-10-15", "c": "실기", "u": "성신여대", "p": "실기-현대실용음악학과", "t": ""}, {"d": "2026-10-15", "c": "실기", "u": "인천대", "p": "실기우수자(조형예술 서양화)", "t": ""}, {"d": "2026-10-15", "c": "실기", "u": "한국교통대", "p": "스포츠의학과·스포츠산업학과", "t": ""}, {"d": "2026-10-15", "c": "실기", "u": "한서대", "p": "일반(문화유산보존/시각디자인/공간디자인/뮤직프로덕션)", "t": ""}, {"d": "2026-10-15", "c": "최종합격", "u": "한림대", "p": "학생부교과(교과우수자 간호 제외)·외국어/체육특기자", "t": "16:00"}, {"d": "2026-10-16", "c": "1단계합격", "u": "고신대", "p": "학생부종합 1단계(수능최저 미적용)", "t": "15:00"}, {"d": "2026-10-16", "c": "1단계합격", "u": "명지대", "p": "교과면접·만학도·특성화고졸재직자·특수교육·실기특기자(스포츠지도)", "t": "15:00"}, {"d": "2026-10-16", "c": "면접", "u": "감리교신학대", "p": "일반전형", "t": "14:00"}, {"d": "2026-10-16", "c": "면접", "u": "경동대", "p": "자기추천제(항공서비스)", "t": ""}, {"d": "2026-10-16", "c": "면접", "u": "국립창원대(거창)", "p": "미래인재전형(전학과)", "t": "10:00"}, {"d": "2026-10-16", "c": "면접", "u": "극동대", "p": "스포츠재활학과(체육특기우수자)", "t": ""}, {"d": "2026-10-16", "c": "면접", "u": "대구가톨릭대", "p": "가톨릭지도자추천(전 모집단위)", "t": ""}, {"d": "2026-10-16", "c": "면접", "u": "대전대", "p": "교과면접전형", "t": ""}, {"d": "2026-10-16", "c": "면접", "u": "서울기독대", "p": "일부 전공", "t": ""}, {"d": "2026-10-16", "c": "면접", "u": "서울한영대", "p": "장애인 등 대상자", "t": ""}, {"d": "2026-10-16", "c": "면접", "u": "신경주대", "p": "학생부교과(면접전형)·지역인재전형", "t": ""}, {"d": "2026-10-16", "c": "면접", "u": "아신대", "p": "전체", "t": "10:00"}, {"d": "2026-10-16", "c": "면접", "u": "위덕대", "p": "면접고사 및 면접 전형", "t": ""}, {"d": "2026-10-16", "c": "면접", "u": "장로회신학대", "p": "성경고사성적우수자(성경·면접)·학생부우수자(면접)", "t": ""}, {"d": "2026-10-16", "c": "면접", "u": "중부대", "p": "학교생활우수자(항공서비스 외, 고양창의)", "t": ""}, {"d": "2026-10-16", "c": "면접", "u": "칼빈대", "p": "전체 전형", "t": "10:00"}, {"d": "2026-10-16", "c": "면접", "u": "한서대", "p": "일반(경호비서학과)", "t": ""}, {"d": "2026-10-16", "c": "면접", "u": "호남신대", "p": "전체", "t": "10:00"}, {"d": "2026-10-16", "c": "논술", "u": "연세대(미래)", "p": "논술우수자", "t": ""}, {"d": "2026-10-16", "c": "논술", "u": "을지대", "p": "논술우수자(간호대학,보건과학대학)", "t": ""}, {"d": "2026-10-16", "c": "실기", "u": "경일대", "p": "실기전형 시각디자인학과", "t": ""}, {"d": "2026-10-16", "c": "실기", "u": "경일대", "p": "실기전형 만화애니메이션학부", "t": ""}, {"d": "2026-10-16", "c": "실기", "u": "경일대", "p": "포트폴리오전형 사진영상·만화애니·뷰티스타일학과", "t": ""}, {"d": "2026-10-16", "c": "실기", "u": "고신대", "p": "실기우수자(태권도)", "t": ""}, {"d": "2026-10-16", "c": "실기", "u": "국민대", "p": "실기우수자(무용)", "t": ""}, {"d": "2026-10-16", "c": "실기", "u": "극동대", "p": "만화애니메이션학과", "t": ""}, {"d": "2026-10-16", "c": "실기", "u": "남서울대", "p": "미술", "t": ""}, {"d": "2026-10-16", "c": "실기", "u": "대구가톨릭대", "p": "실기특기자(체육교육과)", "t": ""}, {"d": "2026-10-16", "c": "실기", "u": "부산대", "p": "실기전형 체육교육과", "t": "16:00"}, {"d": "2026-10-16", "c": "실기", "u": "서울시립대", "p": "음악학과(성악전공,여)", "t": "10:00"}, {"d": "2026-10-16", "c": "실기", "u": "세종대", "p": "실기우수자 무용과(현대무용)", "t": ""}, {"d": "2026-10-16", "c": "실기", "u": "수원대", "p": "연기예술 2단계(농어촌 포함)", "t": ""}, {"d": "2026-10-16", "c": "실기", "u": "수원대", "p": "음악 실기우수자", "t": ""}, {"d": "2026-10-16", "c": "실기", "u": "순천대", "p": "실기 전형", "t": ""}, {"d": "2026-10-16", "c": "실기", "u": "이화여대", "p": "실기/실적(예체능실기) 한국음악과", "t": ""}, {"d": "2026-10-16", "c": "실기", "u": "인제대", "p": "실기(스포츠헬스케어/특성화고)", "t": ""}, {"d": "2026-10-16", "c": "실기", "u": "인천대", "p": "실기우수자(조형예술 한국화)", "t": ""}, {"d": "2026-10-16", "c": "실기", "u": "중부대", "p": "사진영상학전공(고양창의)", "t": ""}, {"d": "2026-10-16", "c": "실기", "u": "총신대", "p": "실기우수자(성악·피아노·오르간·작곡·관현)", "t": ""}, {"d": "2026-10-16", "c": "실기", "u": "한밭대", "p": "실기(일반)전형", "t": ""}, {"d": "2026-10-16", "c": "실기", "u": "한서대", "p": "일반(경호비서/레저해양스포츠)", "t": ""}, {"d": "2026-10-16", "c": "실기", "u": "호남신대", "p": "교회음악학과", "t": "10:00"}, {"d": "2026-10-16", "c": "최종합격", "u": "용인대", "p": "일반학생 및 기타 특별전형", "t": "15:00"}, {"d": "2026-10-17", "c": "면접", "u": "감리교신학대", "p": "특별전형", "t": "14:00"}, {"d": "2026-10-17", "c": "면접", "u": "건양대", "p": "의학과[최저미적용]·지역[면접]", "t": ""}, {"d": "2026-10-17", "c": "면접", "u": "건양대", "p": "채용조건형[계약] 유무인항공·방위산업공학", "t": ""}, {"d": "2026-10-17", "c": "면접", "u": "경동대", "p": "자기추천제(간호)", "t": ""}, {"d": "2026-10-17", "c": "면접", "u": "김천대", "p": "일반면접전형 등", "t": ""}, {"d": "2026-10-17", "c": "면접", "u": "대구가톨릭대", "p": "교과 신학부", "t": ""}, {"d": "2026-10-17", "c": "면접", "u": "대구한의대", "p": "학생부교과(면접전형)", "t": ""}, {"d": "2026-10-17", "c": "면접", "u": "동명대", "p": "면접 일반전형", "t": ""}, {"d": "2026-10-17", "c": "면접", "u": "동신대", "p": "성인학습자전형/실기위주(실기전형)", "t": ""}, {"d": "2026-10-17", "c": "면접", "u": "백석대", "p": "계약학과전형", "t": ""}, {"d": "2026-10-17", "c": "면접", "u": "서울신학대", "p": "일반/기독교/어학특기자/특수교육대상자", "t": ""}, {"d": "2026-10-17", "c": "면접", "u": "성결대", "p": "SKU창의전형(2단계) 토론면접", "t": ""}, {"d": "2026-10-17", "c": "면접", "u": "신라대", "p": "면접우수자·지역인재·특수교육대상자", "t": ""}, {"d": "2026-10-17", "c": "면접", "u": "영남대", "p": "지역의사선발전형/창의인재전형(의예과)", "t": ""}, {"d": "2026-10-17", "c": "면접", "u": "예원예술대", "p": "금속조형/뷰티/융합조형/만화게임영상/시각영상/애니메이션웹툰/공연예술/실용음악/연극영화/게임애니메이션", "t": ""}, {"d": "2026-10-17", "c": "면접", "u": "청주대", "p": "학생부교과(교과면접) 보건의료과학대학", "t": ""}, {"d": "2026-10-17", "c": "면접", "u": "총신대", "p": "교과우수자(구술면접)", "t": ""}, {"d": "2026-10-17", "c": "면접", "u": "추계예술대", "p": "콘텐츠창작학부", "t": ""}, {"d": "2026-10-17", "c": "면접", "u": "한국침례신학대", "p": "전체", "t": "10:30"}, {"d": "2026-10-17", "c": "면접", "u": "한라대", "p": "성인학습자·특성화고졸재직자(정원외)·만학도(정원외)", "t": ""}, {"d": "2026-10-17", "c": "면접", "u": "협성대", "p": "미래창의인재(인문사회과학·이공대학)", "t": ""}, {"d": "2026-10-17", "c": "면접", "u": "협성대", "p": "웨슬리(신학과)", "t": ""}, {"d": "2026-10-17", "c": "논술", "u": "단국대", "p": "논술우수자(자연계열)", "t": ""}, {"d": "2026-10-17", "c": "논술", "u": "을지대", "p": "사회기여 및 배려대상자", "t": ""}, {"d": "2026-10-17", "c": "실기", "u": "강남대", "p": "실기전형 디자인학과", "t": ""}, {"d": "2026-10-17", "c": "실기", "u": "강남대", "p": "실기전형 체육학과", "t": ""}, {"d": "2026-10-17", "c": "실기", "u": "강남대", "p": "실기전형 음악학과", "t": ""}, {"d": "2026-10-17", "c": "실기", "u": "강서대", "p": "실용음악학과", "t": ""}, {"d": "2026-10-17", "c": "실기", "u": "강원대(강릉원주)", "p": "실기일반Ⅰ", "t": ""}, {"d": "2026-10-17", "c": "실기", "u": "경남대", "p": "학생부교과(체육교육과전형)", "t": "오전"}, {"d": "2026-10-17", "c": "실기", "u": "경남대", "p": "실기/실적(예체능전형)", "t": "오후"}, {"d": "2026-10-17", "c": "실기", "u": "경상국립대", "p": "실기/실적 미술·음악(사범대 체육교육과 등)", "t": ""}, {"d": "2026-10-17", "c": "실기", "u": "경성대", "p": "연극영화(연극)", "t": ""}, {"d": "2026-10-17", "c": "실기", "u": "경일대", "p": "포트폴리오전형 게임콘텐츠학과", "t": ""}, {"d": "2026-10-17", "c": "실기", "u": "광운대", "p": "실기/실적(체육특기자) 축구", "t": ""}, {"d": "2026-10-17", "c": "실기", "u": "나사렛대", "p": "실기위주 실용음악학과/태권도학과", "t": ""}, {"d": "2026-10-17", "c": "실기", "u": "덕성여대", "p": "미술실기(기초디자인)", "t": ""}, {"d": "2026-10-17", "c": "실기", "u": "동서대", "p": "운동처방학과·체육학과", "t": ""}, {"d": "2026-10-17", "c": "실기", "u": "동아대", "p": "미술/산업디자인", "t": ""}, {"d": "2026-10-17", "c": "실기", "u": "명지대", "p": "예술학부(싱어송라이터)", "t": ""}, {"d": "2026-10-17", "c": "실기", "u": "명지대", "p": "예술학부(뮤지컬-댄스)", "t": ""}, {"d": "2026-10-17", "c": "실기", "u": "목원대", "p": "음악교육과·미술교육과·웹툰애니메이션게임대학", "t": "10:00"}, {"d": "2026-10-17", "c": "실기", "u": "백석대", "p": "사범학부 특수체육교육과", "t": ""}, {"d": "2026-10-17", "c": "실기", "u": "서울과기대", "p": "실기위주(실기전형)", "t": "08:00"}, {"d": "2026-10-17", "c": "실기", "u": "서울시립대", "p": "음악학과(성악전공,남)", "t": "10:00"}, {"d": "2026-10-17", "c": "실기", "u": "서울신학대", "p": "실기(음악과 성악/피아노/오르간/작곡)", "t": ""}, {"d": "2026-10-17", "c": "실기", "u": "서울여대", "p": "실기우수자(미술-현대미술·시각디자인)", "t": ""}, {"d": "2026-10-17", "c": "실기", "u": "서울장신대", "p": "실기/실적 및 기타(면접) 응시자", "t": "10:00"}, {"d": "2026-10-17", "c": "실기", "u": "성균관대", "p": "연기예술(연기) 2단계/무용학과", "t": ""}, {"d": "2026-10-17", "c": "실기", "u": "성신여대", "p": "실기-무용예술학과", "t": ""}, {"d": "2026-10-17", "c": "실기", "u": "성신여대", "p": "실기-뷰티산업학과/동양화·서양화·조소과", "t": ""}, {"d": "2026-10-17", "c": "실기", "u": "성신여대", "p": "실기-성악과/기악(관악)", "t": ""}, {"d": "2026-10-17", "c": "실기", "u": "세명대", "p": "일반전형 영화웹툰애니메이션학과", "t": ""}, {"d": "2026-10-17", "c": "실기", "u": "세종대", "p": "실기우수자 음악과", "t": ""}, {"d": "2026-10-17", "c": "실기", "u": "세종대", "p": "실기우수자 무용과(발레)", "t": ""}, {"d": "2026-10-17", "c": "실기", "u": "숙명여대", "p": "예능창의인재 시각·영상디자인·산업디자인·환경디자인·공예과", "t": ""}, {"d": "2026-10-17", "c": "실기", "u": "숭실대", "p": "예체능우수인재(연기 2단계)", "t": ""}, {"d": "2026-10-17", "c": "실기", "u": "안양대", "p": "실기우수자 예술학부 음악융합예술전공", "t": ""}, {"d": "2026-10-17", "c": "실기", "u": "예원예술대", "p": "금속조형/뷰티/융합조형/만화게임영상/시각영상/애니메이션웹툰/공연예술/실용음악/연극영화/게임애니메이션", "t": ""}, {"d": "2026-10-17", "c": "실기", "u": "울산대", "p": "예체능(스포츠과학부)", "t": ""}, {"d": "2026-10-17", "c": "실기", "u": "인제대", "p": "실기(음악학과)", "t": ""}, {"d": "2026-10-17", "c": "실기", "u": "전주대", "p": "실기/실적(체육·축구·태권도학과)", "t": ""}, {"d": "2026-10-17", "c": "실기", "u": "중부대", "p": "특수체육교육과(고양창의)", "t": ""}, {"d": "2026-10-17", "c": "실기", "u": "추계예술대", "p": "피아노과", "t": ""}, {"d": "2026-10-17", "c": "실기", "u": "추계예술대", "p": "미술창작학부", "t": ""}, {"d": "2026-10-17", "c": "실기", "u": "충북대", "p": "미술 실기고사", "t": "09:00"}, {"d": "2026-10-17", "c": "실기", "u": "한밭대", "p": "실기우수자전형", "t": ""}, {"d": "2026-10-17", "c": "실기", "u": "한성대", "p": "한국무용·현대무용·발레(전공실기)", "t": ""}, {"d": "2026-10-17", "c": "실기", "u": "한양대(ERICA)", "p": "재능우수자(실용음악) 보컬 2단계", "t": ""}, {"d": "2026-10-17", "c": "실기", "u": "호서대", "p": "실기전형 시각·산업·실내·디지털프로덕트디자인학과", "t": ""}, {"d": "2026-10-18", "c": "면접", "u": "삼육대", "p": "재림교회목회자추천·기회균형Ⅰ·S/W인재", "t": ""}, {"d": "2026-10-18", "c": "면접", "u": "협성대", "p": "미래창의인재(경영대학)·자율전공학부", "t": ""}, {"d": "2026-10-18", "c": "논술", "u": "단국대", "p": "논술우수자(인문계열)", "t": ""}, {"d": "2026-10-18", "c": "실기", "u": "경성대", "p": "시각/산업디자인·영상애니·사진", "t": ""}, {"d": "2026-10-18", "c": "실기", "u": "광운대", "p": "실기/실적(체육특기자) 아이스하키", "t": ""}, {"d": "2026-10-18", "c": "실기", "u": "덕성여대", "p": "미술실기(기초소양: 수묵담채/인체수채)", "t": ""}, {"d": "2026-10-18", "c": "실기", "u": "동국대", "p": "체육교육과", "t": ""}, {"d": "2026-10-18", "c": "실기", "u": "세종대", "p": "실기우수자 무용과(한국무용)", "t": ""}, {"d": "2026-10-18", "c": "실기", "u": "숙명여대", "p": "예능창의인재 회화과", "t": ""}, {"d": "2026-10-18", "c": "실기", "u": "이화여대", "p": "실기/실적(예체능실기) 무용과", "t": ""}, {"d": "2026-10-18", "c": "실기", "u": "한성대", "p": "AI융합디자인학부(기초디자인)", "t": ""}, {"d": "2026-10-18", "c": "실기", "u": "호서대", "p": "실기전형 애니메이션스쿨", "t": ""}, {"d": "2026-10-19", "c": "면접", "u": "우송대", "p": "학생부 종합면접형", "t": ""}, {"d": "2026-10-19", "c": "면접", "u": "청운대", "p": "청운인재·평생학습자·농어촌·재직자·조기취업형계약학과", "t": ""}, {"d": "2026-10-19", "c": "실기", "u": "백석대", "p": "디자인영상학부", "t": ""}, {"d": "2026-10-19", "c": "실기", "u": "백석대", "p": "문화예술학부 연기·뮤지컬", "t": ""}, {"d": "2026-10-19", "c": "실기", "u": "서원대", "p": "예체능전형(헬스케어운동학과)", "t": ""}, {"d": "2026-10-19", "c": "실기", "u": "인천대", "p": "실기우수자(체육교육과)", "t": ""}, {"d": "2026-10-19", "c": "실기", "u": "한국전통문화대", "p": "수시-예술대학", "t": ""}, {"d": "2026-10-20", "c": "1단계합격", "u": "국민대", "p": "특기자(어학/기능/미술조형/체육)", "t": "14:00"}, {"d": "2026-10-20", "c": "1단계합격", "u": "나사렛대", "p": "학생부종합전형", "t": ""}, {"d": "2026-10-20", "c": "1단계합격", "u": "단국대", "p": "공연영화학부(영화전공,뮤지컬연기),도예과,디자인학부", "t": "18:00"}, {"d": "2026-10-20", "c": "1단계합격", "u": "한양대", "p": "실기/실적(미술특기자·체육특기자)", "t": ""}, {"d": "2026-10-20", "c": "면접", "u": "동서대", "p": "학생부면접 전형 비대면", "t": ""}, {"d": "2026-10-20", "c": "면접", "u": "한국전통문화대", "p": "수시-심층면접", "t": ""}, {"d": "2026-10-20", "c": "실기", "u": "국립창원대(창원)", "p": "미술·무용", "t": "10:00"}, {"d": "2026-10-20", "c": "실기", "u": "인천대", "p": "실기우수자(스포츠의학부)·공연예술 1차", "t": ""}, {"d": "2026-10-21", "c": "1단계합격", "u": "경희대", "p": "학생부교과(기회균형Ⅰ-재직자)·실기우수자(한국화·회화·조소,연극·뮤지컬연기)", "t": "18:00"}, {"d": "2026-10-21", "c": "1단계합격", "u": "동의대", "p": "학생부교과(조기취업형계약학과)", "t": "14:00"}, {"d": "2026-10-21", "c": "1단계합격", "u": "순천향대", "p": "지역의사선발/조기취업형계약학과/평생학습자/실기특기자", "t": "17:00"}, {"d": "2026-10-21", "c": "1단계합격", "u": "협성대", "p": "디자인학과", "t": ""}, {"d": "2026-10-21", "c": "면접", "u": "한경국립대", "p": "면접/실기고사(전형·캠퍼스별)", "t": ""}, {"d": "2026-10-21", "c": "실기", "u": "대진대", "p": "실기/실적 연기예술학과", "t": ""}, {"d": "2026-10-21", "c": "실기", "u": "대진대", "p": "실기/실적 영화영상학과", "t": ""}, {"d": "2026-10-21", "c": "실기", "u": "동국대", "p": "연극학부-특기형", "t": ""}, {"d": "2026-10-21", "c": "실기", "u": "동국대", "p": "한국음악과", "t": ""}, {"d": "2026-10-21", "c": "실기", "u": "동국대", "p": "연극학부-실기형(2단계)", "t": ""}, {"d": "2026-10-21", "c": "실기", "u": "서원대", "p": "예체능전형(레저스포츠학부)", "t": ""}, {"d": "2026-10-21", "c": "실기", "u": "영남대", "p": "실기전형 체육학부/예술대학", "t": ""}, {"d": "2026-10-21", "c": "실기", "u": "인천대", "p": "실기우수자(스포츠과학부)", "t": ""}, {"d": "2026-10-21", "c": "실기", "u": "한경국립대", "p": "실기위주 고사(전형·캠퍼스별)", "t": ""}, {"d": "2026-10-21", "c": "최종합격", "u": "대구예대", "p": "학생부교과·실기/실적", "t": "14:00"}, {"d": "2026-10-21", "c": "최종합격", "u": "한예종", "p": "일반전형 연극원 연기과", "t": ""}, {"d": "2026-10-21", "c": "최종합격", "u": "한예종", "p": "일반전형 음악원·전통예술원", "t": ""}, {"d": "2026-10-21", "c": "최종합격", "u": "협성대", "p": "교과성적우수자·기회균형·사회배려자·에이블아트스포츠·정원외", "t": ""}, {"d": "2026-10-22", "c": "1단계합격", "u": "건국대", "p": "실기/실적(연기우수자,연출우수자,체육특기자)", "t": "14:00"}, {"d": "2026-10-22", "c": "1단계합격", "u": "고신대", "p": "학생부종합 1단계(간호)", "t": "15:00"}, {"d": "2026-10-22", "c": "1단계합격", "u": "남서울대", "p": "학생부종합 면접형", "t": "11:00"}, {"d": "2026-10-22", "c": "면접", "u": "GIST", "p": "수시 전체", "t": ""}, {"d": "2026-10-22", "c": "면접", "u": "호서대", "p": "학생부교과(조기취업형계약학과전형)", "t": ""}, {"d": "2026-10-22", "c": "실기", "u": "공주대", "p": "미술교육·게임디자인·가구리빙디자인·도자문화융합디자인·주얼리금속디자인 등", "t": ""}, {"d": "2026-10-22", "c": "실기", "u": "국립창원대(창원)", "p": "음악·산업디자인", "t": "10:00"}, {"d": "2026-10-22", "c": "실기", "u": "대진대", "p": "실기/실적 스포츠건강과학과", "t": ""}, {"d": "2026-10-22", "c": "실기", "u": "한양대", "p": "실기/실적(미술특기자) 2단계", "t": ""}, {"d": "2026-10-23", "c": "1단계합격", "u": "가톨릭관동대", "p": "신학과(잠재능력우수자면접·가톨릭지도자추천)", "t": "16:00"}, {"d": "2026-10-23", "c": "1단계합격", "u": "가톨릭대", "p": "학생부종합(신학과)", "t": "16:00"}, {"d": "2026-10-23", "c": "1단계합격", "u": "고려대", "p": "사이버국방", "t": "17:00"}, {"d": "2026-10-23", "c": "1단계합격", "u": "고려대(세종)", "p": "실기/실적(미래인재·체육특기자)", "t": "17:00"}, {"d": "2026-10-23", "c": "1단계합격", "u": "국립경국대", "p": "학생부종합(바른인재 간호·장애인등)", "t": "15:00"}, {"d": "2026-10-23", "c": "1단계합격", "u": "대구대", "p": "학생부교과 특수창의융합인재전형", "t": ""}, {"d": "2026-10-23", "c": "1단계합격", "u": "서울신학대", "p": "학생부종합(서류심사)", "t": "14:00"}, {"d": "2026-10-23", "c": "1단계합격", "u": "성신여대", "p": "실기-미디어영상연기학과", "t": "10:00"}, {"d": "2026-10-23", "c": "1단계합격", "u": "우석대", "p": "교과면접", "t": "15:00"}, {"d": "2026-10-23", "c": "1단계합격", "u": "원광대", "p": "특기자전형", "t": ""}, {"d": "2026-10-23", "c": "1단계합격", "u": "인제대", "p": "지역인재Ⅰ(방사선·작업치료)·사회배려대상자", "t": "14:00"}, {"d": "2026-10-23", "c": "1단계합격", "u": "충남대", "p": "국가안보(교과/종합)", "t": "15:00"}, {"d": "2026-10-23", "c": "1단계합격", "u": "한국기술교대", "p": "학생부종합(창의인재_면접형)·충남형계약학과(조기취업형)", "t": ""}, {"d": "2026-10-23", "c": "1단계합격", "u": "한동대", "p": "농어촌학생Ⅱ:울릉도", "t": "15:00"}, {"d": "2026-10-23", "c": "면접", "u": "GIST", "p": "수시 전체", "t": ""}, {"d": "2026-10-23", "c": "면접", "u": "가톨릭꽃동네대", "p": "휴먼리더면접/가톨릭지도자추천/지역인재-일반/지역인재-경제배려", "t": ""}, {"d": "2026-10-23", "c": "면접", "u": "경운대", "p": "교과면접전형", "t": ""}, {"d": "2026-10-23", "c": "면접", "u": "경운대", "p": "체육실적전형", "t": ""}, {"d": "2026-10-23", "c": "면접", "u": "고신대", "p": "학생부교과·특수교육대상자(신학·기독교교육·유아교육)", "t": ""}, {"d": "2026-10-23", "c": "면접", "u": "국립창원대(남해)", "p": "전문인재(항공호텔관광/원예조경/호텔조리제빵경영)", "t": ""}, {"d": "2026-10-23", "c": "면접", "u": "국립창원대(남해전형기간자율화)", "p": "전문인재전형 항공호텔관광·원예조경·호텔조리제빵경영", "t": ""}, {"d": "2026-10-23", "c": "면접", "u": "대구가톨릭대", "p": "종합 글로벌항공서비스학과", "t": ""}, {"d": "2026-10-23", "c": "면접", "u": "동양대", "p": "면접전형 생활체육학과", "t": ""}, {"d": "2026-10-23", "c": "면접", "u": "세명대", "p": "면접우수자전형 항공서비스학과", "t": ""}, {"d": "2026-10-23", "c": "면접", "u": "송원대", "p": "간호·스포츠지도·스포츠데이터분석·스포츠AI자율전공", "t": ""}, {"d": "2026-10-23", "c": "면접", "u": "장로회신학대", "p": "사회기여및배려자·대안학교출신자", "t": ""}, {"d": "2026-10-23", "c": "면접", "u": "창신대", "p": "창신인재면접(전체학과)", "t": ""}, {"d": "2026-10-23", "c": "면접", "u": "호남대", "p": "학생부교과 면접중심[일반학생A]", "t": ""}, {"d": "2026-10-23", "c": "면접", "u": "호서대", "p": "학생부교과(면접전형)·재외국민전형", "t": ""}, {"d": "2026-10-23", "c": "실기", "u": "경동대", "p": "일반학생(체육학과)", "t": ""}, {"d": "2026-10-23", "c": "실기", "u": "경북대", "p": "실기전형 중 체능", "t": ""}, {"d": "2026-10-23", "c": "실기", "u": "경운대", "p": "실기전형", "t": ""}, {"d": "2026-10-23", "c": "실기", "u": "경운대", "p": "포트폴리오전형", "t": ""}, {"d": "2026-10-23", "c": "실기", "u": "공주대", "p": "상황표현·영상학과", "t": ""}, {"d": "2026-10-23", "c": "실기", "u": "대진대", "p": "실기/실적 시각디자인학과·산업디자인학과", "t": ""}, {"d": "2026-10-23", "c": "실기", "u": "서울기독대", "p": "일부 전공", "t": ""}, {"d": "2026-10-23", "c": "실기", "u": "서울신학대", "p": "실기(실용음악과 보컬)", "t": ""}, {"d": "2026-10-23", "c": "실기", "u": "서원대", "p": "일반전형(체육교육과)", "t": ""}, {"d": "2026-10-23", "c": "실기", "u": "선문대", "p": "무도경호/스포츠과학/태권도", "t": ""}, {"d": "2026-10-23", "c": "실기", "u": "송원대", "p": "공연예술학과", "t": ""}, {"d": "2026-10-23", "c": "실기", "u": "평택대", "p": "커뮤니케이션디자인·패션디자인", "t": "09:00"}, {"d": "2026-10-23", "c": "실기", "u": "평택대", "p": "연극영화·실용음악·음악학과", "t": "09:00"}, {"d": "2026-10-23", "c": "실기", "u": "한남대", "p": "실기전형(미술교육/융합디자인/회화)", "t": "13:00"}, {"d": "2026-10-24", "c": "면접", "u": "강원대(강릉원주)", "p": "특수교육대상자", "t": ""}, {"d": "2026-10-24", "c": "면접", "u": "강원대(춘천삼척)", "p": "[자율화]학생부교과(평생학습자)·학생부교과(특수교육대상자)", "t": ""}, {"d": "2026-10-24", "c": "면접", "u": "경남대", "p": "실기/실적(체육특기자전형)", "t": "오전/오후"}, {"d": "2026-10-24", "c": "면접", "u": "고신대", "p": "자기추천 1단계 합격자(수능최저 미적용)", "t": ""}, {"d": "2026-10-24", "c": "면접", "u": "국민대", "p": "특기자(미술조형/체육)", "t": ""}, {"d": "2026-10-24", "c": "면접", "u": "나사렛대", "p": "학생부종합전형 2단계", "t": ""}, {"d": "2026-10-24", "c": "면접", "u": "대구가톨릭대", "p": "학생부종합 전 모집단위/지역종합", "t": ""}, {"d": "2026-10-24", "c": "면접", "u": "동국대(WISE)", "p": "불교추천인재전형(불교학부 교리문답 P/F)", "t": ""}, {"d": "2026-10-24", "c": "면접", "u": "동국대(WISE)", "p": "면접전형", "t": ""}, {"d": "2026-10-24", "c": "면접", "u": "백석대", "p": "체육특기자전형", "t": ""}, {"d": "2026-10-24", "c": "면접", "u": "부산가톨릭대", "p": "학생부종합(가톨릭지도자추천전형)", "t": ""}, {"d": "2026-10-24", "c": "면접", "u": "부산외대", "p": "교과면접·체육경기실적우수자·재외국민·만학도", "t": ""}, {"d": "2026-10-24", "c": "면접", "u": "세명대", "p": "면접우수자전형 전체", "t": ""}, {"d": "2026-10-24", "c": "면접", "u": "안양대", "p": "체육특기자·경기실적우수자", "t": ""}, {"d": "2026-10-24", "c": "면접", "u": "영산대", "p": "면접전형(간호·물리치료·치위생·태권도·동양무예) [양산]", "t": "10:00"}, {"d": "2026-10-24", "c": "면접", "u": "예원예술대", "p": "특수교육대상자/스포츠과학/스포츠융합복지", "t": ""}, {"d": "2026-10-24", "c": "면접", "u": "인천가톨릭대", "p": "송도국제캠퍼스(조형·간호·자유전공)", "t": "09:00"}, {"d": "2026-10-24", "c": "면접", "u": "인천대", "p": "특기자·실기우수자(체육교육과)", "t": ""}, {"d": "2026-10-24", "c": "면접", "u": "청주대", "p": "학생부교과(교과면접) 경상/인문사회/예술/자유전공", "t": ""}, {"d": "2026-10-24", "c": "면접", "u": "한국교통대", "p": "평생학습자전형", "t": ""}, {"d": "2026-10-24", "c": "면접", "u": "한세대", "p": "면접우수자·특수교육대상자(예술학부 제외)", "t": ""}, {"d": "2026-10-24", "c": "면접", "u": "한양대", "p": "실기/실적(체육특기자) 2단계", "t": ""}, {"d": "2026-10-24", "c": "면접", "u": "호서대", "p": "학생부교과(성인학습자·재직자·만학도전형)", "t": ""}, {"d": "2026-10-24", "c": "실기", "u": "가톨릭관동대", "p": "실기고사(음악과) 10.24~10.25", "t": ""}, {"d": "2026-10-24", "c": "실기", "u": "가톨릭대", "p": "실기(음악과)", "t": ""}, {"d": "2026-10-24", "c": "실기", "u": "강원대(강릉원주)", "p": "실기일반Ⅰ·체육특기자", "t": ""}, {"d": "2026-10-24", "c": "실기", "u": "강원대(춘천삼척)", "p": "실기/실적(실기일반)·체육단체(춘천)", "t": ""}, {"d": "2026-10-24", "c": "실기", "u": "경동대", "p": "태권도특기자(격파)", "t": ""}, {"d": "2026-10-24", "c": "실기", "u": "경성대", "p": "음악·연극영화(영화)·현대미술·공예·스포츠건강", "t": ""}, {"d": "2026-10-24", "c": "실기", "u": "공주대", "p": "만화애니메이션학부(칸만화)", "t": ""}, {"d": "2026-10-24", "c": "실기", "u": "국립경국대", "p": "실기전형", "t": ""}, {"d": "2026-10-24", "c": "실기", "u": "김천대", "p": "실기전형", "t": ""}, {"d": "2026-10-24", "c": "실기", "u": "나사렛대", "p": "실기위주 재활스포츠학부", "t": ""}, {"d": "2026-10-24", "c": "실기", "u": "대구한의대", "p": "실기/실적(헤어메이크업디자인학과)", "t": ""}, {"d": "2026-10-24", "c": "실기", "u": "대진대", "p": "실기/실적 만화게임그래픽학과", "t": ""}, {"d": "2026-10-24", "c": "실기", "u": "동국대(WISE)", "p": "스포츠과학전공/스포츠의학전공", "t": ""}, {"d": "2026-10-24", "c": "실기", "u": "동서대", "p": "계열3(게임·애니메이션·웹툰)", "t": ""}, {"d": "2026-10-24", "c": "실기", "u": "동아대", "p": "태권도", "t": ""}, {"d": "2026-10-24", "c": "실기", "u": "동양대", "p": "체육실기우수자전형 생활체육학과", "t": ""}, {"d": "2026-10-24", "c": "실기", "u": "명지대", "p": "예술학부(작곡)", "t": ""}, {"d": "2026-10-24", "c": "실기", "u": "명지대", "p": "실기특기자(스포츠지도-농구/배구)", "t": ""}, {"d": "2026-10-24", "c": "실기", "u": "목원대", "p": "미술·디자인대학·창의예술자율전공학부·연극영화영상학부", "t": "10:00"}, {"d": "2026-10-24", "c": "실기", "u": "배재대", "p": "예술인재-실용음악(공연예술학부)", "t": ""}, {"d": "2026-10-24", "c": "실기", "u": "상지대", "p": "리빙디자인·산업융합디자인·시각영상디자인·만화애니메이션학과", "t": ""}, {"d": "2026-10-24", "c": "실기", "u": "서울신학대", "p": "실기(실용음악과 건반/기타/베이스/뮤직프로듀싱)", "t": ""}, {"d": "2026-10-24", "c": "실기", "u": "서원대", "p": "일반전형(음악교육과)", "t": ""}, {"d": "2026-10-24", "c": "실기", "u": "선문대", "p": "디자인학부/피트니스재활/무도경호/체육특기자", "t": ""}, {"d": "2026-10-24", "c": "실기", "u": "성결대", "p": "체육특기자", "t": ""}, {"d": "2026-10-24", "c": "실기", "u": "성균관대", "p": "스포츠과학과(실기우수자)", "t": ""}, {"d": "2026-10-24", "c": "실기", "u": "숭실대", "p": "예체능우수인재(연출 2단계)", "t": ""}, {"d": "2026-10-24", "c": "실기", "u": "신한대", "p": "모델콘텐츠/산업·패션·실내디자인", "t": ""}, {"d": "2026-10-24", "c": "실기", "u": "아주대", "p": "실기/실적 체육우수자(축구)", "t": ""}, {"d": "2026-10-24", "c": "실기", "u": "예원예술대", "p": "특수교육대상자/스포츠과학/스포츠융합복지", "t": ""}, {"d": "2026-10-24", "c": "실기", "u": "울산대", "p": "특기자·경기실적우수자", "t": ""}, {"d": "2026-10-24", "c": "실기", "u": "인제대", "p": "실기(웹툰영상학과)", "t": ""}, {"d": "2026-10-24", "c": "실기", "u": "전주대", "p": "실기/실적(웹툰만화·산업디자인·공연예술·시각디자인)", "t": ""}, {"d": "2026-10-24", "c": "실기", "u": "조선대", "p": "실기전형", "t": ""}, {"d": "2026-10-24", "c": "실기", "u": "총신대", "p": "성경지식우수자(성경고사·구술면접)", "t": ""}, {"d": "2026-10-24", "c": "실기", "u": "추계예술대", "p": "작곡과", "t": ""}, {"d": "2026-10-24", "c": "실기", "u": "충남대", "p": "실기(음악과)", "t": "08:30"}, {"d": "2026-10-24", "c": "실기", "u": "한성대", "p": "동양화·서양화", "t": ""}, {"d": "2026-10-24", "c": "실기", "u": "한양대", "p": "실기/실적(무용특기자)", "t": ""}, {"d": "2026-10-24", "c": "실기", "u": "한양대(ERICA)", "p": "재능우수자(디자인) 2단계", "t": ""}, {"d": "2026-10-24", "c": "실기", "u": "한양대(ERICA)", "p": "재능우수자(무용)", "t": ""}, {"d": "2026-10-24", "c": "실기", "u": "협성대", "p": "디자인학과(시각디자인)", "t": ""}, {"d": "2026-10-24", "c": "실기", "u": "호서대", "p": "실기전형 뮤직프로덕션·연기학과·문화영상학부", "t": ""}, {"d": "2026-10-25", "c": "면접", "u": "명지대", "p": "실기특기자(스포츠 체육학/스포츠산업)", "t": ""}, {"d": "2026-10-25", "c": "면접", "u": "부산가톨릭대", "p": "학생부종합(자기추천전형)", "t": ""}, {"d": "2026-10-25", "c": "면접", "u": "삼육대", "p": "세움인재·예체능인재·기회균형Ⅱ·특수교육대상자", "t": ""}, {"d": "2026-10-25", "c": "실기", "u": "경성대", "p": "음악(GMB)·뮤지컬·스포츠건강", "t": ""}, {"d": "2026-10-25", "c": "실기", "u": "명지대", "p": "실기특기자(스포츠지도-축구)", "t": ""}, {"d": "2026-10-25", "c": "실기", "u": "성균관대", "p": "스포츠과학과(예체능특기자)", "t": ""}, {"d": "2026-10-25", "c": "실기", "u": "세명대", "p": "일반전형 공연예술학과", "t": ""}, {"d": "2026-10-25", "c": "실기", "u": "충남대", "p": "실기(관현악과)", "t": "08:30"}, {"d": "2026-10-25", "c": "실기", "u": "협성대", "p": "디자인학과(산업디자인)", "t": ""}, {"d": "2026-10-26", "c": "1단계합격", "u": "대전대", "p": "혜화인재전형", "t": "15:00"}, {"d": "2026-10-26", "c": "1단계합격", "u": "연세대", "p": "학생부종합(국제인재)", "t": ""}, {"d": "2026-10-26", "c": "1단계합격", "u": "연세대", "p": "학생부종합(기회균형)", "t": ""}, {"d": "2026-10-26", "c": "1단계합격", "u": "연세대", "p": "특기자(체육인재)", "t": ""}, {"d": "2026-10-26", "c": "1단계합격", "u": "중앙대", "p": "실기/실적(특기형) 체육(단체)", "t": "14:00"}, {"d": "2026-10-26", "c": "면접", "u": "건국대(글로컬)", "p": "특수교육대상자", "t": ""}, {"d": "2026-10-26", "c": "면접", "u": "건국대(글로컬)", "p": "체육특기자", "t": ""}, {"d": "2026-10-26", "c": "면접", "u": "한서대", "p": "모든전형(항공관광학과)", "t": ""}, {"d": "2026-10-26", "c": "실기", "u": "신한대", "p": "공연예술/K-POP", "t": ""}, {"d": "2026-10-26", "c": "실기", "u": "원광대", "p": "실기 디자인융합계열", "t": ""}, {"d": "2026-10-26", "c": "최종합격", "u": "건양대", "p": "학생부교과·실기/실적·의학과(수능최저미적용)", "t": "16:00"}, {"d": "2026-10-27", "c": "1단계합격", "u": "고신대", "p": "학생부종합·학생부교과 1단계(의예과)", "t": "15:00"}, {"d": "2026-10-27", "c": "1단계합격", "u": "동덕여대", "p": "동덕창의리더", "t": "17:00"}, {"d": "2026-10-27", "c": "1단계합격", "u": "루터대", "p": "학생부종합(서류전형)", "t": ""}, {"d": "2026-10-27", "c": "1단계합격", "u": "연세대(미래)", "p": "학교생활우수자(면접/서류)·글로벌인재 면접대상자 발표(의예과 제외)", "t": "17:00"}, {"d": "2026-10-27", "c": "1단계합격", "u": "차의과학대", "p": "학생부교과(CHA학생부교과) 전 모집단위", "t": "16:00"}, {"d": "2026-10-27", "c": "면접", "u": "한서대", "p": "충남형계약학과(전 학과)", "t": ""}, {"d": "2026-10-27", "c": "실기", "u": "동국대", "p": "스포츠문화학과(축구/야구/농구)", "t": ""}, {"d": "2026-10-27", "c": "실기", "u": "세명대", "p": "일반전형 생활체육학과", "t": ""}, {"d": "2026-10-27", "c": "실기", "u": "원광대", "p": "실기 체육교육과", "t": ""}, {"d": "2026-10-27", "c": "최종합격", "u": "숙명여대", "p": "실기/실적 예능창의인재", "t": "17:00"}, {"d": "2026-10-27", "c": "최종합격", "u": "차의과학대", "p": "학생부교과(지역균형선발 간호·글로벌미래인재)", "t": "16:00"}, {"d": "2026-10-28", "c": "1단계합격", "u": "광운대", "p": "학생부종합(광운참빛인재I-면접형/소프트웨어우수인재)", "t": "15:00"}, {"d": "2026-10-28", "c": "1단계합격", "u": "한국해양대", "p": "지역인재전형", "t": "10:00"}, {"d": "2026-10-28", "c": "1단계합격", "u": "협성대", "p": "융합인재Ⅱ", "t": ""}, {"d": "2026-10-28", "c": "면접", "u": "한국해양대", "p": "체육특기자전형", "t": ""}, {"d": "2026-10-28", "c": "면접", "u": "한서대", "p": "한서인재(인문사회/공학/예체능/자유전공)", "t": ""}, {"d": "2026-10-28", "c": "실기", "u": "상명대", "p": "실기/실적(스포츠건강관리전공)", "t": ""}, {"d": "2026-10-28", "c": "실기", "u": "상명대", "p": "실기/실적(음악학부)", "t": ""}, {"d": "2026-10-28", "c": "실기", "u": "우석대", "p": "실기일반/기회균형/농어촌(체육 자율전공학부-전주)", "t": ""}, {"d": "2026-10-28", "c": "최종합격", "u": "광주여대", "p": "전체", "t": "14:00"}, {"d": "2026-10-28", "c": "최종합격", "u": "남부대", "p": "수능최저 미적용 학과", "t": "14:00"}, {"d": "2026-10-28", "c": "최종합격", "u": "동신대", "p": "수능최저 미적용 모집단위", "t": ""}, {"d": "2026-10-28", "c": "최종합격", "u": "서울장신대", "p": "전 전형", "t": "14:00"}, {"d": "2026-10-28", "c": "최종합격", "u": "신경주대", "p": "전 전형", "t": ""}, {"d": "2026-10-29", "c": "1단계합격", "u": "가천대", "p": "가천바람개비", "t": ""}, {"d": "2026-10-29", "c": "1단계합격", "u": "가천대", "p": "조기취업형계약학과", "t": ""}, {"d": "2026-10-29", "c": "1단계합격", "u": "상명대(천안)", "p": "상명인재·조기취업형계약학과", "t": "14:00"}, {"d": "2026-10-29", "c": "1단계합격", "u": "신한대", "p": "실적위주(1차)", "t": ""}, {"d": "2026-10-29", "c": "1단계합격", "u": "홍익대", "p": "공연예술우수자", "t": ""}, {"d": "2026-10-29", "c": "면접", "u": "한경국립대", "p": "면접/실기고사(전형·캠퍼스별)", "t": ""}, {"d": "2026-10-29", "c": "면접", "u": "한서대", "p": "한서인재(자연과학계열)", "t": ""}, {"d": "2026-10-29", "c": "면접", "u": "한양대(ERICA)", "p": "학생부종합(조기취업형 계약학과) 2단계", "t": ""}, {"d": "2026-10-29", "c": "실기", "u": "군산대", "p": "실기(미술/산업디자인)", "t": ""}, {"d": "2026-10-29", "c": "실기", "u": "세종대", "p": "실기우수자 영화예술-연출제작 2단계", "t": ""}, {"d": "2026-10-29", "c": "실기", "u": "원광대", "p": "실기 스포츠과학부", "t": ""}, {"d": "2026-10-29", "c": "실기", "u": "충남대", "p": "실기(무용학과)", "t": "09:00"}, {"d": "2026-10-29", "c": "실기", "u": "한경국립대", "p": "실기위주 고사(전형·캠퍼스별)", "t": ""}, {"d": "2026-10-29", "c": "최종합격", "u": "광주대", "p": "전 모집단위(수능최저 미적용)", "t": "16:00"}, {"d": "2026-10-29", "c": "최종합격", "u": "초당대", "p": "모든 모집단위", "t": ""}, {"d": "2026-10-29", "c": "최종합격", "u": "한국체대", "p": "경기입상실적우수자(태권도)/교과성적우수자(운동건강관리 등 5개학과)", "t": ""}, {"d": "2026-10-29", "c": "최종합격", "u": "호남대", "p": "수능 미적용학과(면접중심[일반학생A]/교과중심[일반학생B·일반고·지역인재·기초차상위한부모])", "t": "13:00"}, {"d": "2026-10-30", "c": "1단계합격", "u": "강남대", "p": "학생부종합(학교생활우수자2/장애인등대상자)", "t": ""}, {"d": "2026-10-30", "c": "1단계합격", "u": "고려대", "p": "계열적합", "t": "17:00"}, {"d": "2026-10-30", "c": "1단계합격", "u": "상명대", "p": "학생부종합(상명인재전형)", "t": "14:00"}, {"d": "2026-10-30", "c": "1단계합격", "u": "순천대", "p": "학생부종합(종합면접)·실기/실적(특기자)", "t": "18:00"}, {"d": "2026-10-30", "c": "면접", "u": "가톨릭관동대", "p": "신학과 면접평가·교리문답", "t": "10:00"}, {"d": "2026-10-30", "c": "면접", "u": "가톨릭대", "p": "학생부종합(신학과)", "t": "10:00"}, {"d": "2026-10-30", "c": "면접", "u": "경북대", "p": "특기자(체육)전형", "t": ""}, {"d": "2026-10-30", "c": "면접", "u": "고려대(세종)", "p": "실기/실적 체육특기자", "t": ""}, {"d": "2026-10-30", "c": "면접", "u": "국립목포대(미확정)", "p": "특기자전형", "t": ""}, {"d": "2026-10-30", "c": "면접", "u": "동양대", "p": "면접전형(생활체육학과 제외)", "t": ""}, {"d": "2026-10-30", "c": "면접", "u": "동의대", "p": "학생부교과(조기취업형계약학과)", "t": ""}, {"d": "2026-10-30", "c": "면접", "u": "목원대", "p": "학생부교과 교과면접(유아교육과)", "t": "10:00"}, {"d": "2026-10-30", "c": "면접", "u": "우석대", "p": "교과면접(전체학과, 군사학과·군사안보학과 제외)", "t": ""}, {"d": "2026-10-30", "c": "면접", "u": "장로회신학대", "p": "드림(PUTS인재)·신학과/자유전공/기독교교육과 정원외(농어촌·특수교육·기회균형·재외국민·북한이탈)", "t": ""}, {"d": "2026-10-30", "c": "면접", "u": "차의과학대", "p": "학생부교과(간호·글로벌미래인재)", "t": ""}, {"d": "2026-10-30", "c": "논술", "u": "상명대", "p": "논술(인문)", "t": ""}, {"d": "2026-10-30", "c": "실기", "u": "경북대", "p": "실기전형 중 예능", "t": ""}, {"d": "2026-10-30", "c": "실기", "u": "경희대", "p": "실기우수자(한국화·회화·조소) 2단계", "t": ""}, {"d": "2026-10-30", "c": "실기", "u": "동양대", "p": "실기전형 연기예술학과", "t": ""}, {"d": "2026-10-30", "c": "실기", "u": "상명대(천안)", "p": "실기/실적(실기전형)", "t": ""}, {"d": "2026-10-30", "c": "실기", "u": "상명대(천안)", "p": "실기(디자인학부-기초디자인)", "t": ""}, {"d": "2026-10-30", "c": "실기", "u": "상명대(천안)", "p": "실기(영화영상-연기/연극-연기)", "t": ""}, {"d": "2026-10-30", "c": "실기", "u": "서원대", "p": "예체능전형(웹툰콘텐츠학과)", "t": ""}, {"d": "2026-10-30", "c": "실기", "u": "세종대", "p": "실기우수자 영화예술-연기예술 2단계", "t": ""}, {"d": "2026-10-30", "c": "실기", "u": "한남대", "p": "실기전형(스포츠과학)/체육특기자(탁구·레슬링)", "t": "13:00"}, {"d": "2026-10-30", "c": "최종합격", "u": "가야대", "p": "전체", "t": ""}, {"d": "2026-10-30", "c": "최종합격", "u": "서울과기대", "p": "실기위주(실기전형)", "t": "14:00"}, {"d": "2026-10-30", "c": "최종합격", "u": "숭실대", "p": "예체능우수인재", "t": "10:00"}, {"d": "2026-10-30", "c": "최종합격", "u": "아신대", "p": "전체", "t": "11:00"}, {"d": "2026-10-30", "c": "최종합격", "u": "칼빈대", "p": "전체 전형", "t": "10:00"}, {"d": "2026-10-30", "c": "최종합격", "u": "한국침례신학대", "p": "전체", "t": "10:00"}, {"d": "2026-10-30", "c": "최종합격", "u": "호원대", "p": "전체", "t": "14:00"}, {"d": "2026-10-31", "c": "면접", "u": "가천대", "p": "가천바람개비", "t": ""}, {"d": "2026-10-31", "c": "면접", "u": "경희대", "p": "학생부교과(기회균형Ⅰ-재직자) 2단계", "t": ""}, {"d": "2026-10-31", "c": "면접", "u": "고려대", "p": "고른기회·다문화·재직자", "t": ""}, {"d": "2026-10-31", "c": "면접", "u": "고려대", "p": "사이버국방", "t": ""}, {"d": "2026-10-31", "c": "면접", "u": "고려대", "p": "특기자(디자인조형)", "t": ""}, {"d": "2026-10-31", "c": "면접", "u": "고려대(세종)", "p": "실기/실적 글로벌스포츠인재(미래인재)", "t": ""}, {"d": "2026-10-31", "c": "면접", "u": "고신대", "p": "자기추천 1단계 합격자(간호)", "t": ""}, {"d": "2026-10-31", "c": "면접", "u": "광운대", "p": "학생부종합(광운참빛인재I-면접형/SW우수인재)", "t": ""}, {"d": "2026-10-31", "c": "면접", "u": "국립경국대", "p": "학생부종합(바른인재 간호·장애인등)", "t": ""}, {"d": "2026-10-31", "c": "면접", "u": "국립창원대(남해)", "p": "전문인재(방산기계AI/에너지산업안전)", "t": ""}, {"d": "2026-10-31", "c": "면접", "u": "국립창원대(남해전형기간자율화)", "p": "전문인재전형 방산기계AI·에너지산업안전", "t": ""}, {"d": "2026-10-31", "c": "면접", "u": "대구대", "p": "학생부교과 특수창의융합인재전형", "t": ""}, {"d": "2026-10-31", "c": "면접", "u": "대전대", "p": "혜화인재전형", "t": ""}, {"d": "2026-10-31", "c": "면접", "u": "동덕여대", "p": "동덕창의리더 2단계", "t": ""}, {"d": "2026-10-31", "c": "면접", "u": "동의대", "p": "실기/실적(체육특기자)", "t": ""}, {"d": "2026-10-31", "c": "면접", "u": "명지대", "p": "교과면접·만학도·특성화고졸재직자·특수교육·실기특기자", "t": ""}, {"d": "2026-10-31", "c": "면접", "u": "상지대", "p": "생활체육학전공(야간)·태권도학전공(특기자)", "t": ""}, {"d": "2026-10-31", "c": "면접", "u": "서울신학대", "p": "학생부종합 H+인재/사회기여및배려자(1단계 합격자)", "t": ""}, {"d": "2026-10-31", "c": "면접", "u": "서원대", "p": "체육특기자/실기우수자전형", "t": ""}, {"d": "2026-10-31", "c": "면접", "u": "선문대", "p": "항공서비스/신학/면접(대면)·간호/물치/치위생/응급/장애인(비대면)", "t": ""}, {"d": "2026-10-31", "c": "면접", "u": "성공회대", "p": "학생부종합(열린인재)", "t": ""}, {"d": "2026-10-31", "c": "면접", "u": "순천향대", "p": "지역의사선발/조기취업형계약학과/평생학습자/실기특기자", "t": ""}, {"d": "2026-10-31", "c": "면접", "u": "연세대", "p": "특기자(체육인재)", "t": ""}, {"d": "2026-10-31", "c": "면접", "u": "연세대(미래)", "p": "학교생활우수자·글로벌인재(의예과 제외)", "t": ""}, {"d": "2026-10-31", "c": "면접", "u": "인제대", "p": "지역인재Ⅰ(방사선·작업치료)·사회배려대상자", "t": ""}, {"d": "2026-10-31", "c": "면접", "u": "인천가톨릭대", "p": "신학대학 교리필답(강화캠퍼스)", "t": "10:00"}, {"d": "2026-10-31", "c": "면접", "u": "한국기술교대", "p": "학생부종합(창의인재_면접형)", "t": ""}, {"d": "2026-10-31", "c": "면접", "u": "한동대", "p": "농어촌학생Ⅱ:울릉도", "t": ""}, {"d": "2026-10-31", "c": "면접", "u": "한양대(ERICA)", "p": "학생부종합(국방전략기술공학) 2단계", "t": ""}, {"d": "2026-10-31", "c": "면접", "u": "협성대", "p": "융합인재Ⅱ(인문사회과학·이공대학)", "t": ""}, {"d": "2026-10-31", "c": "실기", "u": "강원대(춘천삼척)", "p": "학생부교과 실기우수자(스포츠과학)·삼척 실기", "t": ""}, {"d": "2026-10-31", "c": "실기", "u": "건국대", "p": "실기/실적(체육특기자)", "t": ""}, {"d": "2026-10-31", "c": "실기", "u": "경희대", "p": "실기우수자(체육)", "t": ""}, {"d": "2026-10-31", "c": "실기", "u": "경희대", "p": "실기우수자(연극·뮤지컬연기) 2단계", "t": ""}, {"d": "2026-10-31", "c": "실기", "u": "동국대(WISE)", "p": "디자인미술학과/뷰티아트산업학과", "t": ""}, {"d": "2026-10-31", "c": "실기", "u": "동양대", "p": "실기전형 게임학부·디자인학부·영상미디어학과", "t": ""}, {"d": "2026-10-31", "c": "실기", "u": "배재대", "p": "예술인재/웹툰포트폴리오-아트앤웹툰", "t": ""}, {"d": "2026-10-31", "c": "실기", "u": "부산외대", "p": "체육실기우수자", "t": ""}, {"d": "2026-10-31", "c": "실기", "u": "상명대(천안)", "p": "실기(무대미술/AI미디어콘텐츠)", "t": ""}, {"d": "2026-10-31", "c": "실기", "u": "상명대(천안)", "p": "실기(디지털만화영상)", "t": ""}, {"d": "2026-10-31", "c": "실기", "u": "서울여대", "p": "실기우수자(미술-산업디자인·공예 컬렉터블디자인)", "t": ""}, {"d": "2026-10-31", "c": "실기", "u": "서원대", "p": "예체능전형(뷰티/디자인학과)", "t": ""}, {"d": "2026-10-31", "c": "실기", "u": "성신여대", "p": "실기-미디어영상연기학과(2단계)", "t": ""}, {"d": "2026-10-31", "c": "실기", "u": "세명대", "p": "일반전형 아트&산업/시각영상/패션디자인학과", "t": ""}, {"d": "2026-10-31", "c": "실기", "u": "신한대", "p": "태권도학부", "t": ""}, {"d": "2026-10-31", "c": "실기", "u": "인천가톨릭대", "p": "송도국제캠퍼스 조형예술대학", "t": "10:00"}, {"d": "2026-10-31", "c": "실기", "u": "장로회신학대", "p": "교회음악학과(정원외 포함)", "t": ""}, {"d": "2026-10-31", "c": "실기", "u": "조선대", "p": "특기자전형", "t": ""}, {"d": "2026-10-31", "c": "실기", "u": "충남대", "p": "실기(회화과)", "t": "09:00"}, {"d": "2026-10-31", "c": "실기", "u": "한남대", "p": "체육특기자(축구)", "t": "11:00"}, {"d": "2026-10-31", "c": "실기", "u": "협성대", "p": "디자인학과(가구디자인)", "t": ""}, {"d": "2026-10-31", "c": "실기", "u": "홍익대", "p": "공연예술우수자 2단계(뮤지컬/실용음악)", "t": ""}, {"d": "2026-11-01", "c": "면접", "u": "대구대", "p": "학생부종합 장애인등대상자특별전형", "t": ""}, {"d": "2026-11-01", "c": "면접", "u": "성균관대", "p": "학생부종합(과학인재)", "t": ""}, {"d": "2026-11-01", "c": "면접", "u": "연세대", "p": "학생부종합(국제인재)", "t": ""}, {"d": "2026-11-01", "c": "면접", "u": "연세대", "p": "학생부종합(기회균형)", "t": ""}, {"d": "2026-11-01", "c": "면접", "u": "인천가톨릭대", "p": "신학대학 면접고사(강화캠퍼스)", "t": "10:00"}, {"d": "2026-11-01", "c": "면접", "u": "한국기술교대", "p": "충남형계약학과(조기취업형)", "t": ""}, {"d": "2026-11-01", "c": "면접", "u": "협성대", "p": "융합인재Ⅱ(경영대학)", "t": ""}, {"d": "2026-11-01", "c": "논술", "u": "서경대", "p": "논술우수자", "t": ""}, {"d": "2026-11-01", "c": "실기", "u": "강원대(춘천삼척)", "p": "학생부교과 실기우수자(체육교육과)", "t": ""}, {"d": "2026-11-01", "c": "실기", "u": "경희대", "p": "실기우수자(체육)", "t": ""}, {"d": "2026-11-01", "c": "실기", "u": "경희대", "p": "실기우수자(한국화·회화·조소,연극·뮤지컬연기) 2단계", "t": ""}, {"d": "2026-11-01", "c": "실기", "u": "배재대", "p": "예술인재-디자인(게임애니/커뮤니케이션디자인/산업디자인)", "t": ""}, {"d": "2026-11-01", "c": "실기", "u": "상명대(천안)", "p": "실기(사진영상미디어)", "t": ""}, {"d": "2026-11-01", "c": "실기", "u": "충남대", "p": "실기(조소과)", "t": "09:00"}, {"d": "2026-11-01", "c": "실기", "u": "협성대", "p": "디자인학과(실내디자인)", "t": ""}, {"d": "2026-11-02", "c": "면접", "u": "원광대", "p": "특기자전형", "t": ""}, {"d": "2026-11-02", "c": "실기", "u": "동양대", "p": "실기전형 웹툰애니메이션학과", "t": ""}, {"d": "2026-11-02", "c": "최종합격", "u": "삼육대", "p": "수능최저 미적용", "t": "14:00"}, {"d": "2026-11-03", "c": "서류마감", "u": "용인대", "p": "체육우수자 특별전형", "t": "17:00"}, {"d": "2026-11-03", "c": "1단계합격", "u": "대진대", "p": "학생부종합(윈윈대진)", "t": "14:00"}, {"d": "2026-11-03", "c": "1단계합격", "u": "차의과학대", "p": "학생부종합·사회통합(간호·글로벌미래인재)", "t": "16:00"}, {"d": "2026-11-03", "c": "실기", "u": "건국대", "p": "실기/실적(연기우수자)", "t": ""}, {"d": "2026-11-03", "c": "최종합격", "u": "인천가톨릭대", "p": "신학대학(강화캠퍼스)", "t": "11:00"}, {"d": "2026-11-03", "c": "최종합격", "u": "중앙승가대", "p": "수시", "t": ""}, {"d": "2026-11-04", "c": "1단계합격", "u": "UNIST", "p": "탐구우수·그릿인재", "t": ""}, {"d": "2026-11-04", "c": "1단계합격", "u": "인제대", "p": "의예·약학·지역인재Ⅰ(의약간호)·지역의사·농어촌(약)·기초생활", "t": "14:00"}, {"d": "2026-11-04", "c": "1단계합격", "u": "총신대", "p": "학생부종합(코람데오·총신고른기회·대안학교·기초생활/차상위·특수교육)·외국어(영어)우수자", "t": ""}, {"d": "2026-11-04", "c": "면접", "u": "가천대", "p": "조기취업형계약학과", "t": ""}, {"d": "2026-11-04", "c": "면접", "u": "세종대", "p": "학생부종합(사이버국방) 사이버국방학과", "t": ""}, {"d": "2026-11-04", "c": "실기", "u": "상명대", "p": "실기/실적(조형예술전공)", "t": ""}, {"d": "2026-11-04", "c": "최종합격", "u": "세한대", "p": "전체", "t": "14:00"}, {"d": "2026-11-05", "c": "실기", "u": "계명대", "p": "실기/실적(예체능)", "t": ""}, {"d": "2026-11-05", "c": "실기", "u": "부산대", "p": "체육특기자전형", "t": ""}, {"d": "2026-11-05", "c": "실기", "u": "충남대", "p": "체육특기자", "t": "12:30"}, {"d": "2026-11-05", "c": "최종합격", "u": "경남대", "p": "수능최저 미적용", "t": "17:00"}, {"d": "2026-11-05", "c": "최종합격", "u": "경성대", "p": "실기특별", "t": "15:00"}, {"d": "2026-11-05", "c": "최종합격", "u": "고신대", "p": "수능최저 미적용", "t": "15:00"}, {"d": "2026-11-05", "c": "최종합격", "u": "상지대", "p": "전 모집단위(한의예과·간호학과 제외)", "t": ""}, {"d": "2026-11-05", "c": "최종합격", "u": "서울한영대", "p": "전체", "t": "13:00"}, {"d": "2026-11-05", "c": "최종합격", "u": "영남신학대", "p": "전체", "t": "14:00"}, {"d": "2026-11-05", "c": "최종합격", "u": "청운대", "p": "전체", "t": "14:00"}, {"d": "2026-11-05", "c": "최종합격", "u": "총신대", "p": "실기우수자", "t": ""}, {"d": "2026-11-05", "c": "최종합격", "u": "해군사관학교", "p": "우선선발", "t": "10:00"}, {"d": "2026-11-06", "c": "1단계합격", "u": "경북대", "p": "학생부종합전형(단계별)", "t": "16:00"}, {"d": "2026-11-06", "c": "1단계합격", "u": "인천대", "p": "자기추천·특수교육대상자·실기우수자(공연예술)", "t": ""}, {"d": "2026-11-06", "c": "1단계합격", "u": "한국공학대", "p": "학생부종합(조기취업형계약학과·창의인재)", "t": ""}, {"d": "2026-11-06", "c": "1단계합격", "u": "한밭대", "p": "학생부종합(학·석사·일반 제외, 면접 대상자)", "t": "15:00"}, {"d": "2026-11-06", "c": "면접", "u": "차의과학대", "p": "학생부종합·사회통합(간호·글로벌미래인재)", "t": ""}, {"d": "2026-11-06", "c": "실기", "u": "건국대", "p": "실기/실적(연출우수자)", "t": ""}, {"d": "2026-11-06", "c": "최종합격", "u": "감리교신학대", "p": "전체", "t": "11:00"}, {"d": "2026-11-06", "c": "최종합격", "u": "경동대", "p": "전체", "t": "15:00"}, {"d": "2026-11-06", "c": "최종합격", "u": "경운대", "p": "전 모집단위", "t": "16:00"}, {"d": "2026-11-06", "c": "최종합격", "u": "광운대", "p": "광운참빛인재I·II/SW우수인재/지역균형/체육특기자", "t": "15:00"}, {"d": "2026-11-06", "c": "최종합격", "u": "국군간호사관학교", "p": "2차 시험", "t": "10:00"}, {"d": "2026-11-06", "c": "최종합격", "u": "국군간호사관학교", "p": "우선선발", "t": "10:00"}, {"d": "2026-11-06", "c": "최종합격", "u": "국립경국대", "p": "수능최저 미적용 전형", "t": "15:00"}, {"d": "2026-11-06", "c": "최종합격", "u": "대구한의대", "p": "전체", "t": ""}, {"d": "2026-11-06", "c": "최종합격", "u": "동국대(WISE)", "p": "수능최저 미적용", "t": ""}, {"d": "2026-11-06", "c": "최종합격", "u": "목원대", "p": "학생부교과(100%)·실기/실적위주", "t": "16:00"}, {"d": "2026-11-06", "c": "최종합격", "u": "성결대", "p": "전 전형", "t": "14:00"}, {"d": "2026-11-06", "c": "최종합격", "u": "세종대", "p": "실기우수자·예체능특기자", "t": "17:00"}, {"d": "2026-11-06", "c": "최종합격", "u": "수원대", "p": "면접위주교과·기회균형·고운사회·실기우수자·농어촌·특성화고 등", "t": "17:00"}, {"d": "2026-11-06", "c": "최종합격", "u": "순천대", "p": "실기전형", "t": "18:00"}, {"d": "2026-11-06", "c": "최종합격", "u": "아주대", "p": "실기/실적 체육우수자(축구)", "t": ""}, {"d": "2026-11-06", "c": "최종합격", "u": "육군사관학교", "p": "우선선발·특별전형", "t": "09:00"}, {"d": "2026-11-06", "c": "최종합격", "u": "인천대", "p": "특기자전형", "t": ""}, {"d": "2026-11-06", "c": "최종합격", "u": "제주국제대", "p": "전체", "t": ""}, {"d": "2026-11-06", "c": "최종합격", "u": "한국성서대", "p": "공통", "t": "16:00"}, {"d": "2026-11-06", "c": "최종합격", "u": "한밭대", "p": "실기위주전형", "t": "15:00"}, {"d": "2026-11-06", "c": "최종합격", "u": "한성대", "p": "수능최저 미적용(한성인재·실기우수자·지역균형·기회균형 등)", "t": "14:00"}, {"d": "2026-11-06", "c": "최종합격", "u": "한신대", "p": "전체전형(논술전형 제외)", "t": "10:00"}, {"d": "2026-11-06", "c": "최종합격", "u": "한예종", "p": "일반전형 연극원 연기과", "t": "17:00"}, {"d": "2026-11-06", "c": "최종합격", "u": "한예종", "p": "일반전형 음악원·연극원 무대미술·전통예술원", "t": "17:00"}, {"d": "2026-11-06", "c": "최종합격", "u": "호남신대", "p": "전체", "t": "17:00"}, {"d": "2026-11-07", "c": "1단계합격", "u": "홍익대", "p": "미술계열(미술우수자/농어촌학생)", "t": ""}, {"d": "2026-11-07", "c": "면접", "u": "UNIST", "p": "탐구우수", "t": ""}, {"d": "2026-11-07", "c": "면접", "u": "강남대", "p": "학생부종합(학교생활우수자2/장애인등대상자)", "t": ""}, {"d": "2026-11-07", "c": "면접", "u": "고려대", "p": "계열적합(인문)", "t": ""}, {"d": "2026-11-07", "c": "면접", "u": "국립목포대(미확정)", "p": "성인학습자전형", "t": ""}, {"d": "2026-11-07", "c": "면접", "u": "남서울대", "p": "계약학과 채용조건형·학생부종합 면접형", "t": ""}, {"d": "2026-11-07", "c": "면접", "u": "대진대", "p": "학생부종합(윈윈대진)", "t": ""}, {"d": "2026-11-07", "c": "면접", "u": "루터대", "p": "전체", "t": ""}, {"d": "2026-11-07", "c": "면접", "u": "상명대", "p": "학생부종합(상명인재 스포츠건강관리/조형예술)", "t": ""}, {"d": "2026-11-07", "c": "면접", "u": "상명대(천안)", "p": "상명인재·조기취업형계약학과", "t": ""}, {"d": "2026-11-07", "c": "면접", "u": "총신대", "p": "목회자추천자(구술면접)", "t": ""}, {"d": "2026-11-07", "c": "면접", "u": "총신대", "p": "외국어(영어)우수자(구술면접)", "t": ""}, {"d": "2026-11-07", "c": "면접", "u": "한국항공대", "p": "미래인재·고른기회·학교장추천", "t": ""}, {"d": "2026-11-07", "c": "실기", "u": "건국대(글로컬)", "p": "디자인대학(실기우수자)", "t": ""}, {"d": "2026-11-07", "c": "실기", "u": "용인대", "p": "체육우수자 특별전형", "t": ""}, {"d": "2026-11-07", "c": "실기", "u": "협성대", "p": "디자인자율전공학부", "t": ""}, {"d": "2026-11-07", "c": "최종합격", "u": "홍익대", "p": "공연예술우수자전형", "t": ""}, {"d": "2026-11-08", "c": "면접", "u": "UNIST", "p": "그릿인재", "t": ""}, {"d": "2026-11-08", "c": "면접", "u": "고려대", "p": "계열적합(자연)", "t": ""}, {"d": "2026-11-08", "c": "면접", "u": "성균관대", "p": "학생부종합(성균인재 사범대학)", "t": ""}, {"d": "2026-11-08", "c": "실기", "u": "성균관대", "p": "영상학과/연기예술(연출)", "t": ""}, {"d": "2026-11-09", "c": "면접", "u": "대전가톨릭대", "p": "전체", "t": "10:40"}, {"d": "2026-11-09", "c": "최종합격", "u": "예원예술대", "p": "전체", "t": ""}, {"d": "2026-11-09", "c": "최종합격", "u": "한국전통문화대", "p": "수시모집", "t": ""}, {"d": "2026-11-10", "c": "1단계합격", "u": "국민대", "p": "학생부종합(국제인재/알고리즘우수자/기회균형Ⅰ/성인학습자)", "t": "14:00"}, {"d": "2026-11-10", "c": "1단계합격", "u": "부경대", "p": "실기우수인재전형", "t": "17:00"}, {"d": "2026-11-10", "c": "최종합격", "u": "국민대", "p": "실기우수자/특기자/공무원위탁/군위탁", "t": "17:00"}, {"d": "2026-11-10", "c": "최종합격", "u": "김천대", "p": "전체", "t": ""}, {"d": "2026-11-10", "c": "최종합격", "u": "나사렛대", "p": "수능최저 미적용", "t": ""}, {"d": "2026-11-10", "c": "최종합격", "u": "장로회신학대", "p": "전체", "t": "13:00"}, {"d": "2026-11-10", "c": "최종합격", "u": "중부대", "p": "공통", "t": ""}, {"d": "2026-11-10", "c": "최종합격", "u": "한세대", "p": "공통", "t": ""}, {"d": "2026-11-11", "c": "1단계합격", "u": "KAIST", "p": "Regular Admission(일반/고른기회/특기자/반도체시스템인재)", "t": "10:00"}, {"d": "2026-11-11", "c": "1단계합격", "u": "한동대", "p": "G-IMPACT인재·SW인재", "t": "15:00"}, {"d": "2026-11-11", "c": "면접", "u": "고려대", "p": "특기자(체육교육과)", "t": ""}, {"d": "2026-11-11", "c": "최종합격", "u": "가톨릭꽃동네대", "p": "공통", "t": "15:00"}, {"d": "2026-11-11", "c": "최종합격", "u": "건양대", "p": "학생부종합(지역의사전형 제외)", "t": "16:00"}, {"d": "2026-11-11", "c": "최종합격", "u": "극동대", "p": "전 전형", "t": "14:00"}, {"d": "2026-11-11", "c": "최종합격", "u": "대구가톨릭대", "p": "수능최저 미적용 모집단위", "t": ""}, {"d": "2026-11-11", "c": "최종합격", "u": "영산대", "p": "전 전형", "t": "16:00"}, {"d": "2026-11-11", "c": "최종합격", "u": "인천가톨릭대", "p": "송도국제캠퍼스", "t": "11:00"}, {"d": "2026-11-11", "c": "최종합격", "u": "한동대", "p": "교과(한동인재·지역인재·농어촌Ⅰ)·학종(농어촌Ⅱ울릉도)", "t": "15:00"}, {"d": "2026-11-12", "c": "1단계합격", "u": "가천대", "p": "지역균형", "t": ""}, {"d": "2026-11-12", "c": "1단계합격", "u": "덕성여대", "p": "덕성인재전형II / 기회균형I·장애인등", "t": ""}, {"d": "2026-11-12", "c": "1단계합격", "u": "이화여대", "p": "학생부종합(미래인재 면접형)/학종(예체능서류)", "t": ""}, {"d": "2026-11-12", "c": "면접", "u": "한국체대", "p": "경기지도학과/특수체육교육과", "t": "14:00"}, {"d": "2026-11-12", "c": "실기", "u": "전북대", "p": "예체능 실기고사", "t": "09:00"}, {"d": "2026-11-12", "c": "최종합격", "u": "서울기독대", "p": "전체", "t": ""}, {"d": "2026-11-13", "c": "1단계합격", "u": "건양대", "p": "의학과[최저적용]·지역의사", "t": "16:00"}, {"d": "2026-11-13", "c": "1단계합격", "u": "경상국립대", "p": "학생부종합(일반/지역인재/지역의사 등)", "t": "16:00"}, {"d": "2026-11-13", "c": "1단계합격", "u": "국립목포대(미확정)", "p": "지역인재(종합)·장애인전형", "t": ""}, {"d": "2026-11-13", "c": "1단계합격", "u": "국립창원대(창원)", "p": "계열적합인재", "t": "10:00"}, {"d": "2026-11-13", "c": "1단계합격", "u": "대구교대", "p": "학생부종합", "t": "10:00"}, {"d": "2026-11-13", "c": "1단계합격", "u": "동국대", "p": "학생부종합 단계별(DoDream/불교추천인재/기회균형통합/특수교육대상/특성화고재직자면접형)", "t": ""}, {"d": "2026-11-13", "c": "1단계합격", "u": "서울교대", "p": "학교장추천/교직인성우수자(단계형)", "t": "10:00"}, {"d": "2026-11-13", "c": "1단계합격", "u": "성신여대", "p": "학생부종합(자기주도인재·특수교육대상자)", "t": "10:00"}, {"d": "2026-11-13", "c": "1단계합격", "u": "영남대", "p": "학생부종합 지역인재전형(의예과)", "t": "17:00"}, {"d": "2026-11-13", "c": "1단계합격", "u": "전남대", "p": "학생부교과(고교생활우수자)·학생부종합(고교생활우수자Ⅰ·전공적성·사회배려·지역인재)·실기실적(예능실기)", "t": "15:00"}, {"d": "2026-11-13", "c": "1단계합격", "u": "전주교대", "p": "교직적성우수자(종합)", "t": "15:00"}, {"d": "2026-11-13", "c": "1단계합격", "u": "제주대", "p": "학생부종합(2단계 면접 전형)", "t": ""}, {"d": "2026-11-13", "c": "1단계합격", "u": "진주교대", "p": "학생부종합전형", "t": "14:00"}, {"d": "2026-11-13", "c": "1단계합격", "u": "청주교대", "p": "전 전형", "t": "10:00"}, {"d": "2026-11-13", "c": "1단계합격", "u": "한남대", "p": "학종 한남인재Ⅱ(서류+면접)/창업인재(서류+면접)", "t": ""}, {"d": "2026-11-13", "c": "1단계합격", "u": "한양대", "p": "학생부종합(면접형)", "t": ""}, {"d": "2026-11-13", "c": "1단계합격", "u": "한양대(ERICA)", "p": "학생부종합(면접형)", "t": "18:00"}, {"d": "2026-11-13", "c": "면접", "u": "서울여대", "p": "교과우수자(체육)·실기우수자(미술·체육)", "t": ""}, {"d": "2026-11-13", "c": "실기", "u": "단국대", "p": "연극전공(연기)·도예과", "t": ""}, {"d": "2026-11-13", "c": "실기", "u": "인천대", "p": "서해5도출신자(공연예술) 2차", "t": ""}, {"d": "2026-11-13", "c": "최종합격", "u": "강서대", "p": "수능최저 미적용학과", "t": "14:00"}, {"d": "2026-11-13", "c": "최종합격", "u": "경북대", "p": "실기전형(미술·디자인·체육교육 제외)·특기자(체육)", "t": "16:00"}, {"d": "2026-11-13", "c": "최종합격", "u": "경일대", "p": "수능최저 미적용(전체전형, 간호 제외)", "t": ""}, {"d": "2026-11-13", "c": "최종합격", "u": "공군사관학교", "p": "우선선발", "t": "10:00"}, {"d": "2026-11-13", "c": "최종합격", "u": "대전가톨릭대", "p": "성김대건A·성요셉", "t": "17:00"}, {"d": "2026-11-13", "c": "최종합격", "u": "대진대", "p": "윈윈대진/고른기회/밝은사회/취업자/학교장추천/정원외", "t": "14:00"}, {"d": "2026-11-13", "c": "최종합격", "u": "동서대", "p": "교과/고교생활우수자/특성화/사회기여배려/농어촌/고른기회/평생학습/성인학습/특성화고졸재직/재외국민", "t": ""}, {"d": "2026-11-13", "c": "최종합격", "u": "서원대", "p": "전체전형(아래 제외)", "t": ""}, {"d": "2026-11-13", "c": "최종합격", "u": "성공회대", "p": "공통", "t": "16:00"}, {"d": "2026-11-13", "c": "최종합격", "u": "성신여대", "p": "실기/실적(일반학생)", "t": "10:00"}, {"d": "2026-11-13", "c": "최종합격", "u": "세명대", "p": "전체(아래 12.18 발표대상 제외)", "t": ""}, {"d": "2026-11-13", "c": "최종합격", "u": "송원대", "p": "전체학과", "t": ""}, {"d": "2026-11-13", "c": "최종합격", "u": "신라대", "p": "전 전형", "t": "16:00"}, {"d": "2026-11-13", "c": "최종합격", "u": "안양대", "p": "전체", "t": ""}, {"d": "2026-11-13", "c": "최종합격", "u": "용인대", "p": "체육우수자 특별전형", "t": "15:00"}, {"d": "2026-11-13", "c": "최종합격", "u": "우송대", "p": "", "t": "10:00"}, {"d": "2026-11-13", "c": "최종합격", "u": "전남대", "p": "실기/실적(예능실기) 음악학과·국악학과", "t": "15:00"}, {"d": "2026-11-13", "c": "최종합격", "u": "추계예술대", "p": "전 모집단위", "t": "14:00"}, {"d": "2026-11-13", "c": "최종합격", "u": "한국기술교대", "p": "학생부종합·충남형계약학과(조기취업형)", "t": ""}, {"d": "2026-11-13", "c": "최종합격", "u": "한남대", "p": "교과 어학인재/한남인재Ⅰ(서류)/디자인특기자 등", "t": ""}, {"d": "2026-11-13", "c": "최종합격", "u": "한라대", "p": "전 전형", "t": ""}, {"d": "2026-11-13", "c": "최종합격", "u": "한양대", "p": "실기/실적 전 전형", "t": ""}, {"d": "2026-11-13", "c": "최종합격", "u": "한양대(ERICA)", "p": "재능우수자(체육특기/무용/실용음악)/학생부종합(체육인재/조기취업형 계약학과)", "t": "18:00"}, {"d": "2026-11-13", "c": "최종합격", "u": "화성의과학대", "p": "대부분 모집단위", "t": ""}, {"d": "2026-11-14", "c": "1단계합격", "u": "계명대", "p": "의예과(교과/지역의사/면접 등)", "t": ""}, {"d": "2026-11-14", "c": "면접", "u": "국민대", "p": "학생부종합(국제인재/알고리즘/기회균형Ⅰ/성인학습자)", "t": ""}, {"d": "2026-11-14", "c": "면접", "u": "총신대", "p": "코람데오인재(구술면접)", "t": ""}, {"d": "2026-11-14", "c": "실기", "u": "한국체대", "p": "태권도학과/공연예술학과", "t": ""}, {"d": "2026-11-14", "c": "최종합격", "u": "가천대", "p": "수능일 이전", "t": ""}, {"d": "2026-11-14", "c": "최종합격", "u": "계명대", "p": "학생부종합/약학부/일부전형", "t": ""}, {"d": "2026-11-15", "c": "면접", "u": "단국대", "p": "공연영화학부 영화전공(이론·연출·스탭)", "t": ""}, {"d": "2026-11-16", "c": "1단계합격", "u": "연세대", "p": "학생부교과(추천형)", "t": "17:00"}, {"d": "2026-11-16", "c": "1단계합격", "u": "연세대", "p": "학생부종합(활동우수형)", "t": "17:00"}, {"d": "2026-11-16", "c": "1단계합격", "u": "한국교통대", "p": "학생부종합Ⅰ", "t": "16:00"}, {"d": "2026-11-16", "c": "1단계합격", "u": "한국외대", "p": "학생부종합(면접형)", "t": ""}, {"d": "2026-11-16", "c": "실기", "u": "한국체대", "p": "체육학과(단체종목)", "t": ""}, {"d": "2026-11-16", "c": "최종합격", "u": "대구대", "p": "수능최저 미적용 모집단위(1차)", "t": "21:00"}, {"d": "2026-11-16", "c": "최종합격", "u": "대구대", "p": "학생부교과 특수창의융합인재전형", "t": ""}, {"d": "2026-11-16", "c": "최종합격", "u": "대전대", "p": "수능최저 미적용 전형", "t": "15:00"}, {"d": "2026-11-16", "c": "최종합격", "u": "부산장신대", "p": "전 전형", "t": "15:00"}, {"d": "2026-11-16", "c": "최종합격", "u": "서울신학대", "p": "전체 전형", "t": "14:00"}, {"d": "2026-11-16", "c": "최종합격", "u": "신한대", "p": "학생부교과/실기위주(2차)", "t": ""}, {"d": "2026-11-17", "c": "1단계합격", "u": "고려대", "p": "논술", "t": "17:00"}, {"d": "2026-11-17", "c": "1단계합격", "u": "국민대", "p": "학생부종합(국민프런티어)", "t": "14:00"}, {"d": "2026-11-17", "c": "1단계합격", "u": "아주대", "p": "ACE(의학·약학 제외)/첨단융합인재/특수교육대상자/국방IT우수인재1/특성화고재직자", "t": ""}, {"d": "2026-11-17", "c": "1단계합격", "u": "울산대", "p": "지역교과(의예)·지역의사제(의예)·잠재역량(자율·간호·의예)", "t": "16:00"}, {"d": "2026-11-17", "c": "1단계합격", "u": "인하대", "p": "실기/실적(조형예술/디자인융합/연극영화/의류디자인/체육특기자) 및 학생부종합(인하미래인재 면접형/지역의사선발)", "t": ""}, {"d": "2026-11-17", "c": "1단계합격", "u": "조선대", "p": "학생부종합 면접전형", "t": ""}, {"d": "2026-11-17", "c": "실기", "u": "한국체대", "p": "스포츠청소년지도/특수체육교육/스포츠산업/운동건강관리/노인체육복지학과", "t": ""}, {"d": "2026-11-17", "c": "최종합격", "u": "남서울대", "p": "전체", "t": "11:00"}, {"d": "2026-11-17", "c": "최종합격", "u": "동덕여대", "p": "동덕창의리더(약학과제외)·기회균형·실기우수자·특기자·특성화고졸재직자", "t": "17:00"}, {"d": "2026-11-17", "c": "최종합격", "u": "동양대", "p": "전체전형", "t": "16:00"}, {"d": "2026-11-17", "c": "최종합격", "u": "영남대", "p": "실기전형/특기자전형", "t": "17:00"}, {"d": "2026-11-17", "c": "최종합격", "u": "조선대", "p": "학생부교과(사회통합·평생학습·특성화고·장애인·기초생활 등)", "t": ""}, {"d": "2026-11-17", "c": "최종합격", "u": "중앙대", "p": "실기/실적(특기형, 영화·문예창작·사진 제외)", "t": "14:00"}, {"d": "2026-11-17", "c": "최종합격", "u": "청주대", "p": "전체 모집단위(항공운항·군사학과 제외)", "t": "14:00"}, {"d": "2026-11-18", "c": "1단계합격", "u": "서강대", "p": "학생부종합(특성화고교졸업자)", "t": ""}, {"d": "2026-11-18", "c": "면접", "u": "순천대", "p": "학생부종합(종합면접)·실기/실적(특기자)", "t": ""}, {"d": "2026-11-18", "c": "최종합격", "u": "을지대", "p": "논술고사 시행 전형·재외국민과외국인(2%제한)", "t": ""}, {"d": "2026-11-18", "c": "최종합격", "u": "한경국립대", "p": "일반전형_안성·잠재력우수자·사회통합 외 전체전형", "t": "14:00"}, {"d": "2026-11-19", "c": "수능", "u": "대학수학능력시험", "p": "", "t": ""}, {"d": "2026-11-19", "c": "1단계합격", "u": "건국대(글로컬)", "p": "의예과(지역인재/지역의사제/농어촌 등)", "t": ""}, {"d": "2026-11-19", "c": "1단계합격", "u": "건국대(글로컬)", "p": "Cogito자기추천·지역인재(학종)", "t": ""}, {"d": "2026-11-19", "c": "1단계합격", "u": "공주대", "p": "학생부종합 면접대상자 발표", "t": "18:00"}, {"d": "2026-11-19", "c": "1단계합격", "u": "목포해양대", "p": "해양스포츠학과", "t": ""}, {"d": "2026-11-19", "c": "1단계합격", "u": "숙명여대", "p": "학생부종합(숙명인재면접형·소프트웨어인재·특수교육대상자)", "t": "18:00"}, {"d": "2026-11-19", "c": "최종합격", "u": "건국대(글로컬)", "p": "교과/실기우수자/체육특기자 등", "t": ""}, {"d": "2026-11-20", "c": "서류마감", "u": "한국교통대", "p": "학생부종합(항공운항학과 포함)", "t": "18:00"}, {"d": "2026-11-20", "c": "1단계합격", "u": "KENTECH", "p": "수시", "t": "18:00"}, {"d": "2026-11-20", "c": "1단계합격", "u": "POSTECH", "p": "면접 전형(일반전형Ⅰ/Ⅱ·반도체공학인재)", "t": "10:00"}, {"d": "2026-11-20", "c": "1단계합격", "u": "강원대(강릉원주)", "p": "미래인재면접Ⅰ·기회균형면접·농어촌학생", "t": "15:00"}, {"d": "2026-11-20", "c": "1단계합격", "u": "강원대(춘천삼척)", "p": "학생부종합(미래인재면접/지역인재면접/영농창업인재)", "t": "15:00"}, {"d": "2026-11-20", "c": "1단계합격", "u": "건국대", "p": "학생부종합(KU자기추천,특수교육대상자)", "t": "14:00"}, {"d": "2026-11-20", "c": "1단계합격", "u": "경기대", "p": "학생부종합(KGU·SW우수자·특수교육대상자)", "t": ""}, {"d": "2026-11-20", "c": "1단계합격", "u": "단국대", "p": "DKU인재(면접형),SW인재,창업인재", "t": "18:00"}, {"d": "2026-11-20", "c": "1단계합격", "u": "동아대", "p": "잠재능력우수자·지역인재종합·지역의사제", "t": "14:00"}, {"d": "2026-11-20", "c": "1단계합격", "u": "동의대", "p": "학생부종합(학교생활우수자 면접)", "t": "14:00"}, {"d": "2026-11-20", "c": "1단계합격", "u": "명지대", "p": "명지인재면접·크리스천리더", "t": "15:00"}, {"d": "2026-11-20", "c": "1단계합격", "u": "부산교대", "p": "공통", "t": "17:00"}, {"d": "2026-11-20", "c": "1단계합격", "u": "서울과기대", "p": "학생부종합전형", "t": "14:00"}, {"d": "2026-11-20", "c": "1단계합격", "u": "서울대", "p": "일반전형", "t": "18:00"}, {"d": "2026-11-20", "c": "1단계합격", "u": "서울대", "p": "기회균형특별(사회통합)", "t": "18:00"}, {"d": "2026-11-20", "c": "1단계합격", "u": "서울시립대", "p": "학생부종합전형(학생부종합Ⅱ 제외)", "t": ""}, {"d": "2026-11-20", "c": "1단계합격", "u": "울산대", "p": "지역인재(의예과)", "t": "16:00"}, {"d": "2026-11-20", "c": "1단계합격", "u": "원광대", "p": "학생부종합 면접실시 모집단위", "t": ""}, {"d": "2026-11-20", "c": "1단계합격", "u": "전북대", "p": "학생부종합 단계별(큰사람/지역인재1·2/SW인재/사회통합/특성화고 등)", "t": "14:00"}, {"d": "2026-11-20", "c": "1단계합격", "u": "충남대", "p": "학생부종합(면접대상자)", "t": "15:00"}, {"d": "2026-11-20", "c": "1단계합격", "u": "한국교원대", "p": "전체(면접 대상자)", "t": "10:00"}, {"d": "2026-11-20", "c": "면접", "u": "한밭대", "p": "지역인재(종합)/소프트웨어인재/학생부종합(야간)/특수교육대상자/특성화고재직자(야간)/만학도(야간)", "t": ""}, {"d": "2026-11-20", "c": "최종합격", "u": "건국대", "p": "실기/실적(체육특기자)", "t": "14:00"}, {"d": "2026-11-20", "c": "최종합격", "u": "경기대", "p": "학생부교과·실기/실적 다수", "t": ""}, {"d": "2026-11-20", "c": "최종합격", "u": "국립창원대(창원)", "p": "예·체능", "t": "14:00"}, {"d": "2026-11-20", "c": "최종합격", "u": "동아대", "p": "실기/실적(진로·예체능)", "t": "14:00"}, {"d": "2026-11-20", "c": "최종합격", "u": "동의대", "p": "학생부교과(특성화고·기회균형·농어촌 등)·실기/실적·학생부종합(평생/성인)", "t": "14:00"}, {"d": "2026-11-20", "c": "최종합격", "u": "우석대", "p": "전체학과(수능최저 미적용)", "t": "15:00"}, {"d": "2026-11-20", "c": "최종합격", "u": "울산대", "p": "일반교과·지역교과·학교장추천·기회균형·농어촌 등(의예 제외)", "t": "16:00"}, {"d": "2026-11-20", "c": "최종합격", "u": "원광대", "p": "학생부교과/지역인재교과/실기·특기/일부전형", "t": ""}, {"d": "2026-11-20", "c": "최종합격", "u": "인제대", "p": "교과·면접·지역인재·특성화고·사회배려·실기·체육특기·농어촌·기초생활 등", "t": "14:00"}, {"d": "2026-11-20", "c": "최종합격", "u": "전주대", "p": "전체(교과·종합·실기/실적)", "t": "11:00"}, {"d": "2026-11-20", "c": "최종합격", "u": "창신대", "p": "전체", "t": ""}, {"d": "2026-11-20", "c": "최종합격", "u": "평택대", "p": "전체", "t": "17:00"}, {"d": "2026-11-20", "c": "최종합격", "u": "한서대", "p": "전체", "t": "17:00"}, {"d": "2026-11-21", "c": "면접", "u": "경북대", "p": "학생부종합전형(단계별)", "t": ""}, {"d": "2026-11-21", "c": "면접", "u": "계명대", "p": "의예과(일반/지역기회균형)", "t": ""}, {"d": "2026-11-21", "c": "면접", "u": "고신대", "p": "지역인재종합 1단계 합격자(의예과)", "t": ""}, {"d": "2026-11-21", "c": "면접", "u": "국민대", "p": "학생부종합 국민프런티어(자연계)", "t": ""}, {"d": "2026-11-21", "c": "면접", "u": "대구가톨릭대", "p": "교과 의예과/약학부(지역의사 광역,지역기회균형 등)", "t": ""}, {"d": "2026-11-21", "c": "면접", "u": "대진대", "p": "학생부교과(학생부우수자/종단추천자)", "t": ""}, {"d": "2026-11-21", "c": "면접", "u": "덕성여대", "p": "덕성인재전형II(2단계)", "t": ""}, {"d": "2026-11-21", "c": "면접", "u": "덕성여대", "p": "기회균형I·장애인등 대상자", "t": ""}, {"d": "2026-11-21", "c": "면접", "u": "서울교대", "p": "면접평가 실시 전형", "t": ""}, {"d": "2026-11-21", "c": "면접", "u": "성신여대", "p": "자기주도인재전형", "t": ""}, {"d": "2026-11-21", "c": "면접", "u": "세종대", "p": "세종인재(면접형) 창의소프트학부", "t": ""}, {"d": "2026-11-21", "c": "면접", "u": "세종대", "p": "학생부종합(국방AI융합시스템공학)", "t": ""}, {"d": "2026-11-21", "c": "면접", "u": "세종대", "p": "학생부종합(국방AI로봇융합공학)", "t": ""}, {"d": "2026-11-21", "c": "면접", "u": "아주대", "p": "학생부종합 첨단융합인재/국방IT우수인재1/특수교육대상자/특성화고재직자", "t": ""}, {"d": "2026-11-21", "c": "면접", "u": "연세대", "p": "학생부교과(추천형)", "t": ""}, {"d": "2026-11-21", "c": "면접", "u": "연세대", "p": "학생부종합(활동우수형)", "t": ""}, {"d": "2026-11-21", "c": "면접", "u": "영남대", "p": "창의인재전형(전공자유선택학부 인문/자연)", "t": ""}, {"d": "2026-11-21", "c": "면접", "u": "울산대", "p": "지역교과(의예과)", "t": ""}, {"d": "2026-11-21", "c": "면접", "u": "을지대", "p": "EU면접형", "t": ""}, {"d": "2026-11-21", "c": "면접", "u": "이화여대", "p": "학종(미래인재 면접형 인문계열)/학종(예체능서류)", "t": ""}, {"d": "2026-11-21", "c": "면접", "u": "인제대", "p": "의예·약학·지역인재Ⅰ(약·간호)·농어촌(약)·기초생활", "t": ""}, {"d": "2026-11-21", "c": "면접", "u": "인천대", "p": "자기추천·특수교육대상자", "t": ""}, {"d": "2026-11-21", "c": "면접", "u": "인하대", "p": "학생부종합(지역의사선발/인하미래인재 면접형-경영/사범/사회과학/문과/예술체육/소프트웨어)", "t": ""}, {"d": "2026-11-21", "c": "면접", "u": "총신대", "p": "총신고른기회·대안학교출신자·기초생활/차상위·특수교육대상자(구술면접)", "t": ""}, {"d": "2026-11-21", "c": "면접", "u": "한국외대", "p": "학생부종합 면접형(서울 전 모집단위)", "t": ""}, {"d": "2026-11-21", "c": "면접", "u": "한동대", "p": "G-IMPACT인재·SW인재", "t": ""}, {"d": "2026-11-21", "c": "면접", "u": "한양대(ERICA)", "p": "학생부종합(면접형) 2단계", "t": ""}, {"d": "2026-11-21", "c": "논술", "u": "건국대", "p": "논술(KU논술우수자) 인문·통합", "t": "09:20"}, {"d": "2026-11-21", "c": "논술", "u": "건국대", "p": "논술(KU논술우수자) 자연", "t": "14:00"}, {"d": "2026-11-21", "c": "논술", "u": "경희대", "p": "논술우수자전형", "t": ""}, {"d": "2026-11-21", "c": "논술", "u": "고려대", "p": "논술(자연)", "t": ""}, {"d": "2026-11-21", "c": "논술", "u": "덕성여대", "p": "논술(과학기술대학)", "t": ""}, {"d": "2026-11-21", "c": "논술", "u": "서강대", "p": "논술(일반) 자연", "t": ""}, {"d": "2026-11-21", "c": "논술", "u": "서울여대", "p": "논술우수자", "t": ""}, {"d": "2026-11-21", "c": "논술", "u": "성균관대", "p": "논술위주(언어형/수리형)", "t": ""}, {"d": "2026-11-21", "c": "논술", "u": "수원대", "p": "교과논술(자연계)", "t": ""}, {"d": "2026-11-21", "c": "논술", "u": "숙명여대", "p": "논술우수자 인문계·의류학과", "t": ""}, {"d": "2026-11-21", "c": "논술", "u": "숙명여대", "p": "논술우수자 자연계(의류학과 제외)", "t": ""}, {"d": "2026-11-21", "c": "논술", "u": "숭실대", "p": "논술우수자", "t": ""}, {"d": "2026-11-21", "c": "논술", "u": "한국항공대", "p": "논술우수자전형", "t": ""}, {"d": "2026-11-22", "c": "면접", "u": "계명대", "p": "의예과(지역의사광역)", "t": ""}, {"d": "2026-11-22", "c": "면접", "u": "대구가톨릭대", "p": "종합 의예과/약학부, 지역의사선발(진료) 의예과", "t": ""}, {"d": "2026-11-22", "c": "면접", "u": "세종대", "p": "세종인재(면접형) 인문계열·자연계열", "t": ""}, {"d": "2026-11-22", "c": "면접", "u": "아주대", "p": "ACE 공과대학/첨단ICT융합대학", "t": ""}, {"d": "2026-11-22", "c": "면접", "u": "연세대", "p": "학생부교과(추천형)", "t": ""}, {"d": "2026-11-22", "c": "면접", "u": "연세대", "p": "학생부종합(활동우수형)", "t": ""}, {"d": "2026-11-22", "c": "면접", "u": "이화여대", "p": "학종(미래인재 면접형 자연/의약계열)", "t": ""}, {"d": "2026-11-22", "c": "면접", "u": "한국외대", "p": "학생부종합 면접형(글로벌 전 모집단위)", "t": ""}, {"d": "2026-11-22", "c": "면접", "u": "한양대", "p": "학생부종합(면접형)-공과대학·한양인터칼리지(자연)", "t": ""}, {"d": "2026-11-22", "c": "논술", "u": "가톨릭관동대", "p": "논술-약학과·의예과", "t": "09:30"}, {"d": "2026-11-22", "c": "논술", "u": "가톨릭대", "p": "논술(약학/의예)", "t": "09:30"}, {"d": "2026-11-22", "c": "논술", "u": "경희대", "p": "논술우수자전형", "t": ""}, {"d": "2026-11-22", "c": "논술", "u": "고려대", "p": "논술(인문)", "t": ""}, {"d": "2026-11-22", "c": "논술", "u": "덕성여대", "p": "논술(약학과 등)", "t": ""}, {"d": "2026-11-22", "c": "논술", "u": "동국대", "p": "논술전형", "t": ""}, {"d": "2026-11-22", "c": "논술", "u": "서강대", "p": "논술(일반) 인문", "t": ""}, {"d": "2026-11-22", "c": "논술", "u": "수원대", "p": "교과논술(인문계)", "t": ""}, {"d": "2026-11-22", "c": "논술", "u": "한국공학대", "p": "논술(논술우수자)", "t": ""}, {"d": "2026-11-23", "c": "1단계합격", "u": "숭실대", "p": "SSU미래인재(면접형)·기회균형·SW우수자·특수교육·정보보호특기자", "t": "10:00"}, {"d": "2026-11-23", "c": "1단계합격", "u": "연세대", "p": "학생부종합(국제형)", "t": ""}, {"d": "2026-11-23", "c": "논술", "u": "삼육대", "p": "논술우수자", "t": ""}, {"d": "2026-11-23", "c": "논술", "u": "서울과기대", "p": "논술위주(논술전형)", "t": "10:00"}, {"d": "2026-11-23", "c": "실기", "u": "공주대", "p": "체육교육과(특기자)·스포츠과학과(골프·탁구 특기자)", "t": ""}, {"d": "2026-11-24", "c": "1단계합격", "u": "연세대(미래)", "p": "의예과(교과우수자·학교생활우수자·강원인재·사회통합·정원외) 면접대상자 발표", "t": "17:00"}, {"d": "2026-11-24", "c": "1단계합격", "u": "한예종", "p": "일반전형 영상원·미술원·연극원", "t": ""}, {"d": "2026-11-24", "c": "면접", "u": "국립창원대(창원)", "p": "특수교육대상자·계열적합인재·특기자", "t": "10:00"}, {"d": "2026-11-24", "c": "실기", "u": "공주대", "p": "스포츠과학과(일반)", "t": ""}, {"d": "2026-11-24", "c": "실기", "u": "부산대", "p": "실기 예술대학(음악/한국음악/미술/무용 등) 공지", "t": "16:00"}, {"d": "2026-11-24", "c": "최종합격", "u": "군산대", "p": "전체", "t": "18:00"}, {"d": "2026-11-24", "c": "최종합격", "u": "상명대(천안)", "p": "모든전형(학생부교과 제외)", "t": "10:00"}, {"d": "2026-11-24", "c": "최종합격", "u": "호서대", "p": "전 전형", "t": ""}, {"d": "2026-11-25", "c": "1단계합격", "u": "경희대", "p": "학생부종합(네오르네상스)", "t": "18:00"}, {"d": "2026-11-25", "c": "1단계합격", "u": "서울여대", "p": "바롬인재면접·SW융합인재·기독교지도자", "t": "18:00"}, {"d": "2026-11-25", "c": "면접", "u": "DGIST", "p": "과학인재전형", "t": ""}, {"d": "2026-11-25", "c": "면접", "u": "경상국립대", "p": "학생부종합(사범대/수의/의과/간호/약학 등)", "t": ""}, {"d": "2026-11-25", "c": "면접", "u": "한국공학대", "p": "학생부종합(조기취업형계약학과)", "t": ""}, {"d": "2026-11-25", "c": "면접", "u": "한국교통대", "p": "학생부종합(항공서비스학과)", "t": ""}, {"d": "2026-11-25", "c": "논술", "u": "한국기술교대", "p": "논술전형", "t": ""}, {"d": "2026-11-25", "c": "실기", "u": "경상국립대", "p": "실기/실적 체육·스포츠(일반)", "t": ""}, {"d": "2026-11-25", "c": "실기", "u": "공주대", "p": "음악교육과·스포츠과학과(볼링 특기자)", "t": ""}, {"d": "2026-11-25", "c": "실기", "u": "부경대", "p": "실기우수인재 시각디자인학과", "t": "13:00"}, {"d": "2026-11-25", "c": "최종합격", "u": "경희대", "p": "학생부교과(기회균형Ⅰ-재직자)·학생부종합(기회균형Ⅰ·Ⅱ)·실기우수자 전체", "t": "18:00"}, {"d": "2026-11-25", "c": "최종합격", "u": "부산가톨릭대", "p": "전체", "t": "14:00"}, {"d": "2026-11-25", "c": "최종합격", "u": "선문대", "p": "전체", "t": "16:00"}, {"d": "2026-11-26", "c": "1단계합격", "u": "중앙대", "p": "학종 탐구형인재/성장형인재/융합형인재(의학부)", "t": "14:00"}, {"d": "2026-11-26", "c": "면접", "u": "KAIST", "p": "Regular Admission(일반/고른기회/특기자/반도체시스템인재)", "t": ""}, {"d": "2026-11-26", "c": "면접", "u": "공주대", "p": "학생부종합 사범대학·예술대학", "t": ""}, {"d": "2026-11-26", "c": "면접", "u": "서원대", "p": "일반전형(사범대학)", "t": ""}, {"d": "2026-11-26", "c": "면접", "u": "전북대", "p": "학생부종합(큰사람/SW인재/사회통합/특성화고 등 1일차)", "t": ""}, {"d": "2026-11-26", "c": "면접", "u": "제주대", "p": "학생부종합·지역인재 등 면접 전형", "t": ""}, {"d": "2026-11-26", "c": "면접", "u": "한국해양대", "p": "지역인재전형", "t": ""}, {"d": "2026-11-26", "c": "실기", "u": "목포해양대", "p": "해양스포츠학과", "t": ""}, {"d": "2026-11-26", "c": "실기", "u": "부경대", "p": "실기우수인재 공업디자인학과", "t": "13:00"}, {"d": "2026-11-26", "c": "실기", "u": "서울대", "p": "일반전형(음악대학)", "t": ""}, {"d": "2026-11-26", "c": "실기", "u": "서울대", "p": "기회균형특별(사회통합)", "t": ""}, {"d": "2026-11-26", "c": "실기", "u": "제주대", "p": "체육교육과·스포츠과학과 등 실기", "t": ""}, {"d": "2026-11-27", "c": "1단계합격", "u": "가톨릭관동대", "p": "전체모집단위(종합 면접·서류전형 등)", "t": "16:00"}, {"d": "2026-11-27", "c": "1단계합격", "u": "가톨릭대", "p": "학생부종합(전체 모집단위)", "t": "16:00"}, {"d": "2026-11-27", "c": "1단계합격", "u": "단국대", "p": "실기우수자", "t": "18:00"}, {"d": "2026-11-27", "c": "1단계합격", "u": "동국대(WISE)", "p": "학생부종합전형", "t": ""}, {"d": "2026-11-27", "c": "1단계합격", "u": "서울대", "p": "지역균형", "t": "18:00"}, {"d": "2026-11-27", "c": "1단계합격", "u": "한동대", "p": "대안학교·글로벌인재·선교사목회자자녀·사회통합·기초생활·장애인", "t": "15:00"}, {"d": "2026-11-27", "c": "면접", "u": "강원대(강릉원주)", "p": "미래인재면접Ⅰ·기회균형면접·농어촌학생", "t": ""}, {"d": "2026-11-27", "c": "면접", "u": "강원대(춘천삼척)", "p": "학생부종합(미래인재면접/영농창업인재)", "t": ""}, {"d": "2026-11-27", "c": "면접", "u": "공주대", "p": "학생부종합 천안공과대학·산업과학대학", "t": ""}, {"d": "2026-11-27", "c": "면접", "u": "국립목포대(미확정)", "p": "지역인재(종합)·미래인재전형", "t": ""}, {"d": "2026-11-27", "c": "면접", "u": "동아대", "p": "잠재능력우수자(인문/국제/공과/SW/간호)", "t": ""}, {"d": "2026-11-27", "c": "면접", "u": "동아대", "p": "지역인재종합(의과대)", "t": ""}, {"d": "2026-11-27", "c": "면접", "u": "동아대", "p": "지역의사제(광역권)", "t": ""}, {"d": "2026-11-27", "c": "면접", "u": "명지대", "p": "크리스천리더", "t": ""}, {"d": "2026-11-27", "c": "면접", "u": "서울대", "p": "일반전형", "t": ""}, {"d": "2026-11-27", "c": "면접", "u": "수원대", "p": "고교추천", "t": ""}, {"d": "2026-11-27", "c": "면접", "u": "숭실대", "p": "SSU미래인재(면접형)·정보보호특기자", "t": ""}, {"d": "2026-11-27", "c": "면접", "u": "전주교대", "p": "종합전형", "t": ""}, {"d": "2026-11-27", "c": "면접", "u": "청주교대", "p": "전 전형", "t": ""}, {"d": "2026-11-27", "c": "논술", "u": "경기대", "p": "논술우수자", "t": ""}, {"d": "2026-11-27", "c": "논술", "u": "한국전통문화대", "p": "논술우수자", "t": ""}, {"d": "2026-11-27", "c": "실기", "u": "부경대", "p": "실기우수인재 해양스포츠학과", "t": "13:00"}, {"d": "2026-11-27", "c": "실기", "u": "한국해양대", "p": "교과성적우수자·특별전형(농어촌/특성화고/기회균형) 예체능계(해양스포츠과학과)", "t": ""}, {"d": "2026-11-27", "c": "최종합격", "u": "목원대", "p": "학생부교과(교과면접)·학생부종합 등", "t": "16:00"}, {"d": "2026-11-27", "c": "최종합격", "u": "백석대", "p": "전체", "t": "17:00"}, {"d": "2026-11-27", "c": "최종합격", "u": "한동대", "p": "학종(G-IMPACT인재·SW인재)", "t": "15:00"}, {"d": "2026-11-28", "c": "면접", "u": "POSTECH", "p": "일반전형Ⅰ", "t": ""}, {"d": "2026-11-28", "c": "면접", "u": "가톨릭관동대", "p": "인·적성면접 의예과(지역균형)", "t": "08:00"}, {"d": "2026-11-28", "c": "면접", "u": "가톨릭대", "p": "학생부교과 지역균형(의예 인적성)", "t": "08:00"}, {"d": "2026-11-28", "c": "면접", "u": "강원대(춘천삼척)", "p": "학생부종합(지역인재면접)", "t": ""}, {"d": "2026-11-28", "c": "면접", "u": "건국대(글로컬)", "p": "교과 의예과(지역인재 등)", "t": ""}, {"d": "2026-11-28", "c": "면접", "u": "건국대(글로컬)", "p": "Cogito자기추천·지역인재(학종)", "t": ""}, {"d": "2026-11-28", "c": "면접", "u": "건양대", "p": "의학과[최저적용]·지역의사", "t": ""}, {"d": "2026-11-28", "c": "면접", "u": "계명대", "p": "의예과(면접/지역의사진료)", "t": ""}, {"d": "2026-11-28", "c": "면접", "u": "고신대", "p": "학생부교과 1단계 합격자", "t": ""}, {"d": "2026-11-28", "c": "면접", "u": "국립목포대(미확정)", "p": "장애인전형", "t": ""}, {"d": "2026-11-28", "c": "면접", "u": "대구교대", "p": "학생부종합(모든 전형)", "t": ""}, {"d": "2026-11-28", "c": "면접", "u": "대구한의대", "p": "간호학과", "t": ""}, {"d": "2026-11-28", "c": "면접", "u": "동아대", "p": "잠재능력우수자(사회/경영/자연/생명/디자인/건강보건/예술체육)", "t": ""}, {"d": "2026-11-28", "c": "면접", "u": "동아대", "p": "지역의사제(진료권)", "t": ""}, {"d": "2026-11-28", "c": "면접", "u": "동의대", "p": "학생부종합(의료보건생활·한의·공과·SW융합)", "t": ""}, {"d": "2026-11-28", "c": "면접", "u": "명지대", "p": "명지인재면접(자연캠퍼스)", "t": ""}, {"d": "2026-11-28", "c": "면접", "u": "부산교대", "p": "공통", "t": ""}, {"d": "2026-11-28", "c": "면접", "u": "서강대", "p": "학생부종합(특성화고교졸업자)", "t": ""}, {"d": "2026-11-28", "c": "면접", "u": "서울과기대", "p": "학생부종합(학교생활우수자·창의융합인재·특수교육대상자)", "t": "08:30"}, {"d": "2026-11-28", "c": "면접", "u": "서울대", "p": "일반전형", "t": ""}, {"d": "2026-11-28", "c": "면접", "u": "서울시립대", "p": "인문계열,예체능계열(학생부종합Ⅰ,기회균형Ⅰ,사회공헌·통합)", "t": "10:00"}, {"d": "2026-11-28", "c": "면접", "u": "서울여대", "p": "바롬인재면접·SW융합인재·기독교지도자", "t": ""}, {"d": "2026-11-28", "c": "면접", "u": "숙명여대", "p": "학생부종합 숙명인재(면접형)", "t": ""}, {"d": "2026-11-28", "c": "면접", "u": "숙명여대", "p": "학생부종합 소프트웨어인재", "t": ""}, {"d": "2026-11-28", "c": "면접", "u": "숙명여대", "p": "학생부종합 특수교육대상자", "t": ""}, {"d": "2026-11-28", "c": "면접", "u": "숭실대", "p": "기회균형·SW우수자·특수교육", "t": ""}, {"d": "2026-11-28", "c": "면접", "u": "아주대", "p": "ACE 소프트웨어융합/자연과학/간호대학", "t": ""}, {"d": "2026-11-28", "c": "면접", "u": "연세대(미래)", "p": "의예과 전형", "t": ""}, {"d": "2026-11-28", "c": "면접", "u": "영남대", "p": "학생부종합 지역인재전형(의예과)", "t": "09:00"}, {"d": "2026-11-28", "c": "면접", "u": "영남대", "p": "학생부종합 지역의사선발전형", "t": "15:00"}, {"d": "2026-11-28", "c": "면접", "u": "울산대", "p": "지역의사제(의예)·잠재역량(자율·간호)·지역인재(의예)", "t": ""}, {"d": "2026-11-28", "c": "면접", "u": "인제대", "p": "지역인재Ⅰ(의예과)", "t": ""}, {"d": "2026-11-28", "c": "면접", "u": "조선대", "p": "학생부종합 면접전형", "t": ""}, {"d": "2026-11-28", "c": "면접", "u": "진주교대", "p": "학생부종합전형 심층면접", "t": ""}, {"d": "2026-11-28", "c": "면접", "u": "차의과학대", "p": "학생부교과·학생부종합(약학대학)", "t": ""}, {"d": "2026-11-28", "c": "면접", "u": "한국공학대", "p": "학생부종합(창의인재)", "t": ""}, {"d": "2026-11-28", "c": "면접", "u": "한남대", "p": "학종 한남인재Ⅱ(서류+면접)/창업인재(서류+면접)", "t": ""}, {"d": "2026-11-28", "c": "논술", "u": "강남대", "p": "논술전형", "t": ""}, {"d": "2026-11-28", "c": "논술", "u": "경북대", "p": "논술(AAT) 인문계열", "t": "09:00"}, {"d": "2026-11-28", "c": "논술", "u": "고려대(세종)", "p": "논술 전 모집단위(약학과 제외)", "t": ""}, {"d": "2026-11-28", "c": "논술", "u": "고려대(세종)", "p": "논술 약학과", "t": ""}, {"d": "2026-11-28", "c": "논술", "u": "광운대", "p": "논술(논술우수자) 자연계열", "t": ""}, {"d": "2026-11-28", "c": "논술", "u": "동덕여대", "p": "논술우수자", "t": ""}, {"d": "2026-11-28", "c": "논술", "u": "부산대", "p": "논술전형/지역인재(논술)", "t": ""}, {"d": "2026-11-28", "c": "논술", "u": "세종대", "p": "논술우수자 인문계열 전체", "t": "09:00"}, {"d": "2026-11-28", "c": "논술", "u": "세종대", "p": "논술우수자 자유전공학부", "t": "14:00"}, {"d": "2026-11-28", "c": "논술", "u": "이화여대", "p": "논술전형 인문Ⅰ·인문Ⅱ", "t": "08:30"}, {"d": "2026-11-28", "c": "논술", "u": "중앙대", "p": "논술(일반형) 자연계열", "t": ""}, {"d": "2026-11-28", "c": "논술", "u": "한국외대", "p": "논술전형(영어/서양어/중국학/사회과학/상경 등)", "t": ""}, {"d": "2026-11-28", "c": "논술", "u": "한양대", "p": "논술-상경/인문계열", "t": ""}, {"d": "2026-11-28", "c": "실기", "u": "서울대", "p": "기회균형특별(사회통합)", "t": ""}, {"d": "2026-11-29", "c": "면접", "u": "POSTECH", "p": "일반전형Ⅱ/반도체공학인재전형", "t": ""}, {"d": "2026-11-29", "c": "면접", "u": "경기대", "p": "학생부종합(KGU 디자인·SW·특수교육)", "t": ""}, {"d": "2026-11-29", "c": "면접", "u": "계명대", "p": "약학부", "t": ""}, {"d": "2026-11-29", "c": "면접", "u": "덕성여대", "p": "기회균형I·장애인등(글로벌융합 인문사회)", "t": ""}, {"d": "2026-11-29", "c": "면접", "u": "동의대", "p": "학생부종합(인문사회·상경·예술디자인체육)", "t": ""}, {"d": "2026-11-29", "c": "면접", "u": "명지대", "p": "명지인재면접(인문캠퍼스)", "t": ""}, {"d": "2026-11-29", "c": "면접", "u": "서울과기대", "p": "학생부종합(기회균형·군위탁)", "t": "08:30"}, {"d": "2026-11-29", "c": "면접", "u": "서울시립대", "p": "자연계열(학생부종합Ⅰ,기회균형Ⅰ,사회공헌·통합)", "t": "10:00"}, {"d": "2026-11-29", "c": "면접", "u": "성신여대", "p": "특수교육대상자전형", "t": ""}, {"d": "2026-11-29", "c": "면접", "u": "아주대", "p": "ACE 경영/인문/사회과학대학", "t": ""}, {"d": "2026-11-29", "c": "면접", "u": "연세대", "p": "학생부종합(국제형)", "t": ""}, {"d": "2026-11-29", "c": "면접", "u": "조선대", "p": "학생부종합 면접전형", "t": ""}, {"d": "2026-11-29", "c": "논술", "u": "가천대", "p": "논술(의예/한의예/약학)", "t": ""}, {"d": "2026-11-29", "c": "논술", "u": "광운대", "p": "논술(논술우수자) 인문계열", "t": ""}, {"d": "2026-11-29", "c": "논술", "u": "세종대", "p": "논술우수자 자연계열 인공지능융합대학", "t": "09:00"}, {"d": "2026-11-29", "c": "논술", "u": "세종대", "p": "논술우수자 자연계열(자연과학·생명과학·공과대학)", "t": "14:00"}, {"d": "2026-11-29", "c": "논술", "u": "신한대", "p": "논술전형", "t": ""}, {"d": "2026-11-29", "c": "논술", "u": "이화여대", "p": "논술전형 자연Ⅰ·자연Ⅱ", "t": "08:30"}, {"d": "2026-11-29", "c": "논술", "u": "중앙대", "p": "논술(일반형) 인문계열", "t": ""}, {"d": "2026-11-29", "c": "논술", "u": "한국외대", "p": "논술전형(아시아언어/일본학/사범/경영/국제 등)", "t": ""}, {"d": "2026-11-29", "c": "논술", "u": "한양대", "p": "논술-자연계열", "t": ""}, {"d": "2026-11-30", "c": "면접", "u": "KENTECH", "p": "수시", "t": ""}, {"d": "2026-11-30", "c": "면접", "u": "공주대", "p": "학생부종합 인문사회·자연과학·간호보건·국제학부", "t": ""}, {"d": "2026-11-30", "c": "논술", "u": "가천대", "p": "논술(인문/간호/바이오로직스/화공생명배터리)", "t": ""}, {"d": "2026-11-30", "c": "최종합격", "u": "동명대", "p": "면접일반·일반교과·자연치유·기회균형·농어촌(간호 제외)", "t": ""}, {"d": "2026-12-01", "c": "1단계합격", "u": "부산대", "p": "학종 지역인재/지역의사선발/저소득층/사회배려자", "t": "16:00"}, {"d": "2026-12-01", "c": "면접", "u": "수원가톨릭대", "p": "특별전형·일반전형[2단계] 대학입시면접", "t": "09:00"}, {"d": "2026-12-01", "c": "면접", "u": "원광대", "p": "학생부종합 지역인재(종합/기회균형)/지역의사선발", "t": ""}, {"d": "2026-12-01", "c": "면접", "u": "전남대", "p": "학생부교과(고교생활우수자)", "t": ""}, {"d": "2026-12-01", "c": "면접", "u": "충남대", "p": "학생부종합", "t": ""}, {"d": "2026-12-01", "c": "논술", "u": "가천대", "p": "논술(자연계열)", "t": ""}, {"d": "2026-12-01", "c": "실기", "u": "전남대", "p": "학생부교과(예능실기)·실기실적(예능실기) 음악학과·국악학과", "t": ""}, {"d": "2026-12-01", "c": "최종합격", "u": "동국대", "p": "학교장추천인재/특성화고재직자(서류형)/실기·실적", "t": ""}, {"d": "2026-12-02", "c": "면접", "u": "경찰대학교", "p": "전체", "t": ""}, {"d": "2026-12-02", "c": "면접", "u": "원광대", "p": "학생부종합 기회균형/농어촌학생", "t": ""}, {"d": "2026-12-02", "c": "면접", "u": "전남대", "p": "학생부종합(고교생활우수자Ⅰ·지역인재·전공적성·사회배려·예능경영)", "t": ""}, {"d": "2026-12-02", "c": "면접", "u": "충남대", "p": "학생부종합", "t": ""}, {"d": "2026-12-02", "c": "면접", "u": "충남대", "p": "국가안보융합인재(종합)", "t": ""}, {"d": "2026-12-02", "c": "실기", "u": "전남대", "p": "학생부교과(예능실기)·실기실적(예능실기) 미술학과·디자인학과", "t": ""}, {"d": "2026-12-03", "c": "1단계합격", "u": "한림대", "p": "학생부종합(전 모집단위)", "t": "16:00"}, {"d": "2026-12-03", "c": "면접", "u": "충남대", "p": "학생부종합·학생부교과", "t": ""}, {"d": "2026-12-03", "c": "면접", "u": "충남대", "p": "국가안보융합인재(종합) 해양안보", "t": ""}, {"d": "2026-12-03", "c": "최종합격", "u": "상명대", "p": "모든 전형", "t": "09:00"}, {"d": "2026-12-03", "c": "최종합격", "u": "이화여대", "p": "학종(미래인재 면접형/고른기회/사회기여자/예체능실기)", "t": ""}, {"d": "2026-12-04", "c": "면접", "u": "서울대", "p": "지역균형", "t": ""}, {"d": "2026-12-04", "c": "면접", "u": "서울대", "p": "기회균형특별(사회통합)", "t": ""}, {"d": "2026-12-04", "c": "면접", "u": "충남대", "p": "학생부종합", "t": ""}, {"d": "2026-12-04", "c": "면접", "u": "충남대", "p": "국가안보교과전형", "t": "09:00"}, {"d": "2026-12-04", "c": "최종합격", "u": "부산외대", "p": "전체", "t": "15:00"}, {"d": "2026-12-05", "c": "면접", "u": "가천대", "p": "지역균형", "t": ""}, {"d": "2026-12-05", "c": "면접", "u": "가톨릭관동대", "p": "전체모집단위 면접평가(잠재능력우수자면접 등)", "t": "08:30"}, {"d": "2026-12-05", "c": "면접", "u": "가톨릭관동대", "p": "인·적성면접 의예과·간호학과", "t": "08:00"}, {"d": "2026-12-05", "c": "면접", "u": "가톨릭대", "p": "학생부종합(전체)", "t": "08:30"}, {"d": "2026-12-05", "c": "면접", "u": "가톨릭대", "p": "학생부종합(의예/간호 인적성)", "t": "08:00"}, {"d": "2026-12-05", "c": "면접", "u": "건국대", "p": "학생부종합(KU자기추천 일부학과/특수교육대상자)", "t": ""}, {"d": "2026-12-05", "c": "면접", "u": "경기대", "p": "학생부종합(KGU 인문·FineArts·창의공과·관광문화·사회과학)", "t": ""}, {"d": "2026-12-05", "c": "면접", "u": "경희대", "p": "학생부종합(네오르네상스) 2단계", "t": ""}, {"d": "2026-12-05", "c": "면접", "u": "단국대", "p": "DKU인재(면접형)인문계열,창업인재 인문계열", "t": ""}, {"d": "2026-12-05", "c": "면접", "u": "동국대(WISE)", "p": "학생부종합전형", "t": ""}, {"d": "2026-12-05", "c": "면접", "u": "부산대", "p": "학종 지역인재/지역의사선발 등", "t": ""}, {"d": "2026-12-05", "c": "면접", "u": "서울대", "p": "지역균형", "t": ""}, {"d": "2026-12-05", "c": "면접", "u": "서울대", "p": "일반전형(음악대학 국악과)", "t": ""}, {"d": "2026-12-05", "c": "면접", "u": "서울대", "p": "기회균형특별(사회통합)", "t": ""}, {"d": "2026-12-05", "c": "면접", "u": "울산대", "p": "잠재역량(의예)·지역교과(의예)", "t": ""}, {"d": "2026-12-05", "c": "면접", "u": "인제대", "p": "지역의사(의예과)", "t": ""}, {"d": "2026-12-05", "c": "면접", "u": "중앙대", "p": "학종 탐구형인재/성장형인재", "t": ""}, {"d": "2026-12-05", "c": "면접", "u": "한국교원대", "p": "제2단계 전형(전체)", "t": ""}, {"d": "2026-12-05", "c": "면접", "u": "한동대", "p": "대안학교·글로벌인재·선교사목회자자녀·사회통합·기초생활·장애인", "t": ""}, {"d": "2026-12-05", "c": "면접", "u": "한양대", "p": "학생부종합(면접형)-의과대학", "t": ""}, {"d": "2026-12-05", "c": "면접", "u": "홍익대", "p": "미술우수자(동양화/회화/판화/조소/디자인학부)", "t": ""}, {"d": "2026-12-05", "c": "논술", "u": "국민대", "p": "논술(인문계)", "t": ""}, {"d": "2026-12-05", "c": "논술", "u": "아주대", "p": "논술우수자 공과/자연과학/자유전공(자연)/첨단ICT/SW융합/의과대학", "t": ""}, {"d": "2026-12-05", "c": "논술", "u": "인하대", "p": "논술(논술우수자-인문계열)", "t": ""}, {"d": "2026-12-05", "c": "논술", "u": "한신대", "p": "논술전형(인문계열)", "t": "10:00"}, {"d": "2026-12-05", "c": "논술", "u": "한신대", "p": "논술전형(자연계열)", "t": "14:30"}, {"d": "2026-12-06", "c": "면접", "u": "건국대", "p": "학생부종합(KU자기추천 일부학과)", "t": ""}, {"d": "2026-12-06", "c": "면접", "u": "경기대", "p": "학생부종합(KGU 소프트웨어경영·융합과학)", "t": ""}, {"d": "2026-12-06", "c": "면접", "u": "경희대", "p": "학생부종합(네오르네상스) 2단계", "t": ""}, {"d": "2026-12-06", "c": "면접", "u": "단국대", "p": "DKU인재(면접형)자연계열,SW인재,창업인재 자연계열", "t": ""}, {"d": "2026-12-06", "c": "면접", "u": "성균관대", "p": "학생부종합(자유전공/AI/의예)", "t": ""}, {"d": "2026-12-06", "c": "면접", "u": "중앙대", "p": "학종 융합형인재(의학부)", "t": ""}, {"d": "2026-12-06", "c": "면접", "u": "한양대", "p": "학생부종합(면접형)-사범대학", "t": ""}, {"d": "2026-12-06", "c": "논술", "u": "아주대", "p": "논술우수자 경영/인문/사회과학/자유전공(인문)/약학대학", "t": ""}, {"d": "2026-12-08", "c": "면접", "u": "한림대", "p": "지역인재(간호)·장애인등대상자", "t": ""}, {"d": "2026-12-09", "c": "1단계합격", "u": "가천대", "p": "가천의약학", "t": ""}, {"d": "2026-12-09", "c": "면접", "u": "한림대", "p": "학교생활우수자·지역의사·지역인재(의학·광고홍보) 등", "t": ""}, {"d": "2026-12-09", "c": "최종합격", "u": "명지대", "p": "전체", "t": "15:00"}, {"d": "2026-12-10", "c": "1단계합격", "u": "한예종", "p": "일반전형 영상원·미술원·연극원", "t": "17:00"}, {"d": "2026-12-11", "c": "1단계합격", "u": "건양대", "p": "의학과[최저적용]·지역[기초]·농어촌학생[면접]", "t": "16:00"}, {"d": "2026-12-11", "c": "면접", "u": "동국대", "p": "Do Dream", "t": ""}, {"d": "2026-12-11", "c": "면접", "u": "동국대", "p": "기회균형통합·특수교육대상자", "t": ""}, {"d": "2026-12-11", "c": "최종합격", "u": "KENTECH", "p": "수시", "t": "18:00"}, {"d": "2026-12-11", "c": "최종합격", "u": "국립목포대(미확정)", "p": "공통", "t": "18:00"}, {"d": "2026-12-11", "c": "최종합격", "u": "금오공대", "p": "수능최저 미적용", "t": "18:00"}, {"d": "2026-12-11", "c": "최종합격", "u": "대구한의대", "p": "한의예과/간호학과", "t": ""}, {"d": "2026-12-11", "c": "최종합격", "u": "대진대", "p": "학생부교과(학생부우수자/종단추천자)", "t": "14:00"}, {"d": "2026-12-11", "c": "최종합격", "u": "한동대", "p": "학종(대안학교·글로벌인재·선교사목회자자녀·사회통합·기초생활·장애인)", "t": "15:00"}, {"d": "2026-12-12", "c": "1단계합격", "u": "아주대", "p": "ACE(의학·약학)/지역의사선발", "t": ""}, {"d": "2026-12-12", "c": "면접", "u": "건양대", "p": "의학과[최저적용]·지역[기초]·농어촌학생[면접]", "t": ""}, {"d": "2026-12-12", "c": "면접", "u": "동국대", "p": "특성화고졸업재직자(면접형)", "t": ""}, {"d": "2026-12-13", "c": "면접", "u": "가천대", "p": "가천의약학", "t": ""}, {"d": "2026-12-13", "c": "면접", "u": "동국대", "p": "불교추천인재", "t": ""}, {"d": "2026-12-14", "c": "면접", "u": "가천대", "p": "가천의약학(의예)", "t": ""}, {"d": "2026-12-14", "c": "면접", "u": "아주대", "p": "ACE(의학·약학)/지역의사선발", "t": ""}, {"d": "2026-12-14", "c": "최종합격", "u": "한국전통문화대", "p": "논술우수자", "t": ""}, {"d": "2026-12-15", "c": "면접", "u": "가천대", "p": "가천의약학(약학)", "t": ""}, {"d": "2026-12-15", "c": "면접", "u": "광주가톨릭대", "p": "", "t": "15:30"}, {"d": "2026-12-15", "c": "면접", "u": "영선선학대", "p": "일반전형", "t": "09:30"}, {"d": "2026-12-15", "c": "최종합격", "u": "대전대", "p": "수능최저 적용 전형(농어촌·군사학과·한의예과 등)", "t": "15:00"}, {"d": "2026-12-15", "c": "최종합격", "u": "동명대", "p": "간호학과(면접일반·일반교과·지역인재·기회균형)", "t": ""}, {"d": "2026-12-15", "c": "최종합격", "u": "루터대", "p": "전체", "t": ""}, {"d": "2026-12-15", "c": "최종합격", "u": "삼육대", "p": "수능최저 적용", "t": "14:00"}, {"d": "2026-12-15", "c": "최종합격", "u": "우석대", "p": "한의예과·한약학과·약학과·간호학과(수능최저 적용)", "t": "15:00"}, {"d": "2026-12-15", "c": "최종합격", "u": "청주대", "p": "항공운항학과·군사학과", "t": "14:00"}, {"d": "2026-12-15", "c": "최종합격", "u": "한예종", "p": "일반전형 영상원·미술원·연극원", "t": ""}, {"d": "2026-12-15", "c": "최종합격", "u": "해군사관학교", "p": "종합선발", "t": "10:00"}, {"d": "2026-12-16", "c": "최종합격", "u": "건양대", "p": "의학과(수능최저적용)·군사학전형", "t": "16:00"}, {"d": "2026-12-16", "c": "최종합격", "u": "경남대", "p": "수능최저 적용(간호/물리치료/체육교육/군사학과)", "t": "17:00"}, {"d": "2026-12-16", "c": "최종합격", "u": "경운대", "p": "간호학과·항공운항학과", "t": "16:00"}, {"d": "2026-12-16", "c": "최종합격", "u": "고신대", "p": "수능최저 적용(의예과 전체·간호 학생부교과)", "t": "15:00"}, {"d": "2026-12-16", "c": "최종합격", "u": "광주대", "p": "학생부교과(일반학생) 간호학과", "t": "16:00"}, {"d": "2026-12-16", "c": "최종합격", "u": "국립경국대", "p": "수능최저 적용 전형", "t": "15:00"}, {"d": "2026-12-16", "c": "최종합격", "u": "남부대", "p": "수능최저 적용 학과(간호 일반학생)", "t": "14:00"}, {"d": "2026-12-16", "c": "최종합격", "u": "동신대", "p": "수능최저 적용(한의예/간호/물리치료)", "t": ""}, {"d": "2026-12-16", "c": "최종합격", "u": "동의대", "p": "학생부교과(일반고·지역인재)·학생부종합(학교생활우수자·지역인재종합)", "t": "14:00"}, {"d": "2026-12-16", "c": "최종합격", "u": "신한대", "p": "학생부종합/논술(3차)", "t": ""}, {"d": "2026-12-16", "c": "최종합격", "u": "용인대", "p": "교과성적우수자 특별전형", "t": "15:00"}, {"d": "2026-12-16", "c": "최종합격", "u": "한성대", "p": "교과우수(수능최저학력기준 적용)", "t": "14:00"}, {"d": "2026-12-16", "c": "최종합격", "u": "호남대", "p": "수능 적용학과(교과중심[일반고·지역인재·기초차상위한부모])", "t": "13:00"}, {"d": "2026-12-16", "c": "최종합격", "u": "화성의과학대", "p": "학생부교과우수자(간호학과)", "t": ""}, {"d": "2026-12-17", "c": "최종합격", "u": "건국대(글로컬)", "p": "의예과·학생부종합·의예과 등", "t": ""}, {"d": "2026-12-17", "c": "최종합격", "u": "경성대", "p": "일반/지역인재/특성화고 등 교과·종합", "t": "15:00"}, {"d": "2026-12-17", "c": "최종합격", "u": "광주가톨릭대", "p": "", "t": "15:00"}, {"d": "2026-12-17", "c": "최종합격", "u": "대구가톨릭대", "p": "수능최저 적용 모집단위", "t": ""}, {"d": "2026-12-17", "c": "최종합격", "u": "대전가톨릭대", "p": "일반·성김대건B·농어촌", "t": "15:00"}, {"d": "2026-12-17", "c": "최종합격", "u": "상명대(천안)", "p": "학생부교과", "t": "10:00"}, {"d": "2026-12-17", "c": "최종합격", "u": "상지대", "p": "한의예과·간호학과", "t": ""}, {"d": "2026-12-17", "c": "최종합격", "u": "수원가톨릭대", "p": "전체 전형", "t": "15:00"}, {"d": "2026-12-17", "c": "최종합격", "u": "이화여대", "p": "교과(고교추천)/학종(미래인재 서류형)/논술/학종(예체능서류)", "t": ""}, {"d": "2026-12-17", "c": "최종합격", "u": "한경국립대", "p": "[안성캠]일반전형_안성·잠재력우수자·사회통합", "t": "14:00"}, {"d": "2026-12-17", "c": "최종합격", "u": "한국교원대", "p": "전체", "t": "10:00"}, {"d": "2026-12-17", "c": "최종합격", "u": "한동대", "p": "교과(일반)", "t": "15:00"}, {"d": "2026-12-17", "c": "최종합격", "u": "한림대", "p": "교과우수자(간호)·학생부종합 전 모집단위", "t": "16:00"}, {"d": "2026-12-18", "c": "최종합격", "u": "DGIST", "p": "수시 전체", "t": ""}, {"d": "2026-12-18", "c": "최종합격", "u": "GIST", "p": "수시 전체", "t": "18:00"}, {"d": "2026-12-18", "c": "최종합격", "u": "KAIST", "p": "Regular Admission", "t": "10:00"}, {"d": "2026-12-18", "c": "최종합격", "u": "POSTECH", "p": "전 전형(기회균형 포함)", "t": "10:00"}, {"d": "2026-12-18", "c": "최종합격", "u": "UNIST", "p": "수시 전체", "t": ""}, {"d": "2026-12-18", "c": "최종합격", "u": "가천대", "p": "수능일 이후", "t": ""}, {"d": "2026-12-18", "c": "최종합격", "u": "가톨릭관동대", "p": "최초합격자 발표", "t": "16:00"}, {"d": "2026-12-18", "c": "최종합격", "u": "가톨릭대", "p": "", "t": "16:00"}, {"d": "2026-12-18", "c": "최종합격", "u": "강남대", "p": "전체", "t": ""}, {"d": "2026-12-18", "c": "최종합격", "u": "강서대", "p": "수능최저 적용학과(간호학과)", "t": "14:00"}, {"d": "2026-12-18", "c": "최종합격", "u": "강원대(강릉원주)", "p": "전체", "t": "15:00"}, {"d": "2026-12-18", "c": "최종합격", "u": "강원대(춘천삼척)", "p": "공통", "t": "15:00"}, {"d": "2026-12-18", "c": "최종합격", "u": "건국대", "p": "교과(KU지역균형),학종 전체,논술,실기/실적(연기·연출)", "t": "14:00"}, {"d": "2026-12-18", "c": "최종합격", "u": "경북대", "p": "위 전형 외 모든 전형", "t": "16:00"}, {"d": "2026-12-18", "c": "최종합격", "u": "경상국립대", "p": "공통", "t": "16:00"}, {"d": "2026-12-18", "c": "최종합격", "u": "경인교대", "p": "전체", "t": "14:00"}, {"d": "2026-12-18", "c": "최종합격", "u": "경일대", "p": "수능최저 적용(간호 교과)", "t": ""}, {"d": "2026-12-18", "c": "최종합격", "u": "경희대", "p": "학생부교과(지역균형)·학생부종합(네오르네상스)", "t": "18:00"}, {"d": "2026-12-18", "c": "최종합격", "u": "계명대", "p": "학생부교과 등 다수전형", "t": ""}, {"d": "2026-12-18", "c": "최종합격", "u": "고려대", "p": "전체", "t": "17:00"}, {"d": "2026-12-18", "c": "최종합격", "u": "고려대(세종)", "p": "전 전형", "t": "17:00"}, {"d": "2026-12-18", "c": "최종합격", "u": "공군사관학교", "p": "종합선발", "t": "10:00"}, {"d": "2026-12-18", "c": "최종합격", "u": "공주대", "p": "최초합격자 발표", "t": "18:00"}, {"d": "2026-12-18", "c": "최종합격", "u": "광운대", "p": "농어촌/특성화고졸업자/재직자/서해5도/논술우수자", "t": "15:00"}, {"d": "2026-12-18", "c": "최종합격", "u": "국립창원대(거창)", "p": "전체 전형", "t": "14:00"}, {"d": "2026-12-18", "c": "최종합격", "u": "국립창원대(남해)", "p": "전문인재", "t": "14:00"}, {"d": "2026-12-18", "c": "최종합격", "u": "국립창원대(남해전형기간자율화)", "p": "전문인재전형", "t": "14:00"}, {"d": "2026-12-18", "c": "최종합격", "u": "국립창원대(창원)", "p": "예체능 외 모든 전형", "t": "14:00"}, {"d": "2026-12-18", "c": "최종합격", "u": "국민대", "p": "교과우수자/국민프런티어/국제인재/알고리즘/기회균형/농어촌/성인학습자/논술 등", "t": "17:00"}, {"d": "2026-12-18", "c": "최종합격", "u": "금오공대", "p": "수능최저 적용", "t": "18:00"}, {"d": "2026-12-18", "c": "최종합격", "u": "나사렛대", "p": "수능최저 적용(간호 일반/농어촌/기초생활)", "t": ""}, {"d": "2026-12-18", "c": "최종합격", "u": "단국대", "p": "학생부종합·학생부교과·논술우수자", "t": "18:00"}, {"d": "2026-12-18", "c": "최종합격", "u": "대구교대", "p": "전체", "t": "10:00"}, {"d": "2026-12-18", "c": "최종합격", "u": "대구대", "p": "수능최저 적용 모집단위(2차)", "t": "21:00"}, {"d": "2026-12-18", "c": "최종합격", "u": "덕성여대", "p": "", "t": "17:00"}, {"d": "2026-12-18", "c": "최종합격", "u": "동국대", "p": "학생부종합 단계별·논술", "t": ""}, {"d": "2026-12-18", "c": "최종합격", "u": "동국대(WISE)", "p": "수능최저 적용", "t": ""}, {"d": "2026-12-18", "c": "최종합격", "u": "동덕여대", "p": "동덕창의리더(약학과)·학생부교과우수자·논술우수자", "t": "17:00"}, {"d": "2026-12-18", "c": "최종합격", "u": "동서대", "p": "학생부면접/학생부종합/실기/포트폴리오", "t": ""}, {"d": "2026-12-18", "c": "최종합격", "u": "동아대", "p": "교과·학종 등 전체", "t": "14:00"}, {"d": "2026-12-18", "c": "최종합격", "u": "목포가톨릭대", "p": "공통", "t": "14:00"}, {"d": "2026-12-18", "c": "최종합격", "u": "목포해양대", "p": "", "t": ""}, {"d": "2026-12-18", "c": "최종합격", "u": "배재대", "p": "전체", "t": ""}, {"d": "2026-12-18", "c": "최종합격", "u": "부경대", "p": "전체", "t": "17:00"}, {"d": "2026-12-18", "c": "최종합격", "u": "부산교대", "p": "공통", "t": "17:00"}, {"d": "2026-12-18", "c": "최종합격", "u": "부산대", "p": "전체 전형", "t": "16:00"}, {"d": "2026-12-18", "c": "최종합격", "u": "서강대", "p": "공통", "t": "17:00"}, {"d": "2026-12-18", "c": "최종합격", "u": "서경대", "p": "", "t": "17:00"}, {"d": "2026-12-18", "c": "최종합격", "u": "서울과기대", "p": "실기 외 전체 전형", "t": "14:00"}, {"d": "2026-12-18", "c": "최종합격", "u": "서울교대", "p": "전체", "t": "10:00"}, {"d": "2026-12-18", "c": "최종합격", "u": "서울대", "p": "지역균형", "t": "18:00"}, {"d": "2026-12-18", "c": "최종합격", "u": "서울대", "p": "일반전형", "t": "18:00"}, {"d": "2026-12-18", "c": "최종합격", "u": "서울대", "p": "일반전형(음악대학)", "t": "18:00"}, {"d": "2026-12-18", "c": "최종합격", "u": "서울대", "p": "기회균형특별(사회통합)", "t": "18:00"}, {"d": "2026-12-18", "c": "최종합격", "u": "서울시립대", "p": "공통", "t": ""}, {"d": "2026-12-18", "c": "최종합격", "u": "서울여대", "p": "바롬인재서류·면접·SW융합·기독교·기회균형·교과우수자·논술", "t": "18:00"}, {"d": "2026-12-18", "c": "최종합격", "u": "서원대", "p": "수능최저학력 적용 모집단위", "t": ""}, {"d": "2026-12-18", "c": "최종합격", "u": "성균관대", "p": "", "t": ""}, {"d": "2026-12-18", "c": "최종합격", "u": "성신여대", "p": "학생부종합·교과(지역균형)·논술", "t": "10:00"}, {"d": "2026-12-18", "c": "최종합격", "u": "세명대", "p": "한의예과/농어촌/기초생활·차상위·한부모전형", "t": ""}, {"d": "2026-12-18", "c": "최종합격", "u": "세종대", "p": "기타 수시모집 전형", "t": "17:00"}, {"d": "2026-12-18", "c": "최종합격", "u": "수원대", "p": "교과논술·고교추천·교과우수", "t": "17:00"}, {"d": "2026-12-18", "c": "최종합격", "u": "숙명여대", "p": "학생부종합·논술우수자", "t": "17:00"}, {"d": "2026-12-18", "c": "최종합격", "u": "순천대", "p": "전체(실기 제외)", "t": "18:00"}, {"d": "2026-12-18", "c": "최종합격", "u": "순천향대", "p": "전체", "t": "17:00"}, {"d": "2026-12-18", "c": "최종합격", "u": "숭실대", "p": "전체(실기/실적 제외)", "t": "10:00"}, {"d": "2026-12-18", "c": "최종합격", "u": "아주대", "p": "전체(체육우수자 제외)", "t": ""}, {"d": "2026-12-18", "c": "최종합격", "u": "연세대", "p": "전체", "t": "18:00"}, {"d": "2026-12-18", "c": "최종합격", "u": "연세대(미래)", "p": "공통", "t": "17:00"}, {"d": "2026-12-18", "c": "최종합격", "u": "영남대", "p": "전체 전형(실기/특기자 제외)", "t": "15:00"}, {"d": "2026-12-18", "c": "최종합격", "u": "영선선학대", "p": "일반전형", "t": "10:00"}, {"d": "2026-12-18", "c": "최종합격", "u": "예수대", "p": "전체", "t": "14:00"}, {"d": "2026-12-18", "c": "최종합격", "u": "울산대", "p": "지역인재(의예)·지역의사제(의예)·잠재역량(의예) 등", "t": "16:00"}, {"d": "2026-12-18", "c": "최종합격", "u": "원광대", "p": "학생부종합/지역인재(종합/기회균형)/의치한의예과 등", "t": ""}, {"d": "2026-12-18", "c": "최종합격", "u": "원광대", "p": "군사학과전형", "t": ""}, {"d": "2026-12-18", "c": "최종합격", "u": "위덕대", "p": "전체", "t": ""}, {"d": "2026-12-18", "c": "최종합격", "u": "육군사관학교", "p": "종합선발", "t": "09:00"}, {"d": "2026-12-18", "c": "최종합격", "u": "을지대", "p": "위 전형을 제외한 모든 전형", "t": ""}, {"d": "2026-12-18", "c": "최종합격", "u": "인제대", "p": "의예·약학·지역인재Ⅰ(의약간호)·지역의사·농어촌(약)·기초생활(의약간호)", "t": "14:00"}, {"d": "2026-12-18", "c": "최종합격", "u": "인천대", "p": "특기자 제외 모든 전형", "t": ""}, {"d": "2026-12-18", "c": "최종합격", "u": "인하대", "p": "학생부교과/학생부종합/논술 전체", "t": ""}, {"d": "2026-12-18", "c": "최종합격", "u": "전남대", "p": "최초합격자(일반)", "t": "15:00"}, {"d": "2026-12-18", "c": "최종합격", "u": "전북대", "p": "공통", "t": "14:00"}, {"d": "2026-12-18", "c": "최종합격", "u": "전주교대", "p": "", "t": "13:00"}, {"d": "2026-12-18", "c": "최종합격", "u": "제주대", "p": "전체", "t": ""}, {"d": "2026-12-18", "c": "최종합격", "u": "조선대", "p": "일반·군사학과·지역인재·지역의사·면접·서류·농어촌·실기·특기자", "t": ""}, {"d": "2026-12-18", "c": "최종합격", "u": "중앙대", "p": "전체 전형(특기형 일부 제외)", "t": "14:00"}, {"d": "2026-12-18", "c": "최종합격", "u": "진주교대", "p": "학생부종합전형", "t": "10:00"}, {"d": "2026-12-18", "c": "최종합격", "u": "차의과학대", "p": "학생부종합 전체·학생부교과(CHA·약학지역균형)", "t": "16:00"}, {"d": "2026-12-18", "c": "최종합격", "u": "청주교대", "p": "최초합격자 발표", "t": "10:00"}, {"d": "2026-12-18", "c": "최종합격", "u": "총신대", "p": "교과·학생부종합·성경지식우수자·외국어(영어)우수자", "t": ""}, {"d": "2026-12-18", "c": "최종합격", "u": "춘천교대", "p": "전체(학생부종합 일괄합산, 면접 없음)", "t": "14:00"}, {"d": "2026-12-18", "c": "최종합격", "u": "충남대", "p": "전체", "t": "15:00"}, {"d": "2026-12-18", "c": "최종합격", "u": "충북대", "p": "공통", "t": "17:00"}, {"d": "2026-12-18", "c": "최종합격", "u": "한국공학대", "p": "논술·교과·종합 등 전체", "t": ""}, {"d": "2026-12-18", "c": "최종합격", "u": "한국교통대", "p": "전체", "t": "16:00"}, {"d": "2026-12-18", "c": "최종합격", "u": "한국기술교대", "p": "교과전형·논술전형", "t": ""}, {"d": "2026-12-18", "c": "최종합격", "u": "한국외대", "p": "", "t": ""}, {"d": "2026-12-18", "c": "최종합격", "u": "한국체대", "p": "전체 전형", "t": ""}, {"d": "2026-12-18", "c": "최종합격", "u": "한국항공대", "p": "전체", "t": "09:00"}, {"d": "2026-12-18", "c": "최종합격", "u": "한국해양대", "p": "공통", "t": "10:00"}, {"d": "2026-12-18", "c": "최종합격", "u": "한남대", "p": "교과 전체/한남인재Ⅱ/창업인재 등", "t": ""}, {"d": "2026-12-18", "c": "최종합격", "u": "한밭대", "p": "모든 전형(실기위주 제외)", "t": "15:00"}, {"d": "2026-12-18", "c": "최종합격", "u": "한신대", "p": "논술전형", "t": "10:00"}, {"d": "2026-12-18", "c": "최종합격", "u": "한양대", "p": "학생부교과(추천형)·학생부종합 전 전형·논술", "t": ""}, {"d": "2026-12-18", "c": "최종합격", "u": "한양대(ERICA)", "p": "학생부교과(지역균형선발)/학생부종합(서류형·면접형·고른기회·특성화고졸재직자·서해5도·국방전략기술공학)/재능우수자(디자인)", "t": "18:00"}, {"d": "2026-12-18", "c": "최종합격", "u": "협성대", "p": "전체(합격자발표)", "t": ""}, {"d": "2026-12-18", "c": "최종합격", "u": "홍익대", "p": "수시모집 전체(공연예술우수자 제외)", "t": ""}, {"d": "2026-12-21", "c": "최종합격", "u": "국군간호사관학교", "p": "종합선발", "t": "10:00"}, {"d": "2026-12-23", "c": "충원합격", "u": "배재대", "p": "전체", "t": ""}, {"d": "2026-12-24", "c": "최종합격", "u": "한예종", "p": "일반전형 연극원(연출·극작·연극학)·영상원·미술원", "t": "17:00"}, {"d": "2026-12-24", "c": "충원합격", "u": "경운대", "p": "전체", "t": ""}, {"d": "2026-12-24", "c": "충원합격", "u": "광주대", "p": "전체", "t": "09:00"}, {"d": "2026-12-24", "c": "충원합격", "u": "김천대", "p": "전체", "t": ""}, {"d": "2026-12-24", "c": "충원합격", "u": "서울과기대", "p": "전체", "t": "14:00"}, {"d": "2026-12-24", "c": "충원합격", "u": "성신여대", "p": "전체", "t": "10:00"}, {"d": "2026-12-24", "c": "충원합격", "u": "아신대", "p": "전체", "t": ""}, {"d": "2026-12-24", "c": "충원합격", "u": "울산대", "p": "전체", "t": ""}, {"d": "2026-12-24", "c": "충원합격", "u": "전주대", "p": "전체", "t": ""}, {"d": "2026-12-24", "c": "충원합격", "u": "한양대", "p": "전체", "t": ""}, {"d": "2026-12-29", "c": "충원합격", "u": "감리교신학대", "p": "전체", "t": "18:00"}, {"d": "2027-01-04", "c": "최종합격", "u": "경찰대학교", "p": "전체", "t": "17:00"}];
+
+var scheduleOffset = 0;  // 0 = 오늘부터, -7 = 7일 전부터
+var activeFilter = 'all';
+
+function getDateStr(offsetDays) {
+  var d = new Date();
+  d.setHours(0,0,0,0);
+  d.setDate(d.getDate() + offsetDays);
+  return d.getFullYear() + '-' +
+    String(d.getMonth()+1).padStart(2,'0') + '-' +
+    String(d.getDate()).padStart(2,'0');
+}
+
+function formatDateLabel(dateStr) {
+  var d = new Date(dateStr + 'T00:00:00');
+  var wds = ['일','월','화','수','목','금','토'];
+  return (d.getMonth()+1) + '/' + d.getDate() + ' (' + wds[d.getDay()] + ')';
+}
+
+function isToday(dateStr) {
+  return dateStr === getDateStr(0);
+}
+
+function renderSchedule() {
+  var startStr = getDateStr(scheduleOffset);
+  var endStr   = getDateStr(scheduleOffset + 6);
+  var body = document.getElementById('schedule-body');
+  var rangeInfo = document.getElementById('range-info');
+  var todayInfo = document.getElementById('schedule-today-info');
+
+  // 날짜 범위 표시
+  var startD = new Date(startStr + 'T00:00:00');
+  var endD   = new Date(endStr   + 'T00:00:00');
+  rangeInfo.textContent = (startD.getMonth()+1) + '/' + startD.getDate() +
+    ' ~ ' + (endD.getMonth()+1) + '/' + endD.getDate();
+  todayInfo.textContent = '오늘: ' + formatDateLabel(getDateStr(0));
+
+  // 필터링
+  var filtered = SCHEDULE_DATA.filter(function(item) {
+    return item.d >= startStr && item.d <= endStr &&
+      (activeFilter === 'all' || item.c === activeFilter);
+  });
+
+  if (!filtered.length) {
+    body.innerHTML = '<div class="no-schedule"><div class="no-schedule-icon">📭</div><div class="no-schedule-text">해당 기간에 일정이 없습니다</div></div>';
+    return;
+  }
+
+  // 날짜별 그룹핑
+  var groups = {};
+  filtered.forEach(function(item) {
+    if (!groups[item.d]) groups[item.d] = [];
+    groups[item.d].push(item);
+  });
+
+  var html = '';
+  Object.keys(groups).sort().forEach(function(date) {
+    var items = groups[date];
+    var labelClass = isToday(date) ? 'day-label today-label' : 'day-label';
+    var todayBadge = isToday(date) ? ' <span style="font-size:9px;background:var(--accent);color:#fff;padding:1px 6px;border-radius:3px;font-weight:700;">TODAY</span>' : '';
+    html += '<div class="day-group">';
+    html += '<div class="day-header">';
+    html += '<span class="' + labelClass + '">' + formatDateLabel(date) + todayBadge + '</span>';
+    html += '<span class="day-count">' + items.length + '건</span>';
+    html += '<div class="day-divider"></div>';
+    html += '</div>';
+    items.forEach(function(item) {
+      var detail = item.p + (item.t ? ' · ' + item.t : '');
+      html += '<div class="sched-item" data-cat="' + item.c + '">';
+      html += '<span class="sched-cat" data-cat="' + item.c + '">' + item.c + '</span>';
+      html += '<div class="sched-info">';
+      html += '<div class="sched-univ">' + item.u + '</div>';
+      if (detail) html += '<div class="sched-detail">' + detail + '</div>';
+      html += '</div></div>';
+    });
+    html += '</div>';
+  });
+  body.innerHTML = html;
+
+  // 오늘 날짜로 스크롤
+  if (scheduleOffset === 0) {
+    var todayGroup = body.querySelector('.today-label');
+    if (todayGroup) todayGroup.closest('.day-group').scrollIntoView({behavior:'smooth'});
+  }
+}
+
+function changeRange(delta) {
+  scheduleOffset += delta;
+  renderSchedule();
+}
+
+function toggleFilter(cat) {
+  activeFilter = cat;
+  document.querySelectorAll('.filter-btn').forEach(function(btn) {
+    btn.classList.toggle('active', btn.dataset.cat === cat);
+  });
+  renderSchedule();
+}
+
+// 초기 렌더
+renderSchedule();
+// 자정마다 갱신 (날짜 바뀌면 자동 업데이트)
+setInterval(function() {
+  if (scheduleOffset === 0) renderSchedule();
+}, 60 * 60 * 1000);
+
+
+/* =========================================
+   7. 자동 새로고침 (GitHub Pages용)
+      5분마다 파일 변경 여부 확인 후 갱신
+   ========================================= */
+(function() {
+  var lastEtag = '';
+  var CHECK_MS = 3 * 60 * 1000; // 3분마다 확인
+
+  function checkReload() {
+    // 매번 새로운 URL로 요청해서 캐시 완전 우회
+    var url = location.origin + location.pathname + '?_=' + Date.now();
+    fetch(url, {
+      method: 'HEAD',
+      cache: 'no-store',
+      headers: {
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache'
+      }
+    })
+    .then(function(res) {
+      var etag = res.headers.get('etag') || res.headers.get('last-modified') || '';
+      if (lastEtag && etag && lastEtag !== etag) {
+        // 캐시 없이 강제 리로드
+        location.href = location.origin + location.pathname + '?_=' + Date.now();
+      }
+      lastEtag = etag;
+    })
+    .catch(function() {});
+  }
+
+  // 첫 로드 후 3초 뒤 기준값 설정
+  setTimeout(checkReload, 3000);
+  // 이후 3분마다 반복
+  setInterval(checkReload, CHECK_MS);
+})();
+</script>
+
+</div>
+</body>
+</html>
