@@ -34,7 +34,7 @@
 
   /* ── 메인 ── */
   main{display:grid;grid-template-columns:1fr 2fr;gap:13px;padding:13px 30px;overflow:hidden;min-height:0;}
-  .left-col{display:grid;grid-template-rows:1.05fr 1.35fr 0.75fr;gap:11px;min-height:0;}
+  .left-col{display:grid;grid-template-rows:1.05fr 260px 1fr;gap:11px;min-height:0;}
   .mid-row{display:grid;grid-template-columns:1fr 1fr;gap:11px;min-height:0;}
 
   .card{background:var(--surface);border:1px solid var(--border);border-radius:13px;padding:15px 19px;display:flex;flex-direction:column;overflow:hidden;}
@@ -62,7 +62,7 @@
   .meal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:7px;flex-shrink:0;}
   .meal-header .card-label{margin-bottom:0;}
   .meal-day{font-size:10px;font-weight:600;padding:2px 8px;border-radius:20px;font-family:"DM Mono",monospace;}
-  .meal-list{display:flex;flex-direction:column;gap:3px;flex:1;min-height:0;overflow-y:auto;}
+  .meal-list{display:flex;flex-direction:column;gap:3px;flex:1;min-height:0;max-height:188px;overflow-y:auto;}
   .meal-list::-webkit-scrollbar{width:3px;}
   .meal-list::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
   .meal-item{display:flex;align-items:center;gap:6px;padding:4px 8px;background:var(--bg);border-radius:6px;font-size:12px;line-height:1.35;flex-shrink:0;}
@@ -403,7 +403,7 @@ var NOTICE_CSV = SHEET_BASE + '?gid=584526684&single=true&output=csv';  // 공�
 var DDAY_CSV   = SHEET_BASE + '?gid=548968173&single=true&output=csv';  // Dday
 
 /* 파일 버전 — 올리면 모든 기기 저장값이 초기화됩니다 */
-var FILE_VERSION = 'v24';
+var FILE_VERSION = 'v25';
 try {
   if (localStorage.getItem('file_version') !== FILE_VERSION) {
     localStorage.clear();
