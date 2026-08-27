@@ -33,28 +33,28 @@
   #date{font-size:11px;color:var(--text-secondary);margin-top:2px;}
 
   /* ── 메인 ── */
-  main{display:grid;grid-template-columns:1fr 1fr;gap:13px;padding:13px 36px;overflow:hidden;min-height:0;}
-  .left-col{display:grid;grid-template-rows:auto auto 1fr;gap:11px;min-height:0;}
+  main{display:grid;grid-template-columns:1fr 2fr;gap:13px;padding:13px 30px;overflow:hidden;min-height:0;}
+  .left-col{display:grid;grid-template-rows:1.35fr 1fr 0.8fr;gap:11px;min-height:0;}
   .mid-row{display:grid;grid-template-columns:1fr 1fr;gap:11px;min-height:0;}
 
   .card{background:var(--surface);border:1px solid var(--border);border-radius:13px;padding:15px 19px;display:flex;flex-direction:column;overflow:hidden;}
-  .card-label{font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;margin-bottom:10px;flex-shrink:0;}
+  .card-label{font-size:clamp(17px,1.35vw,23px);font-weight:900;letter-spacing:-.02em;margin-bottom:10px;flex-shrink:0;}
 
   /* ── D-Day ── */
-  .card-dday{background:var(--text-primary);border-color:var(--text-primary);color:#fff;flex-direction:row;align-items:stretch;padding:20px 26px;}
+  .card-dday{background:var(--text-primary);border-color:var(--text-primary);color:#fff;flex-direction:row;align-items:stretch;padding:22px 28px;}
   .dday-main{display:flex;flex-direction:column;justify-content:center;padding-right:26px;margin-right:26px;border-right:1px solid rgba(255,255,255,.1);flex-shrink:0;}
   .dday-top-row{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;margin-bottom:4px;}
-  .dday-label-txt{font-size:10px;font-weight:700;letter-spacing:.12em;color:rgba(255,255,255,.3);text-transform:uppercase;}
+  .dday-label-txt{font-size:clamp(15px,1.2vw,20px);font-weight:900;letter-spacing:-.02em;color:rgba(255,255,255,.45);}
   .dday-edit-btn{font-size:9px;font-weight:700;color:rgba(255,255,255,.55);background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);border-radius:5px;padding:2px 8px;cursor:pointer;white-space:nowrap;flex-shrink:0;}
   .dday-edit-btn:hover{background:rgba(255,255,255,.2);color:#fff;}
-  .dday-event{font-size:11px;color:rgba(255,255,255,.4);margin-bottom:4px;white-space:nowrap;}
-  .dday-number{font-family:"DM Mono",monospace;font-size:clamp(48px,6.5vw,78px);font-weight:300;line-height:1;letter-spacing:-.04em;white-space:nowrap;}
+  .dday-event{font-size:clamp(12px,.95vw,15px);color:rgba(255,255,255,.45);margin-bottom:5px;white-space:nowrap;}
+  .dday-number{font-family:"DM Mono",monospace;font-size:clamp(62px,5.6vw,104px);font-weight:300;line-height:1;letter-spacing:-.04em;white-space:nowrap;}
   .dday-number .pre{font-size:.36em;font-weight:500;vertical-align:super;color:rgba(255,255,255,.4);}
-  .dday-sub{font-family:"DM Mono",monospace;font-size:10px;color:rgba(255,255,255,.22);margin-top:7px;}
+  .dday-sub{font-family:"DM Mono",monospace;font-size:clamp(11px,.85vw,14px);color:rgba(255,255,255,.3);margin-top:8px;}
   .dday-list{display:flex;flex-direction:column;justify-content:center;gap:9px;flex:1;}
-  .dday-item{display:flex;justify-content:space-between;align-items:center;padding:8px 13px;background:rgba(255,255,255,.05);border-radius:8px;border:1px solid rgba(255,255,255,.07);}
-  .dday-item-name{font-size:12px;color:rgba(255,255,255,.5);}
-  .dday-item-count{font-family:"DM Mono",monospace;font-size:16px;color:rgba(255,255,255,.9);}
+  .dday-item{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 16px;background:rgba(255,255,255,.05);border-radius:9px;border:1px solid rgba(255,255,255,.07);}
+  .dday-item-name{font-size:clamp(13px,1.05vw,17px);font-weight:500;color:rgba(255,255,255,.62);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .dday-item-count{font-family:"DM Mono",monospace;font-size:clamp(19px,1.5vw,26px);color:#fff;flex-shrink:0;}
 
   /* ── 급식(중식/석식 공통) ── */
   .meal-card{position:relative;}
@@ -85,8 +85,8 @@
   .notice-header .card-label{margin-bottom:0;}
   .notice-add-btn{font-size:9px;font-weight:700;color:var(--accent);background:var(--accent-soft);border:1px solid #C8D8F8;border-radius:5px;padding:2px 8px;cursor:pointer;}
   .notice-add-btn:hover{background:#DDE8FB;}
-  .notice-list{display:flex;flex-direction:column;gap:8px;flex:1;overflow-y:auto;}
-  .notice-item{display:flex;align-items:flex-start;gap:8px;padding:10px 12px;background:var(--accent-soft);border-radius:9px;border-left:3px solid var(--accent);flex-shrink:0;}
+  .notice-list{display:flex;flex-direction:column;gap:6px;flex:1;overflow-y:auto;}
+  .notice-item{display:flex;align-items:flex-start;gap:8px;padding:8px 12px;background:var(--accent-soft);border-radius:9px;border-left:3px solid var(--accent);flex-shrink:0;}
   .notice-badge{font-size:9px;font-weight:700;background:var(--accent);color:#fff;padding:2px 6px;border-radius:3px;white-space:nowrap;margin-top:1px;flex-shrink:0;}
   .notice-item-inner{flex:1;min-width:0;}
   .notice-text{font-size:13px;line-height:1.5;}
@@ -97,7 +97,7 @@
   /* ── 수시일정 ── */
   .schedule-panel{background:var(--surface);border:1px solid var(--border);border-radius:13px;display:flex;flex-direction:column;overflow:hidden;}
   .schedule-toolbar{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:10px 18px;border-bottom:1px solid var(--border);flex-shrink:0;}
-  .schedule-label{font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);}
+  .schedule-label{font-size:clamp(19px,1.5vw,26px);font-weight:900;letter-spacing:-.02em;color:var(--accent);}
   .schedule-today{font-size:11px;color:var(--text-secondary);font-family:"DM Mono",monospace;margin-top:2px;}
   .schedule-right{display:flex;flex-direction:column;gap:5px;align-items:flex-end;}
   .schedule-range{display:flex;align-items:center;gap:6px;}
@@ -112,16 +112,17 @@
   .schedule-body::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
   .day-group{margin-bottom:14px;}
   .day-header{display:flex;align-items:center;gap:8px;margin-bottom:6px;position:sticky;top:0;background:var(--surface);padding:4px 0;z-index:1;}
-  .day-label{font-size:12px;font-weight:700;font-family:"DM Mono",monospace;}
+  .day-label{font-size:14px;font-weight:700;font-family:"DM Mono",monospace;}
   .day-label.today-label{color:var(--accent);}
   .today-badge{font-size:9px;background:var(--accent);color:#fff;padding:1px 6px;border-radius:3px;font-weight:700;margin-left:4px;}
   .day-count{font-size:10px;color:var(--text-muted);background:var(--bg);padding:1px 7px;border-radius:10px;}
   .day-divider{flex:1;height:1px;background:var(--border);}
-  .sched-item{display:flex;align-items:flex-start;gap:8px;padding:6px 10px;border-radius:8px;margin-bottom:4px;border-left:3px solid transparent;}
-  .sched-cat{font-size:9px;font-weight:700;padding:1px 6px;border-radius:3px;color:#fff;white-space:nowrap;flex-shrink:0;margin-top:2px;}
+  .sched-items{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:5px;}
+  .sched-item{display:flex;align-items:flex-start;gap:8px;padding:7px 11px;border-radius:8px;border-left:3px solid transparent;}
+  .sched-cat{font-size:10px;font-weight:700;padding:1px 6px;border-radius:3px;color:#fff;white-space:nowrap;flex-shrink:0;margin-top:2px;}
   .sched-info{flex:1;min-width:0;}
-  .sched-univ{font-size:12px;font-weight:600;}
-  .sched-detail{font-size:10px;color:var(--text-secondary);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .sched-univ{font-size:13px;font-weight:600;}
+  .sched-detail{font-size:11px;color:var(--text-secondary);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .no-schedule{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:8px;color:var(--text-muted);}
   .no-schedule-icon{font-size:32px;opacity:.25;}
   .no-schedule-text{font-size:13px;}
@@ -399,7 +400,7 @@ var NOTICE_CSV = SHEET_BASE + '?gid=584526684&single=true&output=csv';  // 공�
 var DDAY_CSV   = SHEET_BASE + '?gid=548968173&single=true&output=csv';  // Dday
 
 /* 파일 버전 — 올리면 모든 기기 저장값이 초기화됩니다 */
-var FILE_VERSION = 'v21';
+var FILE_VERSION = 'v23';
 try {
   if (localStorage.getItem('file_version') !== FILE_VERSION) {
     localStorage.clear();
@@ -492,7 +493,7 @@ function renderMeal(kind, items, kcal){
     }).join('');
     kcalEl.textContent = kcal ? '열량: ' + kcal : '';
   }
-  if (kind === 'lunch') renderTicker();
+  renderTicker();
 }
 
 /* 시트 한 장에서 오늘 날짜 행을 찾아 메뉴/열량 추출
@@ -677,12 +678,13 @@ function renderTicker(){
   var parts = getNotices().slice(0,5).map(function(n){
     return '<span class="ticker-item">📌 ' + n.text + '</span>';
   });
-  var lunchItems = document.querySelectorAll('#lunch-grid .meal-item');
-  if (lunchItems.length){
+  [['lunch','🍱 오늘 중식'], ['dinner','🍚 오늘 석식']].forEach(function(pair){
+    var els = document.querySelectorAll('#' + pair[0] + '-grid .meal-item');
+    if (!els.length) return;
     var menus = [];
-    lunchItems.forEach(function(el){ menus.push(el.textContent.trim()); });
-    parts.push('<span class="ticker-item">🍱 오늘 중식: ' + menus.join(' · ') + '</span>');
-  }
+    for (var i = 0; i < els.length; i++) menus.push(els[i].textContent.trim());
+    parts.push('<span class="ticker-item">' + pair[1] + ': ' + menus.join(' · ') + '</span>');
+  });
   if (!parts.length){ track.innerHTML = ''; return; }
   var sep = '<span class="ticker-sep">·</span>';
   var one = parts.join(sep);
@@ -857,6 +859,7 @@ function renderSchedule(){
       + (isToday ? '<span class="today-badge">TODAY</span>' : '') + '</span>'
       + '<span class="day-count">' + items.length + '건</span>'
       + '<div class="day-divider"></div></div>';
+    out += '<div class="sched-items">';
     items.forEach(function(it){
       var detail = it.p + (it.t ? ' · ' + it.t : '');
       out += '<div class="sched-item" data-cat="' + it.c + '">'
@@ -865,7 +868,7 @@ function renderSchedule(){
         + (detail ? '<div class="sched-detail">' + detail + '</div>' : '')
         + '</div></div>';
     });
-    out += '</div>';
+    out += '</div></div>';
   });
   body.innerHTML = out;
 }
