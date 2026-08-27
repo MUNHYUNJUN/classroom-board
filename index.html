@@ -71,7 +71,13 @@
   .meal-edit-btn{position:absolute;top:12px;right:13px;font-size:9px;font-weight:700;color:var(--green);background:var(--green-soft);border:1px solid #B8DDD0;border-radius:5px;padding:2px 7px;cursor:pointer;opacity:0;transition:opacity .2s;}
   .card-meal:hover .meal-edit-btn{opacity:1;}
 
-  /* 한마디 카드 */
+  /* 석식 카드 */
+  .card-dinner{position:relative;}
+  .card-dinner .card-label{color:var(--accent);}
+  .card-dinner .meal-day{font-size:10px;color:var(--accent);font-weight:600;background:var(--accent-soft);padding:2px 8px;border-radius:20px;font-family:"DM Mono",monospace;}
+  .card-dinner .meal-dot{background:var(--accent) !important;}
+
+  /* 한마디 카드 (제거됨 - 석식으로 대체) */
   .card-quote{background:var(--amber-soft);border-color:#E2C99A;position:relative;}
   .quote-edit-btn{position:absolute;top:12px;right:13px;font-size:9px;font-weight:700;color:var(--amber);background:rgba(176,112,40,.12);border:1px solid rgba(176,112,40,.25);border-radius:5px;padding:2px 7px;cursor:pointer;opacity:0;transition:opacity .2s;}
   .card-quote:hover .quote-edit-btn{opacity:1;}
@@ -266,14 +272,15 @@
         </div>
         <div class="meal-kcal" id="meal-kcal"></div>
       </div>
-      <div class="card card-quote">
-        <button class="quote-edit-btn" onclick="openQuoteModal()">✏ 편집</button>
-        <div class="card-label">이번주의 한마디</div>
-        <div class="quote-body">
-          <div class="quote-mark">"</div>
-          <div class="quote-text" id="quote-text"></div>
+      <div class="card card-dinner">
+        <div class="meal-header">
+          <div class="card-label">오늘의 석식</div>
+          <div class="meal-day" id="dinner-day">오늘</div>
         </div>
-        <div class="quote-author" id="quote-author"></div>
+        <div class="meal-list" id="dinner-grid">
+          <div class="meal-item"><div class="meal-dot" style="background:var(--accent)"></div><span>불러오는 중…</span></div>
+        </div>
+        <div class="meal-kcal" id="dinner-kcal"></div>
       </div>
     </div>
 
@@ -448,6 +455,8 @@ function tick() {
     n.getFullYear() + '년 ' + (n.getMonth()+1) + '월 ' + n.getDate() + '일 (' + wd + ')';
   document.getElementById('meal-day').textContent =
     (n.getMonth()+1) + '/' + n.getDate() + ' (' + wd + ')';
+  var dd = document.getElementById('dinner-day');
+  if (dd) dd.textContent = (n.getMonth()+1) + '/' + n.getDate() + ' (' + wd + ')';
 }
 setInterval(tick, 1000);
 tick();
@@ -692,7 +701,7 @@ var MEAL_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTQj5B0CsHrY
 
 function parseMealCSV(csv) {
   var lines = csv.trim().split('\n');
-  // 1행: 헤더(날짜,메뉴1,...,열량) 스킵
+  // 1행: 헤더 스킵
   var today = new Date();
   var todayStr = today.getFullYear() + '-' +
     String(today.getMonth()+1).padStart(2,'0') + '-' +
@@ -702,12 +711,18 @@ function parseMealCSV(csv) {
     var cols = lines[i].split(',').map(function(c){ return c.trim().replace(/^"|"$/g,''); });
     var dateCol = cols[0] || '';
     if (dateCol === todayStr) {
-      // B~F열: 메뉴1~5 (빈 값 제외), G열: 열량
-      var items = cols.slice(1, cols.length - 1).filter(Boolean);
-      var kcal  = cols[cols.length - 1] || '';
+      // 마지막 열이 열량인지 확인 (숫자포함 + Kcal/kcal/칼로리)
+      var lastCol = cols[cols.length - 1] || '';
+      var isKcal = /\d/.test(lastCol) && /kcal|Kcal|칼로리|cal/i.test(lastCol);
+      var kcal  = isKcal ? lastCol : '';
+      var end   = isKcal ? cols.length - 1 : cols.length;
+      // A열(날짜) 제외, 빈값 제외
+      var items = cols.slice(1, end).filter(Boolean);
       return { items: items, kcal: kcal };
     }
   }
+  return null;
+}
   return null;
 }
 
@@ -967,6 +982,55 @@ function saveNotice() {
     if (e.target === this) closeNoticeModal();
   });
 })();
+
+/* =========================================
+   석식 관리
+   ========================================= */
+var DINNER_CSV_URL = ''; // 석식 구글 시트 URL (설정 필요)
+
+function renderDinner(items, kcal) {
+  var g = document.getElementById('dinner-grid');
+  if (!g) return;
+  if (!items || !items.length) {
+    g.innerHTML = '<div class="meal-item" style="color:var(--text-muted)">석식 정보가 없습니다</div>';
+    document.getElementById('dinner-kcal').textContent = '';
+    return;
+  }
+  g.innerHTML = items.map(function(m) {
+    return '<div class="meal-item"><div class="meal-dot" style="background:var(--accent)"></div>' + m + '</div>';
+  }).join('');
+  document.getElementById('dinner-kcal').textContent = kcal ? '열량: ' + kcal : '';
+}
+
+function loadDinnerFromSheet() {
+  if (!DINNER_CSV_URL) {
+    renderDinner([]);
+    return;
+  }
+  fetch(DINNER_CSV_URL + '&t=' + Date.now())
+    .then(function(r) { return r.text(); })
+    .then(function(csv) {
+      var result = parseMealCSV(csv);
+      if (result && result.items.length) {
+        renderDinner(result.items, result.kcal);
+      } else {
+        renderDinner([]);
+      }
+    })
+    .catch(function() { renderDinner([]); });
+}
+
+// dinner-day 업데이트 (시계와 동기화)
+function updateDinnerDay() {
+  var n = new Date();
+  var wd = ['일','월','화','수','목','금','토'][n.getDay()];
+  var el = document.getElementById('dinner-day');
+  if (el) el.textContent = (n.getMonth()+1) + '/' + n.getDate() + ' (' + wd + ')';
+}
+updateDinnerDay();
+loadDinnerFromSheet();
+setInterval(loadDinnerFromSheet, 30 * 60 * 1000);
+
 renderNotices();
 loadNoticesFromSheet(); // 구글 시트에서 최신 공지 로드
 // 1시간마다 자동 갱신
