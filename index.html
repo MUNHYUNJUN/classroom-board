@@ -34,37 +34,40 @@
 
   /* ── 메인 ── */
   main{display:grid;grid-template-columns:1fr 2fr;gap:13px;padding:13px 30px;overflow:hidden;min-height:0;}
-  .left-col{display:grid;grid-template-rows:1.35fr 1fr 0.8fr;gap:11px;min-height:0;}
+  .left-col{display:grid;grid-template-rows:1.05fr 1.35fr 0.75fr;gap:11px;min-height:0;}
   .mid-row{display:grid;grid-template-columns:1fr 1fr;gap:11px;min-height:0;}
 
   .card{background:var(--surface);border:1px solid var(--border);border-radius:13px;padding:15px 19px;display:flex;flex-direction:column;overflow:hidden;}
+  .meal-card{padding:13px 16px;}
   .card-label{font-size:clamp(17px,1.35vw,23px);font-weight:900;letter-spacing:-.02em;margin-bottom:10px;flex-shrink:0;}
 
   /* ── D-Day ── */
-  .card-dday{background:var(--text-primary);border-color:var(--text-primary);color:#fff;flex-direction:row;align-items:stretch;padding:22px 28px;}
+  .card-dday{background:var(--text-primary);border-color:var(--text-primary);color:#fff;flex-direction:row;align-items:stretch;padding:18px 26px;}
   .dday-main{display:flex;flex-direction:column;justify-content:center;padding-right:26px;margin-right:26px;border-right:1px solid rgba(255,255,255,.1);flex-shrink:0;}
   .dday-top-row{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;margin-bottom:4px;}
   .dday-label-txt{font-size:clamp(15px,1.2vw,20px);font-weight:900;letter-spacing:-.02em;color:rgba(255,255,255,.45);}
   .dday-edit-btn{font-size:9px;font-weight:700;color:rgba(255,255,255,.55);background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);border-radius:5px;padding:2px 8px;cursor:pointer;white-space:nowrap;flex-shrink:0;}
   .dday-edit-btn:hover{background:rgba(255,255,255,.2);color:#fff;}
   .dday-event{font-size:clamp(12px,.95vw,15px);color:rgba(255,255,255,.45);margin-bottom:5px;white-space:nowrap;}
-  .dday-number{font-family:"DM Mono",monospace;font-size:clamp(62px,5.6vw,104px);font-weight:300;line-height:1;letter-spacing:-.04em;white-space:nowrap;}
+  .dday-number{font-family:"DM Mono",monospace;font-size:clamp(54px,4.9vw,90px);font-weight:300;line-height:1;letter-spacing:-.04em;white-space:nowrap;}
   .dday-number .pre{font-size:.36em;font-weight:500;vertical-align:super;color:rgba(255,255,255,.4);}
   .dday-sub{font-family:"DM Mono",monospace;font-size:clamp(11px,.85vw,14px);color:rgba(255,255,255,.3);margin-top:8px;}
-  .dday-list{display:flex;flex-direction:column;justify-content:center;gap:9px;flex:1;}
-  .dday-item{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 16px;background:rgba(255,255,255,.05);border-radius:9px;border:1px solid rgba(255,255,255,.07);}
+  .dday-list{display:flex;flex-direction:column;justify-content:center;gap:7px;flex:1;}
+  .dday-item{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:9px 15px;background:rgba(255,255,255,.05);border-radius:9px;border:1px solid rgba(255,255,255,.07);}
   .dday-item-name{font-size:clamp(13px,1.05vw,17px);font-weight:500;color:rgba(255,255,255,.62);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .dday-item-count{font-family:"DM Mono",monospace;font-size:clamp(19px,1.5vw,26px);color:#fff;flex-shrink:0;}
 
   /* ── 급식(중식/석식 공통) ── */
   .meal-card{position:relative;}
-  .meal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+  .meal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:7px;flex-shrink:0;}
   .meal-header .card-label{margin-bottom:0;}
   .meal-day{font-size:10px;font-weight:600;padding:2px 8px;border-radius:20px;font-family:"DM Mono",monospace;}
-  .meal-list{display:flex;flex-direction:column;gap:4px;flex:1;overflow:hidden;}
-  .meal-item{display:flex;align-items:center;gap:6px;padding:5px 8px;background:var(--bg);border-radius:6px;font-size:12px;}
+  .meal-list{display:flex;flex-direction:column;gap:3px;flex:1;min-height:0;overflow-y:auto;}
+  .meal-list::-webkit-scrollbar{width:3px;}
+  .meal-list::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
+  .meal-item{display:flex;align-items:center;gap:6px;padding:4px 8px;background:var(--bg);border-radius:6px;font-size:12px;line-height:1.35;flex-shrink:0;}
   .meal-dot{width:4px;height:4px;border-radius:50%;flex-shrink:0;}
-  .meal-kcal{text-align:center;margin-top:5px;font-size:10px;color:var(--text-muted);font-family:"DM Mono",monospace;flex-shrink:0;}
+  .meal-kcal{text-align:center;margin-top:4px;font-size:10px;color:var(--text-muted);font-family:"DM Mono",monospace;flex-shrink:0;}
   .meal-empty{color:var(--text-muted);font-size:11px;padding:5px 8px;}
   .meal-edit-btn{position:absolute;top:12px;right:13px;font-size:9px;font-weight:700;border-radius:5px;padding:2px 7px;cursor:pointer;opacity:0;transition:opacity .2s;}
   .meal-card:hover .meal-edit-btn{opacity:1;}
@@ -400,7 +403,7 @@ var NOTICE_CSV = SHEET_BASE + '?gid=584526684&single=true&output=csv';  // 공�
 var DDAY_CSV   = SHEET_BASE + '?gid=548968173&single=true&output=csv';  // Dday
 
 /* 파일 버전 — 올리면 모든 기기 저장값이 초기화됩니다 */
-var FILE_VERSION = 'v23';
+var FILE_VERSION = 'v24';
 try {
   if (localStorage.getItem('file_version') !== FILE_VERSION) {
     localStorage.clear();
