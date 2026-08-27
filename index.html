@@ -434,21 +434,15 @@
 function normDate(s) {
   if (!s) return '';
   s = String(s).trim();
-  // 이미 YYYY-MM-DD 형식
-  if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
-  // YYYY.MM.DD 또는 YYYY/MM/DD
-  var m = s.match(/^(\d{4})[.\/](\d{1,2})[.\/](\d{1,2})$/);
-  if (m) return m[1] + '-' + m[2].padStart(2,'0') + '-' + m[3].padStart(2,'0');
-  // YYYY-M-D (한 자리 월/일)
-  var m2 = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
-  if (m2) return m2[1] + '-' + m2[2].padStart(2,'0') + '-' + m2[3].padStart(2,'0');
+  var m = s.match(/^([0-9]{4})[-./]([0-9]{1,2})[-./]([0-9]{1,2})$/);
+  if (m) return m[1] + '-' + ('0'+m[2]).slice(-2) + '-' + ('0'+m[3]).slice(-2);
   return s;
 }
 
 /* 파일 버전 — 업로드할 때마다 숫자를 1씩 올리세요 (예: v2, v3...)
    버전이 바뀌면 모든 기기의 localStorage가 자동 초기화됩니다.     */
 (function() {
-  var FILE_VERSION = 'v9';
+  var FILE_VERSION = 'v14';
   if (localStorage.getItem('file_version') !== FILE_VERSION) {
     localStorage.clear();
     localStorage.setItem('file_version', FILE_VERSION);
